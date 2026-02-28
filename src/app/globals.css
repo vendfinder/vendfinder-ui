@@ -1,26 +1,121 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Primary — VendFinder Orange */
+  --color-primary: #E8883A;
+  --color-primary-dark: #D47828;
+  --color-primary-light: #F09E56;
+  --color-primary-50: rgba(232, 136, 58, 0.08);
+
+  /* Surfaces */
+  --color-background: #0B0B0F;
+  --color-foreground: #EEEAE4;
+  --color-muted: #7A7A8A;
+  --color-surface: #14141B;
+  --color-border: #2A2A38;
+  --color-border-hover: #3A3A4A;
+
+  /* Accent — Sale / Urgency */
+  --color-accent: #FF4757;
+  --color-accent-dark: #E6253A;
+
+  /* Semantic */
+  --color-success: #00D68F;
+  --color-error: #FF4757;
+  --color-warning: #FFB800;
+
+  /* Dark surfaces */
+  --color-dark: #0B0B0F;
+  --color-dark-card: #1C1C26;
+  --color-dark-muted: #7A7A8A;
+
+  /* Card */
+  --color-card: #1C1C26;
+  --color-card-hover: #242430;
+
+  /* Typography */
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-playfair);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ---- Base ---- */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+/* ---- Grain Overlay ---- */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+}
+
+/* ---- Marquee ---- */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ---- Glow Pulse ---- */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* ---- Horizontal Scroll (hide scrollbar) ---- */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---- Selection ---- */
+::selection {
+  background: rgba(232, 136, 58, 0.3);
+  color: #EEEAE4;
+}
+
+/* ---- Custom Scrollbar ---- */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B0B0F;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2A2A38;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3A3A4A;
+}
+
+/* ---- Focus ---- */
+*:focus-visible {
+  outline: 2px solid #E8883A;
+  outline-offset: 2px;
 }
