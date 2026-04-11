@@ -12,15 +12,26 @@ on:
 env:
   KUBE_NAMESPACE: vendfinder
   REGISTRY: registry.digitalocean.com/vendfinder-registry
+  STAGING_URL: https://staging.vendfinder.com
+  PROD_URL: https://vendfinder.com
+  API_HEALTH_ENDPOINT: /api/health
+  HEALTH_CHECK_RETRIES: 3
+  HEALTH_CHECK_DELAY: 10
+  ROLLBACK_TIMEOUT: 300s
+  DEPLOYMENT_TIMEOUT: 600s
+  # Resource limits
+  MAX_PARALLEL_DEPLOYMENTS: 2
+  HEALTH_CHECK_TIMEOUT: 180
 
 jobs:
   deploy-staging:
     name: Deploy to Staging Environment
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
+    timeout-minutes: 45
     environment:
       name: staging
-      url: https://staging.vendfinder.com
+      url: ${{ env.STAGING_URL }}
 
     steps:
       - name: Checkout code
@@ -42,8 +53,23 @@ jobs:
       - name: Configure kubectl for DigitalOcean
         run: |
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
-          kubectl config view --minify
-          kubectl cluster-info
+          chmod 600 $HOME/.kube/config
+
+          # Secure validation without exposing config details
+          echo "🔐 Validating cluster connectivity..."
+          if kubectl auth can-i get pods --namespace=${{ env.KUBE_NAMESPACE }} >/dev/null 2>&1; then
+            echo "✅ Kubectl authentication successful"
+            # Verify namespace exists
+            if kubectl get namespace ${{ env.KUBE_NAMESPACE }} >/dev/null 2>&1; then
+              echo "✅ Target namespace '${{ env.KUBE_NAMESPACE }}' verified"
+            else
+              echo "❌ Namespace '${{ env.KUBE_NAMESPACE }}' not found"
+              exit 1
+            fi
+          else
+            echo "❌ Kubectl authentication failed"
+            exit 1
+          fi
 
       - name: Setup Kustomize
         run: |
@@ -56,14 +82,14 @@ jobs:
 
           # Update all service image tags with new staging version
           kustomize edit set image \
-            registry.digitalocean.com/vendfinder-registry/frontend:${{ steps.version.outputs.version }} \
-            registry.digitalocean.com/vendfinder-registry/user-service-oauth:${{ steps.version.outputs.version }} \
-            registry.digitalocean.com/vendfinder-registry/chat-service:${{ steps.version.outputs.version }} \
-            registry.digitalocean.com/vendfinder-registry/product-service:${{ steps.version.outputs.version }} \
-            registry.digitalocean.com/vendfinder-registry/order-service:${{ steps.version.outputs.version }} \
-            registry.digitalocean.com/vendfinder-registry/websocket-service:${{ steps.version.outputs.version }} \
-            registry.digitalocean.com/vendfinder-registry/support-bot:${{ steps.version.outputs.version }} \
-            registry.digitalocean.com/vendfinder-registry/api-gateway-build:${{ steps.version.outputs.version }}
+            ${{ env.REGISTRY }}/frontend:${{ steps.version.outputs.version }} \
+            ${{ env.REGISTRY }}/user-service-oauth:${{ steps.version.outputs.version }} \
+            ${{ env.REGISTRY }}/chat-service:${{ steps.version.outputs.version }} \
+            ${{ env.REGISTRY }}/product-service:${{ steps.version.outputs.version }} \
+            ${{ env.REGISTRY }}/order-service:${{ steps.version.outputs.version }} \
+            ${{ env.REGISTRY }}/websocket-service:${{ steps.version.outputs.version }} \
+            ${{ env.REGISTRY }}/support-bot:${{ steps.version.outputs.version }} \
+            ${{ env.REGISTRY }}/api-gateway-build:${{ steps.version.outputs.version }}
 
       - name: Deploy to staging cluster
         run: |
@@ -72,8 +98,17 @@ jobs:
           # Generate final manifests
           kubectl kustomize environments/staging > /tmp/staging-deployment.yaml
 
-          # Apply the deployment
-          kubectl apply -f /tmp/staging-deployment.yaml
+          # Validate manifest before applying
+          if ! kubectl apply --dry-run=client -f /tmp/staging-deployment.yaml >/dev/null 2>&1; then
+            echo "❌ Deployment manifest validation failed"
+            exit 1
+          fi
+
+          # Apply the deployment with resource limits and timeout
+          if ! timeout 300s kubectl apply -f /tmp/staging-deployment.yaml; then
+            echo "❌ Deployment failed to apply or timed out"
+            exit 1
+          fi
 
           echo "✅ Deployment applied successfully"
 
@@ -82,34 +117,59 @@ jobs:
           echo "⏳ Waiting for deployments to complete..."
 
           # Wait for all deployments to be ready
-          kubectl rollout status deployment/staging-frontend -n ${{ env.KUBE_NAMESPACE }} --timeout=600s
-          kubectl rollout status deployment/staging-user-service -n ${{ env.KUBE_NAMESPACE }} --timeout=600s
-          kubectl rollout status deployment/staging-chat-service -n ${{ env.KUBE_NAMESPACE }} --timeout=600s
-          kubectl rollout status deployment/staging-product-service -n ${{ env.KUBE_NAMESPACE }} --timeout=600s
-          kubectl rollout status deployment/staging-order-service -n ${{ env.KUBE_NAMESPACE }} --timeout=600s
-          kubectl rollout status deployment/staging-websocket-service -n ${{ env.KUBE_NAMESPACE }} --timeout=600s
-          kubectl rollout status deployment/staging-support-bot -n ${{ env.KUBE_NAMESPACE }} --timeout=600s
-          kubectl rollout status deployment/staging-api-gateway -n ${{ env.KUBE_NAMESPACE }} --timeout=600s
+          kubectl rollout status deployment/staging-frontend -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/staging-user-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/staging-chat-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/staging-product-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/staging-order-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/staging-websocket-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/staging-support-bot -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/staging-api-gateway -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
 
           echo "✅ All deployments completed successfully"
 
       - name: Run staging smoke tests
+        id: smoke-tests
         run: |
           echo "🧪 Running staging smoke tests..."
 
-          # Wait for services to be ready
-          sleep 30
+          # Wait for services to stabilize
+          echo "⏳ Waiting for services to stabilize..."
+          sleep 45
 
-          # Get staging service URL
-          STAGING_URL="https://staging.vendfinder.com"
+          # Basic health checks with improved error handling
+          echo "Testing main application endpoint..."
+          for attempt in {1..5}; do
+            if curl -f --connect-timeout 10 --max-time 30 "${{ env.STAGING_URL }}/" >/dev/null 2>&1; then
+              echo "✅ Main application endpoint healthy (attempt $attempt)"
+              break
+            elif [ $attempt -eq 5 ]; then
+              echo "❌ Main application endpoint failed after 5 attempts"
+              exit 1
+            else
+              echo "⏳ Main application not ready, retrying in 15s (attempt $attempt/5)"
+              sleep 15
+            fi
+          done
 
-          # Basic health checks
-          curl -f "${STAGING_URL}/api/health" || exit 1
-          curl -f "${STAGING_URL}/" || exit 1
+          echo "Testing API health endpoint..."
+          for attempt in {1..5}; do
+            if curl -f --connect-timeout 10 --max-time 30 "${{ env.STAGING_URL }}${{ env.API_HEALTH_ENDPOINT }}" >/dev/null 2>&1; then
+              echo "✅ API health endpoint healthy (attempt $attempt)"
+              break
+            elif [ $attempt -eq 5 ]; then
+              echo "❌ API health endpoint failed after 5 attempts"
+              exit 1
+            else
+              echo "⏳ API not ready, retrying in 15s (attempt $attempt/5)"
+              sleep 15
+            fi
+          done
 
           echo "✅ Staging smoke tests passed"
 
       - name: Run integration tests on staging
+        id: e2e-tests
         run: |
           echo "🔧 Running integration tests against staging..."
 
@@ -118,8 +178,178 @@ jobs:
           npx playwright install chromium
 
           # Set staging URL for tests
-          export PLAYWRIGHT_BASE_URL="https://staging.vendfinder.com"
-          npm run test:e2e || echo "⚠️ Some E2E tests failed - review manually"
+          export PLAYWRIGHT_BASE_URL="${{ env.STAGING_URL }}"
+          npm run test:e2e
+
+      - name: Post-deployment health check
+        id: health-check
+        run: |
+          echo "🏥 Running comprehensive health check..."
+
+          # Wait for services to fully stabilize
+          sleep 60
+
+          HEALTH_FAILED=false
+
+          # Extended health checks with improved retry logic
+          echo "Checking main application..."
+          for i in {1..5}; do
+            if curl -f --retry ${{ env.HEALTH_CHECK_RETRIES }} --retry-delay ${{ env.HEALTH_CHECK_DELAY }} "${{ env.STAGING_URL }}/" > /dev/null 2>&1; then
+              echo "✅ Main application healthy (attempt $i)"
+              break
+            elif [ $i -eq 5 ]; then
+              echo "❌ Main application health check failed after 5 attempts"
+              HEALTH_FAILED=true
+            else
+              echo "⏳ Main application not ready, retrying in 15s (attempt $i/5)"
+              sleep 15
+            fi
+          done
+
+          echo "Checking API health endpoint..."
+          for i in {1..5}; do
+            if curl -f --retry ${{ env.HEALTH_CHECK_RETRIES }} --retry-delay ${{ env.HEALTH_CHECK_DELAY }} "${{ env.STAGING_URL }}${{ env.API_HEALTH_ENDPOINT }}" > /dev/null 2>&1; then
+              echo "✅ API healthy (attempt $i)"
+              break
+            elif [ $i -eq 5 ]; then
+              echo "❌ API health check failed after 5 attempts"
+              HEALTH_FAILED=true
+            else
+              echo "⏳ API not ready, retrying in 15s (attempt $i/5)"
+              sleep 15
+            fi
+          done
+
+          # Check if any pods are in error state
+          echo "Checking pod status..."
+          if kubectl get pods -n ${{ env.KUBE_NAMESPACE }} -l environment=staging --field-selector=status.phase!=Running | grep -v "NAME" | wc -l | grep -v "0"; then
+            echo "❌ Some pods are not in Running state"
+            kubectl get pods -n ${{ env.KUBE_NAMESPACE }} -l environment=staging
+            HEALTH_FAILED=true
+          fi
+
+          if [ "$HEALTH_FAILED" = "true" ]; then
+            echo "deployment-healthy=false" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "✅ All health checks passed"
+            echo "deployment-healthy=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Automatic rollback on failure
+        if: failure()
+        run: |
+          echo "🔄 Deployment failed - initiating automatic rollback..."
+
+          # Enhanced error handling and logging
+          set -euo pipefail
+
+          # Get previous successful deployment with comprehensive error handling
+          if ! PREVIOUS_DEPLOYMENT=$(kubectl get deployment staging-frontend -n ${{ env.KUBE_NAMESPACE }} -o jsonpath='{.metadata.annotations.deployment\.kubernetes\.io/revision}' 2>/dev/null); then
+            echo "❌ Failed to get current deployment revision"
+            # Try to get deployment info for debugging
+            kubectl get deployment staging-frontend -n ${{ env.KUBE_NAMESPACE }} -o yaml | grep -A 5 -B 5 revision || echo "Could not retrieve deployment revision info"
+            exit 1
+          fi
+
+          if [ -z "$PREVIOUS_DEPLOYMENT" ] || ! [[ "$PREVIOUS_DEPLOYMENT" =~ ^[0-9]+$ ]]; then
+            echo "❌ Invalid or empty deployment revision: '$PREVIOUS_DEPLOYMENT'"
+            exit 1
+          fi
+
+          ROLLBACK_REVISION=$((PREVIOUS_DEPLOYMENT - 1))
+
+          if [ $ROLLBACK_REVISION -gt 0 ]; then
+            echo "📝 Current revision: $PREVIOUS_DEPLOYMENT, rolling back to: $ROLLBACK_REVISION"
+
+            # List of deployments with existence verification
+            DEPLOYMENTS=("staging-frontend" "staging-user-service" "staging-chat-service" "staging-product-service" "staging-order-service" "staging-websocket-service" "staging-support-bot" "staging-api-gateway")
+            ROLLBACK_FAILED=false
+            ROLLBACK_STARTED=false
+
+            # Rollback all staging deployments with enhanced error tracking
+            for deployment in "${DEPLOYMENTS[@]}"; do
+              echo "🔄 Processing rollback for $deployment..."
+
+              # Check if deployment exists
+              if ! kubectl get deployment $deployment -n ${{ env.KUBE_NAMESPACE }} >/dev/null 2>&1; then
+                echo "⚠️ Deployment $deployment not found, skipping"
+                continue
+              fi
+
+              # Attempt rollback with timeout
+              if timeout 60s kubectl rollout undo deployment/$deployment -n ${{ env.KUBE_NAMESPACE }} --to-revision=$ROLLBACK_REVISION 2>/dev/null; then
+                echo "✅ $deployment rollback initiated successfully"
+                ROLLBACK_STARTED=true
+              else
+                echo "❌ Failed to rollback $deployment (timeout or error)"
+                ROLLBACK_FAILED=true
+              fi
+            done
+
+            # Only wait for rollbacks if we successfully started any
+            if [ "$ROLLBACK_STARTED" = "true" ]; then
+              echo "⏳ Waiting for rollback deployments to complete..."
+              sleep 15
+
+              for deployment in "${DEPLOYMENTS[@]}"; do
+                if kubectl get deployment $deployment -n ${{ env.KUBE_NAMESPACE }} >/dev/null 2>&1; then
+                  echo "⏳ Checking rollback status for $deployment..."
+                  if ! timeout ${{ env.ROLLBACK_TIMEOUT }} kubectl rollout status deployment/$deployment -n ${{ env.KUBE_NAMESPACE }}; then
+                    echo "⚠️ $deployment rollback status check timed out"
+                    ROLLBACK_FAILED=true
+                  else
+                    echo "✅ $deployment rollback completed"
+                  fi
+                fi
+              done
+            else
+              echo "❌ No rollbacks were successfully initiated"
+              ROLLBACK_FAILED=true
+            fi
+
+            # Enhanced health verification
+            if [ "$ROLLBACK_FAILED" = "false" ]; then
+              echo "🏥 Verifying rollback health..."
+              sleep 45
+
+              HEALTH_CHECK_COUNT=0
+              HEALTH_CHECK_MAX=3
+
+              while [ $HEALTH_CHECK_COUNT -lt $HEALTH_CHECK_MAX ]; do
+                if curl -f --connect-timeout 10 --max-time 30 "${{ env.STAGING_URL }}${{ env.API_HEALTH_ENDPOINT }}" >/dev/null 2>&1; then
+                  echo "✅ Rollback successful - staging is healthy"
+                  break
+                else
+                  HEALTH_CHECK_COUNT=$((HEALTH_CHECK_COUNT + 1))
+                  if [ $HEALTH_CHECK_COUNT -eq $HEALTH_CHECK_MAX ]; then
+                    echo "❌ Rollback completed but health checks still failing after $HEALTH_CHECK_MAX attempts"
+                    ROLLBACK_FAILED=true
+                  else
+                    echo "⏳ Health check failed, retrying in 20s (attempt $HEALTH_CHECK_COUNT/$HEALTH_CHECK_MAX)"
+                    sleep 20
+                  fi
+                fi
+              done
+            fi
+
+          else
+            echo "❌ Cannot rollback: no valid previous deployment (revision would be $ROLLBACK_REVISION)"
+            ROLLBACK_FAILED=true
+          fi
+
+          # Annotate the failed deployment with detailed status
+          kubectl annotate deployment staging-frontend -n ${{ env.KUBE_NAMESPACE }} \
+            vendfinder.com/deployment-status="failed-$(if [ "$ROLLBACK_FAILED" = "true" ]; then echo "rollback-failed"; else echo "rolled-back"; fi)" \
+            vendfinder.com/rollback-at="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            vendfinder.com/rollback-target-revision="$ROLLBACK_REVISION" \
+            --overwrite || echo "⚠️ Failed to annotate deployment"
+
+          # Exit with appropriate code
+          if [ "$ROLLBACK_FAILED" = "true" ]; then
+            echo "💥 Rollback process encountered errors - manual intervention may be required"
+            exit 1
+          fi
 
       - name: Update deployment status
         run: |
@@ -136,13 +366,13 @@ jobs:
         run: |
           echo "✅ Staging deployment successful!"
           echo "Version: ${{ steps.version.outputs.version }}"
-          echo "Staging URL: https://staging.vendfinder.com"
+          echo "Staging URL: ${{ env.STAGING_URL }}"
           echo "Commit: ${{ github.sha }}"
 
           # Optional: Send Slack notification if webhook is configured
           if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
             curl -X POST -H 'Content-type: application/json' \
-              --data '{"text":"✅ VendFinder staging deployment successful\nVersion: ${{ steps.version.outputs.version }}\nURL: https://staging.vendfinder.com\nCommit: ${{ github.sha }}"}' \
+              --data '{"text":"✅ VendFinder staging deployment successful\nVersion: ${{ steps.version.outputs.version }}\nURL: ${{ env.STAGING_URL }}\nCommit: ${{ github.sha }}"}' \
               ${{ secrets.SLACK_WEBHOOK_URL }}
           fi
 
