@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: vendfinder
+  labels:
+    app: user-service
+    environment: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      imagePullSecrets:
+        - name: vendfinder-registry
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - prod-app
+      containers:
+        - name: user-service
+          image: registry.digitalocean.com/vendfinder-registry/user-service:latest
+          ports:
+            - containerPort: 3000
+          env:
+            # DigitalOcean Spaces Configuration for KYC documents
+            - name: DO_SPACES_ENDPOINT
+              value: "https://nyc3.digitaloceanspaces.com"
+            - name: DO_SPACES_REGION
+              value: "nyc3"
+            - name: DO_SPACES_BUCKET
+              value: "vendfinder-kyc-documents"
+            - name: DO_SPACES_KEY
+              value: "YOUR_SPACES_ACCESS_KEY_HERE"
+            - name: DO_SPACES_SECRET
+              value: "YOUR_SPACES_SECRET_KEY_HERE"
+            - name: DO_SPACES_CDN_ENDPOINT
+              value: "https://vendfinder-kyc-documents.nyc3.cdn.digitaloceanspaces.com"
+            # Google Cloud Vision for OCR
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/Users/anthonyhudnall/vendfinder-ui/user-service-oauth/google-vision-credentials.json"
+            - name: GOOGLE_CLOUD_PROJECT_ID
+              value: "translate-api-484101"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: vendfinder
+  labels:
+    app: user-service
+    environment: production
+spec:
+  type: ClusterIP
+  selector:
+    app: user-service
+  ports:
+    - port: 3000
+      targetPort: 3000
