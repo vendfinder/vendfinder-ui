@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# expo
+mobile/.expo/
+mobile/ios/
+mobile/android/
+mobile/dist/
+
+# build directories
+.chat-service-build/
+api-gateway-build/
+dist/
+*.build/

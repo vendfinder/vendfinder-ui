@@ -1,0 +1,41 @@
+# Global ownership
+* @anthonyhudnall
+
+# Frontend components
+src/components/ @anthonyhudnall
+src/app/ @anthonyhudnall
+
+# Backend services
+api/ @anthonyhudnall
+lib/ @anthonyhudnall
+
+# Infrastructure and deployment
+k8s/ @anthonyhudnall
+docker/ @anthonyhudnall
+scripts/ @anthonyhudnall
+Dockerfile @anthonyhudnall
+*.yaml @anthonyhudnall
+*.yml @anthonyhudnall
+
+# CI/CD configuration
+.github/ @anthonyhudnall
+.husky/ @anthonyhudnall
+.commitlintrc.json @anthonyhudnall
+
+# Security and configuration
+.env* @anthonyhudnall
+next.config.* @anthonyhudnall
+package.json @anthonyhudnall
+tsconfig.json @anthonyhudnall
+
+# Documentation
+*.md @anthonyhudnall
+docs/ @anthonyhudnall
+
+# Monitoring and observability
+monitoring/ @anthonyhudnall
+
+# Critical application files
+src/lib/ @anthonyhudnall
+src/context/ @anthonyhudnall
+src/types/ @anthonyhudnall
