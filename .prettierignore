@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+
+# Service directories
+.chat-service-build/
+api-gateway-build/
+chat-service/
+order-service/
+product-service/
+user-service-oauth/
+websocket-service/
+support-bot/
+
+# Other
+*.tsbuildinfo
+.env*
+*.log
+monitoring/
+mobile/
+environments/
+k8s/
+
+# Generated files
+next-env.d.ts
