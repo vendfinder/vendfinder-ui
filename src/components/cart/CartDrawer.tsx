@@ -1,9 +1,11 @@
 "use client";
 
 import { X, Minus, Plus, ShoppingBag } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { formatPrice } from "@/lib/utils";
+import { useFormattedPrice } from "@/hooks/useFormattedPrice";
+import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
 
 export default function CartDrawer() {
@@ -16,6 +18,8 @@ export default function CartDrawer() {
     removeItem,
     updateQuantity,
   } = useCart();
+  const t = useTranslations();
+  const formatPrice = useFormattedPrice();
 
   if (!drawerOpen) return null;
 
@@ -29,7 +33,7 @@ export default function CartDrawer() {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-bold text-foreground">
-            Cart ({totalItems})
+            {t("cart.title", { count: totalItems })}
           </h2>
           <button
             onClick={() => setDrawerOpen(false)}
@@ -44,13 +48,13 @@ export default function CartDrawer() {
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
             <ShoppingBag size={48} className="text-border mb-4" />
             <p className="text-lg font-medium text-foreground mb-1">
-              Your cart is empty
+              {t("cart.emptyTitle")}
             </p>
             <p className="text-sm text-muted mb-6">
-              Browse our products and find something you love
+              {t("cart.emptyDesc")}
             </p>
             <Button href="/products" onClick={() => setDrawerOpen(false)}>
-              Start Shopping
+              {t("common.startShopping")}
             </Button>
           </div>
         ) : (
@@ -61,8 +65,18 @@ export default function CartDrawer() {
                   key={`${item.product.id}-${item.size || "default"}`}
                   className="flex gap-4 p-3 rounded-lg border border-border bg-card"
                 >
-                  <div className="w-20 h-20 rounded-lg bg-surface flex items-center justify-center flex-shrink-0">
-                    <ShoppingBag size={24} className="text-muted" />
+                  <div className="w-20 h-20 rounded-lg bg-surface flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {item.product.images?.[0] ? (
+                      <Image
+                        src={item.product.images[0]}
+                        alt={item.product.name}
+                        width={80}
+                        height={80}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <ShoppingBag size={24} className="text-muted" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-medium text-foreground truncate">
@@ -70,12 +84,11 @@ export default function CartDrawer() {
                     </h3>
                     {item.size && (
                       <p className="text-xs text-muted mt-0.5">
-                        Size:{" "}
-                        <span className="text-foreground font-medium">
-                          {item.product.category === "sneakers"
-                            ? `US ${item.size}`
-                            : item.size}
-                        </span>
+                        {t("cart.size", {
+                          size: item.product.category === "sneakers"
+                            ? t("cart.sizeUS", { size: item.size })
+                            : item.size,
+                        })}
                       </p>
                     )}
                     <p className="text-sm font-bold text-primary mt-1">
@@ -115,7 +128,7 @@ export default function CartDrawer() {
                         }
                         className="ml-auto text-xs text-muted hover:text-error cursor-pointer"
                       >
-                        Remove
+                        {t("common.remove")}
                       </button>
                     </div>
                   </div>
@@ -126,26 +139,26 @@ export default function CartDrawer() {
             {/* Footer */}
             <div className="p-4 border-t border-border space-y-4">
               <div className="flex justify-between text-sm">
-                <span className="text-muted">Subtotal</span>
+                <span className="text-muted">{t("cart.subtotal")}</span>
                 <span className="font-semibold text-foreground">
                   {formatPrice(totalPrice)}
                 </span>
               </div>
               <p className="text-xs text-muted">
-                Shipping and taxes calculated at checkout
+                {t("cart.shippingNote")}
               </p>
               <Link
                 href="/checkout"
                 onClick={() => setDrawerOpen(false)}
                 className="block w-full text-center px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-dark transition-colors"
               >
-                Checkout
+                {t("cart.checkout")}
               </Link>
               <button
                 onClick={() => setDrawerOpen(false)}
                 className="block w-full text-center text-sm text-muted hover:text-foreground transition-colors cursor-pointer"
               >
-                Continue Shopping
+                {t("common.continueShopping")}
               </button>
             </div>
           </>

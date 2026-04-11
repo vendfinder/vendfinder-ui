@@ -1,0 +1,39 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vendfinder-monitoring-https
+  namespace: vendfinder
+  labels:
+    app: vendfinder-monitoring
+    component: monitoring
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - grafana.vendfinder.com
+    secretName: vendfinder-tls-secret  # Certificate secret name
+
+  rules:
+  # Grafana monitoring domain
+  - host: grafana.vendfinder.com
+    http:
+      paths:
+      # Direct access to Grafana at root
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 3000

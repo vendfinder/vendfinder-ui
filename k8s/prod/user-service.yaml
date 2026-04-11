@@ -30,10 +30,21 @@ spec:
                       - prod-app
       containers:
         - name: user-service
-          image: registry.digitalocean.com/vendfinder-registry/user-service:latest
+          image: vendfinder/user-service:latest
+          imagePullPolicy: Never
           ports:
-            - containerPort: 3000
+            - containerPort: 3004
           env:
+            # Service configuration
+            - name: PORT
+              value: "3004"
+            # Database configuration
+            - name: DATABASE_URL
+              value: "postgresql://vendfinder:vendfinder_pass@chat-db:5432/user_db"
+            - name: JWT_SECRET
+              value: "vendfinder-jwt-secret-change-in-production"
+            - name: CORS_ORIGIN
+              value: "*"
             # DigitalOcean Spaces Configuration for KYC documents
             - name: DO_SPACES_ENDPOINT
               value: "https://nyc3.digitaloceanspaces.com"
@@ -73,5 +84,6 @@ spec:
   selector:
     app: user-service
   ports:
-    - port: 3000
-      targetPort: 3000
+    - name: http
+      port: 3004
+      targetPort: 3004

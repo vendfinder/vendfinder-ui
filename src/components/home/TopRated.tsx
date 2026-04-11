@@ -1,8 +1,10 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
+import Image from "next/image";
 import { Star, Package, ShoppingCart, Award } from "lucide-react";
-import { getTopRated } from "@/data/products";
+import type { Product } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 import {
@@ -11,9 +13,12 @@ import {
   StaggerItem,
 } from "@/components/motion/MotionWrapper";
 
-export default function TopRated() {
+export default function TopRated({ products }: { products: Product[] }) {
+  const t = useTranslations("topRated");
   const { addItem } = useCart();
-  const topProducts = getTopRated();
+  const topProducts = products;
+
+  if (topProducts.length === 0) return null;
 
   // Separate #1 featured from the rest
   const hero = topProducts[0];
@@ -26,11 +31,11 @@ export default function TopRated() {
           <div className="flex items-center gap-3 mb-2">
             <Award size={20} className="text-primary" />
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-              Customer favorites
+              {t("badge")}
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-display font-black text-foreground tracking-tight mb-10">
-            Top Rated
+            {t("title")}
           </h2>
         </FadeIn>
 
@@ -41,14 +46,24 @@ export default function TopRated() {
               href={`/products/${hero.slug}`}
               className="group block h-full bg-card border border-border rounded-xl overflow-hidden hover:border-primary/30 transition-all duration-300 hover:shadow-[0_16px_48px_rgba(232,136,58,0.08)]"
             >
-              <div className="aspect-[4/3] bg-surface flex items-center justify-center relative">
-                <Package
-                  size={64}
-                  className="text-border group-hover:text-muted transition-colors"
-                />
+              <div className="aspect-[4/3] bg-surface flex items-center justify-center relative overflow-hidden">
+                {hero.images[0] ? (
+                  <Image
+                    src={hero.images[0]}
+                    alt={hero.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                  />
+                ) : (
+                  <Package
+                    size={64}
+                    className="text-border group-hover:text-muted transition-colors"
+                  />
+                )}
                 <span className="absolute top-4 left-4 px-3 py-1 text-xs font-black uppercase tracking-wider bg-primary text-white rounded-full flex items-center gap-1">
                   <Star size={12} className="fill-white" />
-                  #1 Rated
+                  {t("topRated")}
                 </span>
               </div>
               <div className="p-6">
@@ -91,11 +106,21 @@ export default function TopRated() {
                     href={`/products/${product.slug}`}
                     className="block relative flex-shrink-0"
                   >
-                    <div className="aspect-square bg-surface flex items-center justify-center">
-                      <Package
-                        size={40}
-                        className="text-border group-hover:text-muted transition-colors"
-                      />
+                    <div className="aspect-square bg-surface flex items-center justify-center relative overflow-hidden">
+                      {product.images[0] ? (
+                        <Image
+                          src={product.images[0]}
+                          alt={product.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
+                        />
+                      ) : (
+                        <Package
+                          size={40}
+                          className="text-border group-hover:text-muted transition-colors"
+                        />
+                      )}
                     </div>
                     <span className="absolute top-3 right-3 px-2 py-0.5 text-[10px] font-bold bg-surface text-primary rounded-full flex items-center gap-0.5">
                       <Star size={10} className="fill-primary" />

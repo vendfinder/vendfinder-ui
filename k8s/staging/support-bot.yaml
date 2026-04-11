@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: support-bot
+  namespace: vendfinder-staging
+  labels:
+    app: support-bot
+    environment: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: support-bot
+  template:
+    metadata:
+      labels:
+        app: support-bot
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - gateway
+      imagePullSecrets:
+        - name: vendfinder-registry
+      containers:
+        - name: support-bot
+          image: registry.digitalocean.com/vendfinder-registry/support-bot:latest
+          ports:
+            - containerPort: 3009
+          env:
+            - name: PORT
+              value: "3009"
+            - name: BOT_USER_ID
+              value: "00000000-0000-0000-0000-000000000001"
+            - name: CHAT_SERVICE_URL
+              value: http://chat-service:3005
+            - name: ORDER_SERVICE_URL
+              value: http://order-service:3000
+            - name: PRODUCT_SERVICE_URL
+              value: http://product-service:3000
+            - name: USER_SERVICE_URL
+              value: http://user-service:3004
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: url
+            - name: INTERNAL_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: support-bot-secrets
+                  key: internal-service-key
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: support-bot-secrets
+                  key: anthropic-api-key
+            - name: ANTHROPIC_MODEL
+              value: "claude-sonnet-4-6-20250514"
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: support-bot-secrets
+                  key: slack-webhook-url
+            - name: MAX_HISTORY_MESSAGES
+              value: "20"
+            - name: RESPONSE_DELAY_MS
+              value: "1000"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3009
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3009
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: support-bot
+  namespace: vendfinder-staging
+  labels:
+    app: support-bot
+    environment: staging
+spec:
+  selector:
+    app: support-bot
+  ports:
+    - protocol: TCP
+      port: 3009
+      targetPort: 3009

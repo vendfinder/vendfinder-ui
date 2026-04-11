@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,10 +15,11 @@ interface SearchBarProps {
 export default function SearchBar({
   value,
   onChange,
-  placeholder = "Search products...",
+  placeholder,
   className,
   onSubmit,
 }: SearchBarProps) {
+  const t = useTranslations("common");
   return (
     <form
       onSubmit={(e) => {
@@ -34,7 +36,7 @@ export default function SearchBar({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t("searchProducts")}
         className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl bg-surface text-foreground text-sm placeholder:text-muted/30 transition-all focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20"
       />
     </form>

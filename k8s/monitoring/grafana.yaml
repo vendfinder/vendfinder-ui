@@ -1,0 +1,247 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasource
+  namespace: vendfinder
+  labels:
+    app: grafana
+data:
+  datasource.yml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus.vendfinder.svc.cluster.local:9090
+        isDefault: true
+        editable: true
+        jsonData:
+          httpMethod: POST
+          manageAlerts: true
+          prometheusType: Prometheus
+          prometheusVersion: 2.47.0
+          cacheLevel: 'High'
+          disableRecordingRules: false
+          incrementalQueryOverlapWindow: 10m
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-config
+  namespace: vendfinder
+  labels:
+    app: grafana
+data:
+  dashboards.yml: |
+    apiVersion: 1
+    providers:
+      - name: 'VendFinder Dashboards'
+        orgId: 1
+        folder: 'VendFinder'
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 10
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard
+  namespace: vendfinder
+  labels:
+    app: grafana
+data:
+  vendfinder-dashboard.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "VendFinder Inventory & Sales Dashboard",
+        "tags": ["vendfinder", "inventory", "sales"],
+        "style": "dark",
+        "timezone": "browser",
+        "refresh": "30s",
+        "time": {"from": "now-1h", "to": "now"},
+        "panels": [
+          {
+            "id": 1,
+            "title": "Total Revenue by Vendor",
+            "type": "stat",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+            "targets": [{
+              "expr": "vendfinder_vendor_revenue_dollars",
+              "format": "table",
+              "instant": true,
+              "refId": "A"
+            }],
+            "fieldConfig": {
+              "defaults": {
+                "unit": "currencyUSD",
+                "decimals": 2,
+                "color": {"mode": "thresholds"},
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": null},
+                    {"color": "yellow", "value": 1000},
+                    {"color": "red", "value": 5000}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 2,
+            "title": "Products by Vendor & Category",
+            "type": "bargauge",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+            "targets": [{
+              "expr": "sum by (vendor_name, category) (vendfinder_vendor_products_total)",
+              "format": "time_series",
+              "refId": "A"
+            }]
+          }
+        ]
+      }
+    }
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-admin
+  namespace: vendfinder
+  labels:
+    app: grafana
+type: Opaque
+data:
+  username: YWRtaW4=  # admin
+  password: dmVuZGZpbmRlcjEyMw==  # vendfinder123
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-storage
+  namespace: vendfinder
+  labels:
+    app: grafana
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: vendfinder
+  labels:
+    app: grafana
+    component: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+        component: monitoring
+    spec:
+      securityContext:
+        runAsUser: 472
+        runAsGroup: 0
+        fsGroup: 472
+      containers:
+      - name: grafana
+        image: grafana/grafana:10.1.0
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: GF_SECURITY_ADMIN_USER
+          valueFrom:
+            secretKeyRef:
+              name: grafana-admin
+              key: username
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: grafana-admin
+              key: password
+        - name: GF_USERS_ALLOW_SIGN_UP
+          value: "false"
+        - name: GF_FEATURE_TOGGLES_ENABLE
+          value: "publicDashboards"
+        - name: GF_SERVER_ROOT_URL
+          value: "%(protocol)s://%(domain)s:%(http_port)s/admin/monitoring/"
+        - name: GF_SERVER_SERVE_FROM_SUB_PATH
+          value: "true"
+        volumeMounts:
+        - name: grafana-storage
+          mountPath: /var/lib/grafana
+        - name: grafana-datasource
+          mountPath: /etc/grafana/provisioning/datasources
+        - name: grafana-dashboard-config
+          mountPath: /etc/grafana/provisioning/dashboards
+        - name: grafana-dashboard
+          mountPath: /var/lib/grafana/dashboards
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "300m"
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 60
+          periodSeconds: 15
+      volumes:
+      - name: grafana-storage
+        persistentVolumeClaim:
+          claimName: grafana-storage
+      - name: grafana-datasource
+        configMap:
+          name: grafana-datasource
+      - name: grafana-dashboard-config
+        configMap:
+          name: grafana-dashboard-config
+      - name: grafana-dashboard
+        configMap:
+          name: grafana-dashboard
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: vendfinder
+  labels:
+    app: grafana
+    component: monitoring
+spec:
+  selector:
+    app: grafana
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000
+    protocol: TCP
+  type: ClusterIP

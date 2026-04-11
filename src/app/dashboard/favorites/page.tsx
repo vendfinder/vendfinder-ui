@@ -22,19 +22,14 @@ import {
   Flame,
   Package,
 } from "lucide-react";
-import { favorites } from "@/data/seller";
+import { useDashboardData } from "@/hooks/useDashboardData";
 import { formatPrice } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import type { FavoriteItem } from "@/types";
 
 type SortKey = "recent" | "price-high" | "price-low" | "change";
 
-const sortOptions: { key: SortKey; label: string }[] = [
-  { key: "recent", label: "Recently Added" },
-  { key: "price-high", label: "Price: High to Low" },
-  { key: "price-low", label: "Price: Low to High" },
-  { key: "change", label: "Biggest Movers" },
-];
-
-function sortFavorites(items: typeof favorites, key: SortKey) {
+function sortFavorites(items: FavoriteItem[], key: SortKey) {
   const sorted = [...items];
   switch (key) {
     case "price-high":
@@ -52,6 +47,8 @@ export default function FavoritesPage() {
   const [sortKey, setSortKey] = useState<SortKey>("recent");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const { favorites, loading } = useDashboardData();
+  const t = useTranslations("dashboardFavorites");
 
   const sortedFavorites = sortFavorites(favorites, sortKey);
 
@@ -61,9 +58,16 @@ export default function FavoritesPage() {
   const gainers = favorites.filter((f) => f.priceChange > 0).length;
   const decliners = favorites.filter((f) => f.priceChange < 0).length;
 
+  const sortOptions: { key: SortKey; label: string }[] = [
+    { key: "recent", label: t("sortRecentlyAdded") },
+    { key: "price-high", label: t("sortPriceHighToLow") },
+    { key: "price-low", label: t("sortPriceLowToHigh") },
+    { key: "change", label: t("sortBiggestMovers") },
+  ];
+
   const stats = [
     {
-      label: "Watching",
+      label: t("statWatching"),
       value: favorites.length.toString(),
       icon: Heart,
       color: "text-rose-400",
@@ -71,7 +75,7 @@ export default function FavoritesPage() {
       borderColor: "border-rose-400/15",
     },
     {
-      label: "Watchlist Value",
+      label: t("statWatchlistValue"),
       value: formatPrice(totalValue),
       icon: DollarSign,
       color: "text-violet-400",
@@ -79,7 +83,7 @@ export default function FavoritesPage() {
       borderColor: "border-violet-400/15",
     },
     {
-      label: "Trending Up",
+      label: t("statTrendingUp"),
       value: gainers.toString(),
       icon: TrendingUp,
       color: "text-emerald-400",
@@ -87,7 +91,7 @@ export default function FavoritesPage() {
       borderColor: "border-emerald-400/15",
     },
     {
-      label: "Avg Change",
+      label: t("statAvgChange"),
       value: `${avgChange >= 0 ? "+" : ""}${avgChange.toFixed(1)}%`,
       icon: Flame,
       color: avgChange >= 0 ? "text-emerald-400" : "text-red-400",
@@ -110,16 +114,16 @@ export default function FavoritesPage() {
             <div className="w-8 h-8 rounded-xl bg-rose-400/10 flex items-center justify-center">
               <Heart size={15} className="text-rose-400 fill-rose-400" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Favorites</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
           </div>
-          <p className="text-sm text-muted">Track prices on items you&apos;re watching</p>
+          <p className="text-sm text-muted">{t("subtitle")}</p>
         </div>
         <Link
           href="/products"
           className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-border/60 text-sm font-medium text-foreground hover:border-rose-400/40 hover:text-rose-400 transition-all bg-surface/40 backdrop-blur-sm w-fit"
         >
           <Search size={14} />
-          Discover Items
+          {t("discoverItems")}
         </Link>
       </motion.div>
 
@@ -142,9 +146,9 @@ export default function FavoritesPage() {
                 <p className="text-[11px] text-muted uppercase tracking-wider font-semibold">{stat.label}</p>
               </div>
               <p className={`text-2xl font-bold tracking-tight ${
-                stat.label === "Avg Change"
+                stat.label === t("statAvgChange")
                   ? avgChange >= 0 ? "text-emerald-400" : "text-red-400"
-                  : stat.label === "Watchlist Value"
+                  : stat.label === t("statWatchlistValue")
                     ? "text-violet-400"
                     : "text-foreground"
               }`}>
@@ -188,11 +192,11 @@ export default function FavoritesPage() {
       >
         {/* Table header */}
         <div className="hidden sm:grid grid-cols-[1fr_100px_100px_100px_100px_50px] gap-3 px-5 py-3 border-b border-white/[0.04] bg-white/[0.01]">
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold">Item</span>
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">Lowest Ask</span>
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">Highest Bid</span>
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">Last Sale</span>
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">Change</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold">{t("headerItem")}</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">{t("headerLowestAsk")}</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">{t("headerHighestBid")}</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">{t("headerLastSale")}</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">{t("headerChange")}</span>
           <span />
         </div>
 
@@ -209,14 +213,14 @@ export default function FavoritesPage() {
                 <div className="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center mx-auto mb-4">
                   <Heart size={24} className="text-muted/30" />
                 </div>
-                <p className="text-foreground font-medium">No favorites yet</p>
-                <p className="text-sm text-muted mt-1 mb-4">Items you favorite will appear here for price tracking.</p>
+                <p className="text-foreground font-medium">{t("emptyTitle")}</p>
+                <p className="text-sm text-muted mt-1 mb-4">{t("emptyDesc")}</p>
                 <Link
                   href="/products"
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-rose-400/10 text-rose-400 text-sm font-medium hover:bg-rose-400/15 transition-colors"
                 >
                   <Search size={14} />
-                  Browse Products
+                  {t("browseProducts")}
                 </Link>
               </motion.div>
             ) : (
@@ -258,7 +262,7 @@ export default function FavoritesPage() {
                                 ? "bg-emerald-400/10 text-emerald-400"
                                 : "bg-red-400/10 text-red-400"
                             }`}>
-                              {isUp ? "HOT" : "DIP"}
+                              {isUp ? t("labelHot") : t("labelDip")}
                             </span>
                           )}
                         </div>
@@ -268,14 +272,14 @@ export default function FavoritesPage() {
                     {/* Lowest Ask */}
                     <div className="text-right">
                       <p className="text-sm font-semibold text-emerald-400">{formatPrice(item.lowestAsk)}</p>
-                      <p className="text-[10px] text-muted sm:hidden mt-0.5">Lowest Ask</p>
+                      <p className="text-[10px] text-muted sm:hidden mt-0.5">{t("headerLowestAsk")}</p>
                     </div>
 
                     {/* Highest Bid */}
                     <div className="text-right hidden sm:block">
                       <p className="text-sm text-foreground/80">{formatPrice(item.highestBid)}</p>
                       <span className="text-[9px] text-muted mt-0.5 block">
-                        ${spreadFromBid} spread
+                        ${spreadFromBid} {t("spread")}
                       </span>
                     </div>
 
@@ -316,20 +320,20 @@ export default function FavoritesPage() {
                           >
                             <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors">
                               <ShoppingCart size={12} className="text-muted" />
-                              Buy Now
+                              {t("menuBuyNow")}
                             </button>
                             <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors">
                               <ExternalLink size={12} className="text-muted" />
-                              View Product
+                              {t("menuViewProduct")}
                             </button>
                             <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors">
                               <BellRing size={12} className="text-muted" />
-                              Price Alert
+                              {t("menuPriceAlert")}
                             </button>
                             <div className="border-t border-border" />
                             <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-error hover:bg-red-500/5 transition-colors">
                               <Trash2 size={12} />
-                              Remove
+                              {t("menuRemove")}
                             </button>
                           </motion.div>
                         )}
@@ -346,19 +350,19 @@ export default function FavoritesPage() {
         {sortedFavorites.length > 0 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.04] bg-white/[0.01]">
             <p className="text-[11px] text-muted">
-              Watching <span className="font-semibold text-foreground">{sortedFavorites.length}</span> item{sortedFavorites.length !== 1 ? "s" : ""}
+              {t("footerWatching")} <span className="font-semibold text-foreground">{sortedFavorites.length}</span> {t("footerItems", { count: sortedFavorites.length })}
             </p>
             <div className="flex items-center gap-4 text-[11px] text-muted">
               <span>
-                <span className="font-semibold text-emerald-400">{gainers}</span> up
+                <span className="font-semibold text-emerald-400">{gainers}</span> {t("footerUp")}
               </span>
               <span className="w-px h-3 bg-white/[0.06]" />
               <span>
-                <span className="font-semibold text-red-400">{decliners}</span> down
+                <span className="font-semibold text-red-400">{decliners}</span> {t("footerDown")}
               </span>
               <span className="w-px h-3 bg-white/[0.06]" />
               <span>
-                Total value:{" "}
+                {t("footerTotalValue")}{" "}
                 <span className="font-semibold text-foreground">
                   {formatPrice(totalValue)}
                 </span>

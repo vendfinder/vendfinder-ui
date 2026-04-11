@@ -1,7 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { getNewArrivals } from "@/data/products";
+import type { Product } from "@/types";
 import ProductCard from "@/components/product/ProductCard";
 import Button from "@/components/ui/Button";
 import {
@@ -10,8 +11,9 @@ import {
   StaggerItem,
 } from "@/components/motion/MotionWrapper";
 
-export default function NewArrivals() {
-  const arrivals = getNewArrivals().slice(0, 8);
+export default function NewArrivals({ products }: { products: Product[] }) {
+  const t = useTranslations("newArrivals");
+  const arrivals = products;
 
   return (
     <section className="py-16 lg:py-24 bg-surface">
@@ -22,11 +24,11 @@ export default function NewArrivals() {
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles size={16} className="text-primary" />
                 <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                  Just dropped
+                  {t("badge")}
                 </span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-display font-black text-foreground tracking-tight">
-                New Arrivals
+                {t("title")}
               </h2>
             </div>
             <Button
@@ -34,7 +36,7 @@ export default function NewArrivals() {
               variant="ghost"
               className="hidden sm:inline-flex text-muted hover:text-primary"
             >
-              See All <ArrowRight size={16} className="ml-1" />
+              {t("seeAll")} <ArrowRight size={16} className="ml-1" />
             </Button>
           </div>
         </FadeIn>
@@ -49,7 +51,7 @@ export default function NewArrivals() {
 
         <div className="mt-10 text-center sm:hidden">
           <Button href="/products" variant="outline" className="border-border text-foreground hover:border-primary hover:text-primary">
-            View All Products <ArrowRight size={16} className="ml-1" />
+            {t("viewAllProducts")} <ArrowRight size={16} className="ml-1" />
           </Button>
         </div>
       </div>

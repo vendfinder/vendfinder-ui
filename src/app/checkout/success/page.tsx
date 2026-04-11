@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { CheckCircle2, Package, ArrowRight, ShoppingBag, Mail, Truck, BarChart3 } from "lucide-react";
 
 export default function CheckoutSuccessPage() {
+  const t = useTranslations("checkoutSuccess");
+  const t2 = useTranslations("common");
   const orderId = `ORD-${Date.now().toString().slice(-8)}`;
 
   return (
@@ -25,10 +28,10 @@ export default function CheckoutSuccessPage() {
         transition={{ duration: 0.4, delay: 0.2 }}
       >
         <h1 className="text-2xl font-bold text-foreground mb-2">
-          Order Confirmed!
+          {t("title")}
         </h1>
         <p className="text-sm text-muted mb-2">
-          Thank you for your purchase. Your order has been placed successfully.
+          {t("description")}
         </p>
         <p className="text-sm font-mono bg-surface px-3 py-1.5 rounded-lg border border-border inline-block text-foreground mb-8">
           {orderId}
@@ -43,14 +46,14 @@ export default function CheckoutSuccessPage() {
         className="bg-card rounded-2xl border border-border p-6 text-left mb-8"
       >
         <p className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold mb-4">
-          What&apos;s Next
+          {t("whatsNext")}
         </p>
         <div className="space-y-4">
           {[
-            { icon: Mail, color: "text-blue-400", bgColor: "bg-blue-400/10", text: "You'll receive an email confirmation shortly" },
-            { icon: Package, color: "text-amber-400", bgColor: "bg-amber-400/10", text: "Your seller will ship within 2 business days" },
-            { icon: Truck, color: "text-violet-400", bgColor: "bg-violet-400/10", text: "We'll notify you when your order ships" },
-            { icon: BarChart3, color: "text-emerald-400", bgColor: "bg-emerald-400/10", text: "Track your order from your dashboard" },
+            { icon: Mail, color: "text-blue-400", bgColor: "bg-blue-400/10", text: t("emailConfirmation") },
+            { icon: Package, color: "text-amber-400", bgColor: "bg-amber-400/10", text: t("sellerShip") },
+            { icon: Truck, color: "text-violet-400", bgColor: "bg-violet-400/10", text: t("shipNotification") },
+            { icon: BarChart3, color: "text-emerald-400", bgColor: "bg-emerald-400/10", text: t("trackOrder") },
           ].map((item, i) => {
             const Icon = item.icon;
             return (
@@ -81,7 +84,7 @@ export default function CheckoutSuccessPage() {
           href="/dashboard/buying"
           className="flex items-center justify-center gap-1.5 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark shadow-[0_0_20px_rgba(232,136,58,0.15)] transition-all"
         >
-          View Orders
+          {t("viewOrders")}
           <ArrowRight size={14} />
         </Link>
         <Link
@@ -89,7 +92,7 @@ export default function CheckoutSuccessPage() {
           className="flex items-center justify-center gap-1.5 px-6 py-3 rounded-xl border border-border text-sm font-medium text-foreground hover:border-primary/40 hover:text-primary transition-all"
         >
           <ShoppingBag size={14} />
-          Continue Shopping
+          {t2("continueShopping")}
         </Link>
       </motion.div>
     </div>

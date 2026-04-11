@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VendFinder Monitoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-frame {
+            width: 100%;
+            height: 80vh;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn.secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn.secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .info h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .info ul {
+            color: #666;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info li {
+            padding: 5px 0;
+        }
+
+        .info li:before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .credentials {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .credentials strong {
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">📊 VendFinder Monitoring</div>
+        <div class="subtitle">Inventory & Sales Analytics Dashboard</div>
+
+        <iframe
+            id="grafanaFrame"
+            src="http://localhost:3001"
+            class="dashboard-frame"
+            title="VendFinder Monitoring Dashboard">
+        </iframe>
+
+        <div class="buttons">
+            <a href="http://localhost:3001" target="_blank" class="btn">
+                📈 Open in New Tab
+            </a>
+            <button onclick="refreshDashboard()" class="btn secondary">
+                🔄 Refresh
+            </button>
+            <a href="http://localhost:3002" class="btn secondary">
+                🏠 Back to VendFinder
+            </a>
+        </div>
+
+        <div class="credentials">
+            <strong>📝 Grafana Login:</strong> Username: <code>admin</code> | Password: <code>vendfinder123</code>
+        </div>
+
+        <div class="info">
+            <h3>📊 What You Can Monitor:</h3>
+            <ul>
+                <li>Vendor revenue and earnings by product</li>
+                <li>Product inventory by category and vendor</li>
+                <li>Sales performance and top products</li>
+                <li>Order status tracking (processing, shipped, delivered)</li>
+                <li>Payment success rates and monitoring</li>
+                <li>System performance and health metrics</li>
+            </ul>
+        </div>
+
+        <div class="info">
+            <h3>🎯 For Sally's Dashboard:</h3>
+            <ul>
+                <li>Track her $298 Gucci bag sale</li>
+                <li>Verify no Wolf Grey sneaker assignments</li>
+                <li>Monitor order fulfillment progress</li>
+                <li>Confirm payment success status</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function refreshDashboard() {
+            document.getElementById('grafanaFrame').src = document.getElementById('grafanaFrame').src;
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshDashboard, 30000);
+    </script>
+</body>
+</html>

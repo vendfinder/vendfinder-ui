@@ -1,66 +1,42 @@
-import { NavItem } from "@/types";
+// Structural data only — translatable labels come from i18n/messages/*.json via t()
 
-export const siteConfig = {
-  name: "VendFinder",
-  description:
-    "Discover trending products from top brands. Sneakers, electronics, streetwear, and more — all in one marketplace.",
-  tagline: "Find It. Love It. Own It.",
-};
+export const navItemHrefs = [
+  { key: "home", href: "/" },
+  { key: "products", href: "/products" },
+  { key: "sneakers", href: "/categories/sneakers" },
+  { key: "electronics", href: "/categories/electronics" },
+  { key: "apparel", href: "/categories/apparel" },
+  { key: "accessories", href: "/categories/accessories" },
+  { key: "collectibles", href: "/categories/collectibles" },
+] as const;
 
-export const navItems: NavItem[] = [
-  { label: "Home", href: "/" },
-  { label: "Products", href: "/products" },
-  { label: "Sneakers", href: "/categories/sneakers" },
-  { label: "Electronics", href: "/categories/electronics" },
-  { label: "Streetwear", href: "/categories/streetwear" },
-  { label: "Accessories", href: "/categories/accessories" },
-  { label: "Collectibles", href: "/categories/collectibles" },
-];
-
-export const footerLinks = {
+export const footerLinkHrefs = {
   shop: [
-    { label: "All Products", href: "/products" },
-    { label: "Sneakers", href: "/categories/sneakers" },
-    { label: "Electronics", href: "/categories/electronics" },
-    { label: "Streetwear", href: "/categories/streetwear" },
-    { label: "Accessories", href: "/categories/accessories" },
+    { key: "allProducts", href: "/products" },
+    { key: "sneakers", href: "/categories/sneakers" },
+    { key: "electronics", href: "/categories/electronics" },
+    { key: "apparel", href: "/categories/apparel" },
+    { key: "accessories", href: "/categories/accessories" },
   ],
   company: [
-    { label: "About Us", href: "#" },
-    { label: "Careers", href: "#" },
-    { label: "Press", href: "#" },
-    { label: "Blog", href: "#" },
+    { key: "aboutUs", href: "/about" },
+    { key: "careers", href: "/careers" },
+    { key: "press", href: "/press" },
+    { key: "blog", href: "/blog" },
   ],
   support: [
-    { label: "Help Center", href: "#" },
-    { label: "Shipping Info", href: "#" },
-    { label: "Returns", href: "#" },
-    { label: "Contact Us", href: "#" },
+    { key: "helpCenter", href: "/help" },
+    { key: "shippingInfo", href: "/shipping" },
+    { key: "returns", href: "/returns" },
+    { key: "contactUs", href: "/contact" },
   ],
-};
+} as const;
 
-export const valueProps = [
-  {
-    icon: "Truck",
-    title: "Free Shipping",
-    description: "On orders over $50",
-  },
-  {
-    icon: "Shield",
-    title: "Secure Payment",
-    description: "100% protected checkout",
-  },
-  {
-    icon: "RotateCcw",
-    title: "Easy Returns",
-    description: "30-day return policy",
-  },
-  {
-    icon: "Headphones",
-    title: "24/7 Support",
-    description: "We're always here to help",
-  },
-];
+export const valuePropKeys = [
+  { icon: "BadgeCheck", titleKey: "verifiedSellers", descKey: "verifiedSellersDesc" },
+  { icon: "Lock", titleKey: "escrowProtected", descKey: "escrowProtectedDesc" },
+  { icon: "ShieldCheck", titleKey: "buyerProtection", descKey: "buyerProtectionDesc" },
+] as const;
 
 export const testimonials = [
   {

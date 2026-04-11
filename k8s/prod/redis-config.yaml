@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: vendfinder
+  labels:
+    app: redis
+    environment: production
+data:
+  redis.conf: |
+    # Memory
+    maxmemory 200mb
+    maxmemory-policy allkeys-lru
+
+    # AOF persistence (durable writes)
+    appendonly yes
+    appendfsync everysec
+
+    # RDB snapshots
+    save 900 1
+    save 300 10
+    save 60 10000
+
+    # Networking
+    tcp-keepalive 300
+    timeout 0
+
+    # Logging
+    loglevel notice

@@ -1,15 +1,30 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { getTrendingProducts } from "@/data/products";
+import type { Product } from "@/types";
 import ProductCard from "@/components/product/ProductCard";
 import Button from "@/components/ui/Button";
 import { FadeIn } from "@/components/motion/MotionWrapper";
+import { transformProduct } from "@/lib/api";
 
-export default function FeaturedProducts() {
+export default function FeaturedProducts({ storiesBar }: { storiesBar?: React.ReactNode }) {
+  const t = useTranslations("featured");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const trending = getTrendingProducts();
+  const [featured, setFeatured] = useState<Product[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/products/featured")
+      .then((r) => r.ok ? r.json() : { products: [] })
+      .then((data) => {
+        const products = (data.products || []).map(transformProduct);
+        setFeatured(products);
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
+  }, []);
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
@@ -20,17 +35,29 @@ export default function FeaturedProducts() {
     });
   };
 
+  // Always render stories bar; only render featured section if there are paid slots
+  if (!loaded || featured.length === 0) {
+    return storiesBar ? (
+      <section className="py-12 bg-dark">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {storiesBar}
+        </div>
+      </section>
+    ) : null;
+  }
+
   return (
     <section className="py-16 lg:py-24 bg-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {storiesBar && <div className="mb-10">{storiesBar}</div>}
         <FadeIn>
           <div className="flex items-end justify-between mb-10">
             <div>
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-2 block">
-                Popular right now
+                {t("popularNow")}
               </span>
               <h2 className="text-3xl sm:text-4xl font-display font-black text-foreground tracking-tight">
-                Trending Products
+                {t("trendingProducts")}
               </h2>
             </div>
             <div className="hidden sm:flex items-center gap-3">
@@ -52,12 +79,11 @@ export default function FeaturedProducts() {
           </div>
         </FadeIn>
 
-        {/* Horizontal scroll */}
         <div
           ref={scrollRef}
           className="flex gap-4 lg:gap-6 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 snap-x snap-mandatory"
         >
-          {trending.map((product) => (
+          {featured.map((product) => (
             <div
               key={product.id}
               className="flex-none w-[260px] sm:w-[280px] snap-start"
@@ -69,7 +95,7 @@ export default function FeaturedProducts() {
 
         <div className="mt-10 text-center">
           <Button href="/products" variant="outline" className="border-border text-foreground hover:border-primary hover:text-primary">
-            View All Products <ArrowRight size={16} className="ml-2" />
+            {t("viewAllProducts")} <ArrowRight size={16} className="ml-2" />
           </Button>
         </div>
       </div>

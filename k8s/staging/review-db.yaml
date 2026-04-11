@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: review-db
+  namespace: vendfinder-staging
+  labels:
+    app: review-db
+    environment: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: review-db
+  template:
+    metadata:
+      labels:
+        app: review-db
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - gateway
+      containers:
+        - name: review-db
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: review_db
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: review-db-credentials
+                  key: password
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: review-db-data
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+      volumes:
+        - name: review-db-data
+          persistentVolumeClaim:
+            claimName: review-db-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: review-db
+  namespace: vendfinder-staging
+  labels:
+    app: review-db
+    environment: staging
+spec:
+  selector:
+    app: review-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

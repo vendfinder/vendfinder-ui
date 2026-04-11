@@ -19,19 +19,14 @@ import {
   Search,
   ShieldCheck,
 } from "lucide-react";
-import { portfolio } from "@/data/seller";
+import { useDashboardData } from "@/hooks/useDashboardData";
 import { formatPrice } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import type { PortfolioItem } from "@/types";
 
 type SortKey = "value" | "gain" | "loss" | "recent";
 
-const sortOptions: { key: SortKey; label: string }[] = [
-  { key: "value", label: "Highest Value" },
-  { key: "gain", label: "Top Gainers" },
-  { key: "loss", label: "Top Losers" },
-  { key: "recent", label: "Recently Added" },
-];
-
-function sortPortfolio(items: typeof portfolio, key: SortKey) {
+function sortPortfolio(items: PortfolioItem[], key: SortKey) {
   const sorted = [...items];
   switch (key) {
     case "value":
@@ -71,6 +66,8 @@ function MiniBar({ percent }: { percent: number }) {
 export default function PortfolioPage() {
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const { portfolio, loading } = useDashboardData();
+  const t = useTranslations("dashboardPortfolio");
 
   const sorted = sortPortfolio(portfolio, sortKey);
 
@@ -82,11 +79,18 @@ export default function PortfolioPage() {
   const gainers = portfolio.filter((p) => p.gainLoss > 0).length;
   const losers = portfolio.filter((p) => p.gainLoss < 0).length;
 
+  const sortOptions: { key: SortKey; label: string }[] = [
+    { key: "value", label: t("sortHighestValue") },
+    { key: "gain", label: t("sortTopGainers") },
+    { key: "loss", label: t("sortTopLosers") },
+    { key: "recent", label: t("sortRecentlyAdded") },
+  ];
+
   const stats = [
     {
-      label: "Portfolio Value",
+      label: t("statPortfolioValue"),
       value: formatPrice(totalCurrentValue),
-      sub: `${portfolio.length} items`,
+      sub: t("statItemCount", { count: portfolio.length }),
       icon: Briefcase,
       color: "text-violet-400",
       bgColor: "bg-violet-400/10",
@@ -94,9 +98,9 @@ export default function PortfolioPage() {
       valueColor: "text-violet-400",
     },
     {
-      label: "Total Cost",
+      label: t("statTotalCost"),
       value: formatPrice(totalPurchaseValue),
-      sub: "purchase basis",
+      sub: t("statPurchaseBasis"),
       icon: DollarSign,
       color: "text-blue-400",
       bgColor: "bg-blue-400/10",
@@ -104,9 +108,9 @@ export default function PortfolioPage() {
       valueColor: "text-foreground",
     },
     {
-      label: "Total Gain/Loss",
+      label: t("statTotalGainLoss"),
       value: `${totalGainLoss >= 0 ? "+" : ""}${formatPrice(Math.abs(totalGainLoss))}`,
-      sub: `${totalGainLossPercent >= 0 ? "+" : ""}${totalGainLossPercent.toFixed(1)}% all time`,
+      sub: `${totalGainLossPercent >= 0 ? "+" : ""}${totalGainLossPercent.toFixed(1)}% ${t("statAllTime")}`,
       icon: TrendingUp,
       color: totalGainLoss >= 0 ? "text-emerald-400" : "text-red-400",
       bgColor: totalGainLoss >= 0 ? "bg-emerald-400/10" : "bg-red-400/10",
@@ -114,9 +118,9 @@ export default function PortfolioPage() {
       valueColor: totalGainLoss >= 0 ? "text-emerald-400" : "text-red-400",
     },
     {
-      label: "ROI",
+      label: t("statROI"),
       value: `${totalGainLossPercent >= 0 ? "+" : ""}${totalGainLossPercent.toFixed(1)}%`,
-      sub: `${gainers} up · ${losers} down`,
+      sub: t("statUpDown", { up: gainers, down: losers }),
       icon: Percent,
       color: "text-amber-400",
       bgColor: "bg-amber-400/10",
@@ -139,16 +143,16 @@ export default function PortfolioPage() {
             <div className="w-8 h-8 rounded-xl bg-violet-400/10 flex items-center justify-center">
               <Briefcase size={15} className="text-violet-400" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Portfolio</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
           </div>
-          <p className="text-sm text-muted">Track the value of items in your collection</p>
+          <p className="text-sm text-muted">{t("subtitle")}</p>
         </div>
         <Link
           href="/dashboard/listings/new"
           className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark shadow-[0_0_20px_rgba(232,136,58,0.15)] hover:shadow-[0_0_30px_rgba(232,136,58,0.25)] transition-all w-fit"
         >
           <Tag size={14} />
-          List an Item
+          {t("listAnItem")}
         </Link>
       </motion.div>
 
@@ -210,11 +214,11 @@ export default function PortfolioPage() {
       >
         {/* Table header */}
         <div className="hidden sm:grid grid-cols-[1fr_95px_95px_100px_100px_50px] gap-3 px-5 py-3 border-b border-white/[0.04] bg-white/[0.01]">
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold">Item</span>
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">Cost Basis</span>
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">Market Value</span>
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">Gain / Loss</span>
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">Return</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold">{t("headerItem")}</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">{t("headerCostBasis")}</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">{t("headerMarketValue")}</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">{t("headerGainLoss")}</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">{t("headerReturn")}</span>
           <span />
         </div>
 
@@ -231,14 +235,14 @@ export default function PortfolioPage() {
                 <div className="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center mx-auto mb-4">
                   <Briefcase size={24} className="text-muted/30" />
                 </div>
-                <p className="text-foreground font-medium">No items in portfolio</p>
-                <p className="text-sm text-muted mt-1 mb-4">Purchase items to start tracking your collection value.</p>
+                <p className="text-foreground font-medium">{t("emptyTitle")}</p>
+                <p className="text-sm text-muted mt-1 mb-4">{t("emptyDesc")}</p>
                 <Link
                   href="/products"
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-400/10 text-violet-400 text-sm font-medium hover:bg-violet-400/15 transition-colors"
                 >
                   <Search size={14} />
-                  Browse Products
+                  {t("browseProducts")}
                 </Link>
               </motion.div>
             ) : (
@@ -334,20 +338,20 @@ export default function PortfolioPage() {
                           >
                             <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors">
                               <Tag size={12} className="text-muted" />
-                              Sell Now
+                              {t("menuSellNow")}
                             </button>
                             <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors">
                               <ExternalLink size={12} className="text-muted" />
-                              View Product
+                              {t("menuViewProduct")}
                             </button>
                             <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors">
                               <BarChart3 size={12} className="text-muted" />
-                              Price History
+                              {t("menuPriceHistory")}
                             </button>
                             <div className="border-t border-border" />
                             <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-error hover:bg-red-500/5 transition-colors">
                               <Trash2 size={12} />
-                              Remove
+                              {t("menuRemove")}
                             </button>
                           </motion.div>
                         )}
@@ -364,19 +368,19 @@ export default function PortfolioPage() {
         {sorted.length > 0 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.04] bg-white/[0.01]">
             <p className="text-[11px] text-muted">
-              <span className="font-semibold text-foreground">{sorted.length}</span> item{sorted.length !== 1 ? "s" : ""} in collection
+              <span className="font-semibold text-foreground">{sorted.length}</span> {t("footerItemsInCollection", { count: sorted.length })}
             </p>
             <div className="flex items-center gap-4 text-[11px] text-muted">
               <span>
-                <span className="font-semibold text-emerald-400">{gainers}</span> up
+                <span className="font-semibold text-emerald-400">{gainers}</span> {t("footerUp")}
               </span>
               <span className="w-px h-3 bg-white/[0.06]" />
               <span>
-                <span className="font-semibold text-red-400">{losers}</span> down
+                <span className="font-semibold text-red-400">{losers}</span> {t("footerDown")}
               </span>
               <span className="w-px h-3 bg-white/[0.06]" />
               <span>
-                Net:{" "}
+                {t("footerNet")}{" "}
                 <span className={`font-semibold ${totalGainLoss >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                   {totalGainLoss >= 0 ? "+" : "-"}{formatPrice(Math.abs(totalGainLoss))}
                 </span>

@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Minus, Plus, Trash2, ShoppingBag, Package, ArrowRight, Shield, Truck } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export default function CartPage() {
   const { items, totalPrice, removeItem, updateQuantity } = useCart();
+  const t = useTranslations();
 
   if (items.length === 0) {
     return (
@@ -20,15 +23,15 @@ export default function CartPage() {
           <div className="w-20 h-20 rounded-2xl bg-surface border border-border flex items-center justify-center mx-auto mb-5">
             <ShoppingBag size={32} className="text-muted/30" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Your cart is empty</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{t("cart.emptyTitle")}</h1>
           <p className="text-sm text-muted mb-6">
-            Looks like you haven&apos;t added anything to your cart yet
+            {t("cart.emptyDesc")}
           </p>
           <Link
             href="/products"
             className="inline-flex items-center gap-1.5 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark shadow-[0_0_20px_rgba(232,136,58,0.15)] transition-all"
           >
-            Browse Products
+            {t("common.browseProducts")}
             <ArrowRight size={14} />
           </Link>
         </motion.div>
@@ -52,10 +55,10 @@ export default function CartPage() {
           <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <ShoppingBag size={15} className="text-primary" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Shopping Cart</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t("cart.shoppingCart")}</h1>
         </div>
         <p className="text-sm text-muted">
-          <span className="font-semibold text-foreground">{items.length}</span> item{items.length !== 1 ? "s" : ""} in your cart
+          {t("cart.itemsInCart", { count: items.length })}
         </p>
       </motion.div>
 
@@ -70,8 +73,18 @@ export default function CartPage() {
               transition={{ duration: 0.3, delay: i * 0.05 }}
               className="flex gap-4 p-4 bg-card rounded-2xl border border-border hover:border-border-hover transition-all group"
             >
-              <div className="w-24 h-24 rounded-xl bg-surface border border-border flex items-center justify-center flex-shrink-0 group-hover:border-border-hover transition-colors">
-                <Package size={28} className="text-muted/20" />
+              <div className="w-24 h-24 rounded-xl bg-surface border border-border flex items-center justify-center flex-shrink-0 group-hover:border-border-hover transition-colors overflow-hidden">
+                {item.product.images?.[0] ? (
+                  <Image
+                    src={item.product.images[0]}
+                    alt={item.product.name}
+                    width={96}
+                    height={96}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Package size={28} className="text-muted/20" />
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <Link
@@ -88,7 +101,7 @@ export default function CartPage() {
                     <>
                       <span className="text-muted/30">&middot;</span>
                       <span className="text-[11px] text-muted bg-surface px-1.5 py-0.5 rounded">
-                        {item.product.category === "sneakers" ? `US ${item.size}` : item.size}
+                        {item.product.category === "sneakers" ? t("cart.sizeUS", { size: item.size }) : item.size}
                       </span>
                     </>
                   )}
@@ -135,25 +148,25 @@ export default function CartPage() {
         >
           <div className="bg-card rounded-2xl border border-border p-6 sticky top-24">
             <h2 className="text-sm font-bold text-foreground uppercase tracking-wider mb-5">
-              Order Summary
+              {t("cart.orderSummary")}
             </h2>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between text-muted">
-                <span>Subtotal</span>
+                <span>{t("cart.subtotal")}</span>
                 <span className="text-foreground font-medium">{formatPrice(totalPrice)}</span>
               </div>
               <div className="flex justify-between text-muted">
-                <span>Shipping</span>
+                <span>{t("cart.shipping")}</span>
                 <span className={shipping === 0 ? "text-emerald-400 font-medium" : "text-foreground font-medium"}>
-                  {shipping === 0 ? "Free" : formatPrice(shipping)}
+                  {shipping === 0 ? t("common.free") : formatPrice(shipping)}
                 </span>
               </div>
               <div className="flex justify-between text-muted">
-                <span>Tax</span>
+                <span>{t("cart.tax")}</span>
                 <span className="text-foreground font-medium">{formatPrice(tax)}</span>
               </div>
               <div className="border-t border-white/[0.06] pt-3 flex justify-between font-bold text-foreground text-base">
-                <span>Total</span>
+                <span>{t("cart.total")}</span>
                 <span>{formatPrice(grandTotal)}</span>
               </div>
             </div>
@@ -162,25 +175,25 @@ export default function CartPage() {
               href="/checkout"
               className="flex items-center justify-center gap-2 w-full mt-6 px-6 py-3.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark shadow-[0_0_20px_rgba(232,136,58,0.15)] hover:shadow-[0_0_30px_rgba(232,136,58,0.25)] transition-all"
             >
-              Proceed to Checkout
+              {t("cart.proceedToCheckout")}
               <ArrowRight size={14} />
             </Link>
             <Link
               href="/products"
               className="flex items-center justify-center w-full mt-2 px-6 py-2.5 rounded-xl text-sm font-medium text-muted hover:text-foreground hover:bg-surface transition-all"
             >
-              Continue Shopping
+              {t("common.continueShopping")}
             </Link>
 
             {/* Trust signals */}
             <div className="flex items-center gap-4 mt-5 pt-4 border-t border-white/[0.04] text-[10px] text-muted">
               <span className="flex items-center gap-1">
                 <Shield size={10} className="text-emerald-400" />
-                Secure
+                {t("cart.secure")}
               </span>
               <span className="flex items-center gap-1">
                 <Truck size={10} className="text-blue-400" />
-                Fast Delivery
+                {t("cart.fastDelivery")}
               </span>
             </div>
           </div>

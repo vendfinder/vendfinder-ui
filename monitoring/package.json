@@ -1,0 +1,31 @@
+{
+  "name": "vendfinder-inventory-metrics",
+  "version": "1.0.0",
+  "description": "VendFinder inventory and sales metrics collector for Prometheus",
+  "main": "inventory-metrics-collector.js",
+  "scripts": {
+    "start": "node inventory-metrics-collector.js",
+    "dev": "nodemon inventory-metrics-collector.js",
+    "test": "echo \"Tests not implemented yet - add proper testing for metrics collector\""
+  },
+  "dependencies": {
+    "express": "^4.22.1",
+    "pg": "^8.20.0",
+    "prom-client": "^15.1.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "prometheus",
+    "metrics",
+    "inventory",
+    "sales",
+    "vendfinder"
+  ],
+  "author": "VendFinder Team",
+  "license": "MIT"
+}

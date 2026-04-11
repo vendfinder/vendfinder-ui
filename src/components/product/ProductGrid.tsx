@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Product } from "@/types";
 import ProductCard from "./ProductCard";
 import { StaggerContainer, StaggerItem } from "@/components/motion/MotionWrapper";
@@ -9,12 +10,14 @@ interface ProductGridProps {
 }
 
 export default function ProductGrid({ products }: ProductGridProps) {
+  const t = useTranslations("product");
+
   if (products.length === 0) {
     return (
       <div className="text-center py-16">
-        <p className="text-lg font-medium text-foreground">No products found</p>
+        <p className="text-lg font-medium text-foreground">{t("noProductsFound")}</p>
         <p className="text-sm text-muted mt-1">
-          Try adjusting your search or filters
+          {t("tryAdjustingSearch")}
         </p>
       </div>
     );

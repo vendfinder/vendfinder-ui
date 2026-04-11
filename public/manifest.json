@@ -1,0 +1,12 @@
+{
+  "name": "VendFinder",
+  "short_name": "VendFinder",
+  "description": "Find It. Love It. Own It.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B0B0F",
+  "theme_color": "#0B0B0F",
+  "icons": [
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

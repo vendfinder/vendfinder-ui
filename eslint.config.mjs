@@ -31,6 +31,11 @@ const eslintConfig = defineConfig([
     "mobile/**",
     // Environment configuration files (our new files)
     "environments/**",
+    // Root level script files
+    "*.js",
+    "!eslint.config.mjs",
+    "!next.config.js",
+    "!next.config.ts",
   ]),
 ]);
 

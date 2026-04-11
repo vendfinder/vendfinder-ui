@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websocket-service
+  namespace: vendfinder-staging
+  labels:
+    app: websocket-service
+    environment: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: websocket-service
+  template:
+    metadata:
+      labels:
+        app: websocket-service
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - gateway
+      imagePullSecrets:
+        - name: vendfinder-registry
+      containers:
+        - name: websocket-service
+          image: registry.digitalocean.com/vendfinder-registry/websocket-service:latest
+          ports:
+            - containerPort: 3006
+          env:
+            - name: PORT
+              value: "3006"
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: url
+            - name: USER_SERVICE_URL
+              value: http://user-service:3004
+            - name: CHAT_SERVICE_URL
+              value: http://chat-service:3005
+            - name: CORS_ORIGIN
+              value: "*"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3006
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3006
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket-service
+  namespace: vendfinder-staging
+  labels:
+    app: websocket-service
+    environment: staging
+spec:
+  selector:
+    app: websocket-service
+  ports:
+    - protocol: TCP
+      port: 3006
+      targetPort: 3006

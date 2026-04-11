@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-service
+  namespace: vendfinder-staging
+  labels:
+    app: admin-service
+    environment: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: admin-service
+  template:
+    metadata:
+      labels:
+        app: admin-service
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - gateway
+      imagePullSecrets:
+        - name: vendfinder-registry
+      containers:
+        - name: admin-service
+          image: registry.digitalocean.com/vendfinder-registry/admin-service:latest
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-service
+  namespace: vendfinder-staging
+  labels:
+    app: admin-service
+    environment: staging
+spec:
+  selector:
+    app: admin-service
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

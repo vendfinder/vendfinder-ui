@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-db
+  namespace: vendfinder-staging
+  labels:
+    app: product-db
+    environment: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-db
+  template:
+    metadata:
+      labels:
+        app: product-db
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - gateway
+      containers:
+        - name: product-db
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: product_db
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: product-db-credentials
+                  key: password
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: product-db-data
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+      volumes:
+        - name: product-db-data
+          persistentVolumeClaim:
+            claimName: product-db-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-db
+  namespace: vendfinder-staging
+  labels:
+    app: product-db
+    environment: staging
+spec:
+  selector:
+    app: product-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

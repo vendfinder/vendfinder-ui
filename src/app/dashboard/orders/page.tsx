@@ -14,7 +14,8 @@ import {
   ExternalLink,
   Search,
 } from "lucide-react";
-import { orders } from "@/data/orders";
+import { useTranslations } from "next-intl";
+import { useDashboardData } from "@/hooks/useDashboardData";
 import Badge from "@/components/ui/Badge";
 import { formatPrice } from "@/lib/utils";
 
@@ -28,8 +29,10 @@ const statusConfig: Record<string, { variant: "info" | "warning" | "success" | "
 };
 
 export default function OrdersPage() {
+  const t = useTranslations("dashboardOrders");
   const [activeTab, setActiveTab] = useState<Tab>("all");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const { orders, loading } = useDashboardData();
 
   const filteredOrders = activeTab === "all"
     ? orders
@@ -40,17 +43,17 @@ export default function OrdersPage() {
   const deliveredCt = orders.filter((o) => o.status === "delivered").length;
 
   const tabs: { key: Tab; label: string; count: number; icon: React.ReactNode }[] = [
-    { key: "all", label: "All Orders", count: orders.length, icon: <ShoppingBag size={13} /> },
-    { key: "processing", label: "Processing", count: processingCt, icon: <Clock size={13} /> },
-    { key: "shipped", label: "Shipped", count: shippedCt, icon: <Truck size={13} /> },
-    { key: "delivered", label: "Delivered", count: deliveredCt, icon: <CheckCircle2 size={13} /> },
+    { key: "all", label: t("allOrders"), count: orders.length, icon: <ShoppingBag size={13} /> },
+    { key: "processing", label: t("processing"), count: processingCt, icon: <Clock size={13} /> },
+    { key: "shipped", label: t("shipped"), count: shippedCt, icon: <Truck size={13} /> },
+    { key: "delivered", label: t("delivered"), count: deliveredCt, icon: <CheckCircle2 size={13} /> },
   ];
 
   const stats = [
-    { label: "Total Orders", value: orders.length.toString(), icon: ShoppingBag, color: "text-primary", bgColor: "bg-primary/10", borderColor: "border-primary/15" },
-    { label: "Processing", value: processingCt.toString(), icon: Clock, color: "text-blue-400", bgColor: "bg-blue-400/10", borderColor: "border-blue-400/15" },
-    { label: "Shipped", value: shippedCt.toString(), icon: Truck, color: "text-amber-400", bgColor: "bg-amber-400/10", borderColor: "border-amber-400/15" },
-    { label: "Delivered", value: deliveredCt.toString(), icon: CheckCircle2, color: "text-emerald-400", bgColor: "bg-emerald-400/10", borderColor: "border-emerald-400/15" },
+    { label: t("allOrders"), value: orders.length.toString(), icon: ShoppingBag, color: "text-primary", bgColor: "bg-primary/10", borderColor: "border-primary/15" },
+    { label: t("processing"), value: processingCt.toString(), icon: Clock, color: "text-blue-400", bgColor: "bg-blue-400/10", borderColor: "border-blue-400/15" },
+    { label: t("shipped"), value: shippedCt.toString(), icon: Truck, color: "text-amber-400", bgColor: "bg-amber-400/10", borderColor: "border-amber-400/15" },
+    { label: t("delivered"), value: deliveredCt.toString(), icon: CheckCircle2, color: "text-emerald-400", bgColor: "bg-emerald-400/10", borderColor: "border-emerald-400/15" },
   ];
 
   return (
@@ -67,13 +70,13 @@ export default function OrdersPage() {
             <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
               <ShoppingBag size={15} className="text-primary" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Order History</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
           </div>
-          <p className="text-sm text-muted">Track and manage your orders</p>
+          <p className="text-sm text-muted">{t("subtitle")}</p>
         </div>
         <button className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-border/60 text-sm font-medium text-foreground hover:border-primary/40 hover:text-primary transition-all bg-surface/40 backdrop-blur-sm w-fit">
           <Search size={14} />
-          Search Orders
+          {t("searchOrders")}
         </button>
       </motion.div>
 
@@ -149,8 +152,8 @@ export default function OrdersPage() {
                 <div className="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center mx-auto mb-4">
                   <Package size={24} className="text-muted/30" />
                 </div>
-                <p className="text-foreground font-medium">No orders found</p>
-                <p className="text-sm text-muted mt-1">Orders matching this filter will appear here.</p>
+                <p className="text-foreground font-medium">{t("noOrdersFound")}</p>
+                <p className="text-sm text-muted mt-1">{t("ordersWillAppear")}</p>
               </motion.div>
             ) : (
               filteredOrders.map((order, i) => {
@@ -220,11 +223,11 @@ export default function OrdersPage() {
                             >
                               <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors">
                                 <Eye size={12} className="text-muted" />
-                                View Details
+                                {t("viewDetails")}
                               </button>
                               <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors">
                                 <ExternalLink size={12} className="text-muted" />
-                                Track Package
+                                {t("trackPackage")}
                               </button>
                             </motion.div>
                           )}
@@ -242,10 +245,10 @@ export default function OrdersPage() {
         {filteredOrders.length > 0 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.04] bg-white/[0.01]">
             <p className="text-[11px] text-muted">
-              Showing <span className="font-semibold text-foreground">{filteredOrders.length}</span> order{filteredOrders.length !== 1 ? "s" : ""}
+              {t("ordersCount", { count: filteredOrders.length })}
             </p>
             <span className="text-[11px] text-muted">
-              Total:{" "}
+              {t("totalValue")}{" "}
               <span className="font-semibold text-foreground">
                 {formatPrice(filteredOrders.reduce((sum, o) => sum + o.total, 0))}
               </span>

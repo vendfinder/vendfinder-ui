@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Footprints,
   Smartphone,
@@ -10,8 +11,7 @@ import {
   Trophy,
   ArrowUpRight,
 } from "lucide-react";
-import { categories } from "@/data/categories";
-import { getProductsByCategory } from "@/data/products";
+import type { Category, Product } from "@/types";
 import {
   FadeIn,
   StaggerContainer,
@@ -36,25 +36,33 @@ const accentColors = [
   "from-primary/20 to-transparent",
 ];
 
-export default function CategoryShowcase() {
+export default function CategoryShowcase({
+  categories,
+  categoryProducts,
+}: {
+  categories: Category[];
+  categoryProducts: Record<string, Product[]>;
+}) {
+  const t = useTranslations("categories");
+
   return (
     <section className="py-16 lg:py-24 bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="text-center mb-14">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-2 block">
-              Browse collections
+              {t("browseCollections")}
             </span>
             <h2 className="text-3xl sm:text-4xl font-display font-black text-foreground tracking-tight">
-              Shop by Category
+              {t("shopByCategory")}
             </h2>
           </div>
         </FadeIn>
 
         <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
           {categories.map((category, idx) => {
-            const categoryProducts = getProductsByCategory(category.slug);
-            const topProduct = categoryProducts[0];
+            const products = categoryProducts[category.slug] || [];
+            const topProduct = products[0];
 
             return (
               <StaggerItem key={category.slug}>
@@ -85,16 +93,13 @@ export default function CategoryShowcase() {
                       {category.description}
                     </p>
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-muted uppercase tracking-wider">
-                        {category.productCount} products
-                      </span>
-                      {topProduct && (
+                    {topProduct && (
+                      <div className="flex items-center justify-between">
                         <span className="text-xs text-primary font-semibold">
-                          From ${Math.min(...categoryProducts.map((p) => p.price))}
+                          {t("fromPrice", { price: `$${Math.min(...products.map((p) => p.price))}` })}
                         </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </Link>
               </StaggerItem>

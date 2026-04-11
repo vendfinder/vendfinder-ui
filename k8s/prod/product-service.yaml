@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+  namespace: vendfinder
+  labels:
+    app: product-service
+    environment: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-service
+  template:
+    metadata:
+      labels:
+        app: product-service
+    spec:
+      imagePullSecrets:
+        - name: vendfinder-registry
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - prod-app
+      containers:
+        - name: product-service
+          image: registry.digitalocean.com/vendfinder-registry/product-service:latest
+          ports:
+            - containerPort: 3002
+          env:
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: url
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: vendfinder
+  labels:
+    app: product-service
+    environment: production
+spec:
+  type: ClusterIP
+  selector:
+    app: product-service
+  ports:
+    - port: 3000
+      targetPort: 3002

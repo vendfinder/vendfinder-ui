@@ -1,0 +1,28 @@
+# Manual TLS Certificate Setup for VendFinder
+# Use this if you have existing certificates or don't use cert-manager
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vendfinder-tls-secret
+  namespace: vendfinder
+type: kubernetes.io/tls
+data:
+  # Base64 encoded certificate and private key
+  # Replace these with your actual certificate data
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t...  # Your certificate here
+  tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0t...  # Your private key here
+
+---
+# Example of how to create the secret manually from certificate files:
+# kubectl create secret tls vendfinder-tls-secret \
+#   --cert=path/to/vendfinder.crt \
+#   --key=path/to/vendfinder.key \
+#   --namespace=vendfinder
+
+# If you have a wildcard certificate:
+# kubectl create secret tls vendfinder-wildcard-tls \
+#   --cert=path/to/wildcard.vendfinder.com.crt \
+#   --key=path/to/wildcard.vendfinder.com.key \
+#   --namespace=vendfinder

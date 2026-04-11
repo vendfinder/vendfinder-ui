@@ -1,8 +1,10 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
+import Image from "next/image";
 import { Flame, ShoppingCart, Package } from "lucide-react";
-import { getSaleProducts } from "@/data/products";
+import type { Product } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 import {
@@ -11,9 +13,10 @@ import {
   StaggerItem,
 } from "@/components/motion/MotionWrapper";
 
-export default function HotDeals() {
+export default function HotDeals({ products }: { products: Product[] }) {
+  const t = useTranslations("hotDeals");
   const { addItem } = useCart();
-  const deals = getSaleProducts();
+  const deals = products;
 
   return (
     <section className="py-16 lg:py-24 bg-dark relative overflow-hidden">
@@ -25,11 +28,11 @@ export default function HotDeals() {
           <div className="flex items-center gap-3 mb-2">
             <Flame size={20} className="text-accent" />
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-accent">
-              Limited time offers
+              {t("badge")}
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-display font-black text-foreground tracking-tight mb-10">
-            Hot Deals
+            {t("title")}
           </h2>
         </FadeIn>
 
@@ -50,14 +53,24 @@ export default function HotDeals() {
                     href={`/products/${product.slug}`}
                     className="block relative"
                   >
-                    <div className="aspect-square bg-surface flex items-center justify-center">
-                      <Package
-                        size={44}
-                        className="text-border group-hover:text-muted transition-colors"
-                      />
+                    <div className="aspect-square bg-surface flex items-center justify-center relative overflow-hidden">
+                      {product.images[0] ? (
+                        <Image
+                          src={product.images[0]}
+                          alt={product.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        />
+                      ) : (
+                        <Package
+                          size={44}
+                          className="text-border group-hover:text-muted transition-colors"
+                        />
+                      )}
                     </div>
                     <span className="absolute top-3 left-3 px-2.5 py-1 text-xs font-black uppercase tracking-wider bg-accent text-white rounded-full">
-                      {discount}% off
+                      {t("percentOff", { discount })}
                     </span>
                   </Link>
 
@@ -91,7 +104,7 @@ export default function HotDeals() {
 
                     {/* Savings badge */}
                     <div className="mt-2 px-2 py-1 bg-accent/10 text-accent text-xs font-bold rounded text-center">
-                      You save {formatPrice(product.compareAtPrice! - product.price)}
+                      {t("youSave", { amount: formatPrice(product.compareAtPrice! - product.price) })}
                     </div>
                   </div>
                 </div>

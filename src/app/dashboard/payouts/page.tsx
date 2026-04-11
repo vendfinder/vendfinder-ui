@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   AlertCircle,
   CreditCard,
-  Building2,
   ArrowUpRight,
   MoreHorizontal,
   Download,
@@ -17,11 +16,15 @@ import {
   Receipt,
   Package,
   Banknote,
-  ChevronRight,
+  MessageCircle,
 } from "lucide-react";
-import { payouts, sellerStats } from "@/data/seller";
+import { useTranslations } from "next-intl";
+import { useDashboardData } from "@/hooks/useDashboardData";
 import Badge from "@/components/ui/Badge";
 import { formatPrice } from "@/lib/utils";
+import PayoutMethodsManager from "@/components/dashboard/PayoutMethodsManager";
+import SellerGate from "@/components/dashboard/SellerGate";
+import KYCBanner from "@/components/dashboard/KYCBanner";
 
 type Tab = "all" | "completed" | "pending";
 
@@ -40,8 +43,10 @@ const statusIcon: Record<string, React.ReactNode> = {
 };
 
 export default function PayoutsPage() {
+  const t = useTranslations("dashboardPayouts");
   const [activeTab, setActiveTab] = useState<Tab>("all");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const { payouts, sellerStats, loading } = useDashboardData();
 
   const completedPayouts = payouts.filter((p) => p.status === "completed");
   const pendingPayouts = payouts.filter((p) => ["pending", "processing"].includes(p.status));
@@ -58,14 +63,14 @@ export default function PayoutsPage() {
   const totalFees = payouts.reduce((sum, p) => sum + p.fee, 0);
 
   const tabs: { key: Tab; label: string; count: number; icon: React.ReactNode }[] = [
-    { key: "all", label: "All Payouts", count: payouts.length, icon: <Banknote size={13} /> },
-    { key: "completed", label: "Completed", count: completedPayouts.length, icon: <CheckCircle2 size={13} /> },
-    { key: "pending", label: "Pending", count: pendingPayouts.length, icon: <Clock size={13} /> },
+    { key: "all", label: t("all"), count: payouts.length, icon: <Banknote size={13} /> },
+    { key: "completed", label: t("completed"), count: completedPayouts.length, icon: <CheckCircle2 size={13} /> },
+    { key: "pending", label: t("pending"), count: pendingPayouts.length, icon: <Clock size={13} /> },
   ];
 
   const stats = [
     {
-      label: "Total Paid Out",
+      label: t("totalPaidOut"),
       value: formatPrice(totalPaidOut),
       icon: DollarSign,
       color: "text-emerald-400",
@@ -74,7 +79,7 @@ export default function PayoutsPage() {
       valueColor: "text-emerald-400",
     },
     {
-      label: "Pending Payouts",
+      label: t("pendingPayouts"),
       value: formatPrice(pendingAmount),
       icon: Clock,
       color: "text-amber-400",
@@ -83,7 +88,7 @@ export default function PayoutsPage() {
       valueColor: "text-foreground",
     },
     {
-      label: "Total Revenue",
+      label: t("totalRevenue"),
       value: formatPrice(sellerStats.totalRevenue),
       icon: Wallet,
       color: "text-primary",
@@ -92,7 +97,7 @@ export default function PayoutsPage() {
       valueColor: "text-foreground",
     },
     {
-      label: "Total Fees",
+      label: t("totalFees"),
       value: formatPrice(totalFees),
       sub: "9% seller fee",
       icon: Receipt,
@@ -104,6 +109,7 @@ export default function PayoutsPage() {
   ];
 
   return (
+    <SellerGate backHref="/dashboard">
     <div>
       {/* Header */}
       <motion.div
@@ -117,15 +123,18 @@ export default function PayoutsPage() {
             <div className="w-8 h-8 rounded-xl bg-emerald-400/10 flex items-center justify-center">
               <Wallet size={15} className="text-emerald-400" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Payouts</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
           </div>
-          <p className="text-sm text-muted">Track your earnings and payout history</p>
+          <p className="text-sm text-muted">{t("subtitle")}</p>
         </div>
         <button className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-border/60 text-sm font-medium text-foreground hover:border-emerald-400/40 hover:text-emerald-400 transition-all bg-surface/40 backdrop-blur-sm w-fit">
           <Download size={14} />
-          Export CSV
+          {t("exportCsv")}
         </button>
       </motion.div>
+
+      {/* KYC Banner */}
+      <KYCBanner />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -160,35 +169,7 @@ export default function PayoutsPage() {
         transition={{ duration: 0.4, delay: 0.25 }}
         className="mb-8"
       >
-        <p className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold mb-3">Payout Methods</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-card rounded-2xl border border-blue-400/15 p-4 flex items-center gap-4 group hover:border-blue-400/30 transition-all cursor-pointer">
-            <div className="w-11 h-11 rounded-xl bg-blue-400/10 text-blue-400 flex items-center justify-center shrink-0">
-              <CreditCard size={18} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground">PayPal</p>
-              <p className="text-[11px] text-muted truncate">alex@example.com</p>
-            </div>
-            <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-emerald-400/10 text-emerald-400">
-              Primary
-            </span>
-            <ChevronRight size={14} className="text-muted/30 group-hover:text-blue-400/60 transition-colors shrink-0" />
-          </div>
-          <div className="bg-card rounded-2xl border border-border p-4 flex items-center gap-4 group hover:border-emerald-400/30 transition-all cursor-pointer">
-            <div className="w-11 h-11 rounded-xl bg-emerald-400/10 text-emerald-400 flex items-center justify-center shrink-0">
-              <Building2 size={18} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground">Bank Transfer</p>
-              <p className="text-[11px] text-muted truncate">Chase ****4892</p>
-            </div>
-            <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-surface text-muted">
-              Secondary
-            </span>
-            <ChevronRight size={14} className="text-muted/30 group-hover:text-emerald-400/60 transition-colors shrink-0" />
-          </div>
-        </div>
+        <PayoutMethodsManager variant="standard" />
       </motion.div>
 
       {/* Tabs */}
@@ -232,12 +213,12 @@ export default function PayoutsPage() {
       >
         {/* Table header */}
         <div className="hidden sm:grid grid-cols-[1fr_90px_75px_90px_95px_90px_50px] gap-3 px-5 py-3 border-b border-white/[0.04] bg-white/[0.01]">
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold">Items</span>
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">Gross</span>
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">Fee</span>
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">Net</span>
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">Method</span>
-          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">Status</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold">{t("items")}</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">{t("gross")}</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">{t("fee")}</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">{t("net")}</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">{t("method")}</span>
+          <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold text-right">{t("status")}</span>
           <span />
         </div>
 
@@ -254,8 +235,8 @@ export default function PayoutsPage() {
                 <div className="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center mx-auto mb-4">
                   <Wallet size={24} className="text-muted/30" />
                 </div>
-                <p className="text-foreground font-medium">No payouts yet</p>
-                <p className="text-sm text-muted mt-1">Your payout history will appear here once you make sales.</p>
+                <p className="text-foreground font-medium">{t("noPayoutsYet")}</p>
+                <p className="text-sm text-muted mt-1">{t("payoutHistoryWillAppear")}</p>
               </motion.div>
             ) : (
               filteredPayouts.map((payout, i) => {
@@ -311,12 +292,16 @@ export default function PayoutsPage() {
                     {/* Method */}
                     <div className="text-right hidden sm:block">
                       <span className="inline-flex items-center gap-1.5 text-[11px] text-muted">
-                        {payout.method === "PayPal" ? (
+                        {payout.method === "paypal" ? (
                           <CreditCard size={10} className="text-blue-400" />
+                        ) : payout.method === "alipay" ? (
+                          <Wallet size={10} className="text-sky-400" />
+                        ) : payout.method === "wechat" ? (
+                          <MessageCircle size={10} className="text-green-400" />
                         ) : (
-                          <Building2 size={10} className="text-emerald-400" />
+                          <Wallet size={10} className="text-muted" />
                         )}
-                        {payout.method}
+                        {payout.method === "paypal" ? "PayPal" : payout.method === "alipay" ? "Alipay" : payout.method === "wechat" ? "WeChat" : payout.method}
                       </span>
                     </div>
 
@@ -350,15 +335,15 @@ export default function PayoutsPage() {
                           >
                             <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors">
                               <Eye size={12} className="text-muted" />
-                              View Details
+                              {t("viewDetails")}
                             </button>
                             <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors">
                               <Receipt size={12} className="text-muted" />
-                              Download Receipt
+                              {t("downloadReceipt")}
                             </button>
                             <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors">
                               <AlertCircle size={12} className="text-muted" />
-                              Report Issue
+                              {t("reportIssue")}
                             </button>
                           </motion.div>
                         )}
@@ -375,25 +360,25 @@ export default function PayoutsPage() {
         {filteredPayouts.length > 0 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.04] bg-white/[0.01]">
             <p className="text-[11px] text-muted">
-              Showing <span className="font-semibold text-foreground">{filteredPayouts.length}</span> payout{filteredPayouts.length !== 1 ? "s" : ""}
+              {t("payoutsCount", { count: filteredPayouts.length })}
             </p>
             <div className="flex items-center gap-4 text-[11px] text-muted">
               <span>
-                Gross:{" "}
+                {t("gross")}:{" "}
                 <span className="font-semibold text-foreground">
                   {formatPrice(filteredPayouts.reduce((sum, p) => sum + p.amount, 0))}
                 </span>
               </span>
               <span className="w-px h-3 bg-white/[0.06]" />
               <span>
-                Fees:{" "}
+                {t("totalFees")}:{" "}
                 <span className="font-semibold text-red-400">
                   -{formatPrice(filteredPayouts.reduce((sum, p) => sum + p.fee, 0))}
                 </span>
               </span>
               <span className="w-px h-3 bg-white/[0.06]" />
               <span>
-                Net:{" "}
+                {t("net")}:{" "}
                 <span className="font-semibold text-emerald-400">
                   {formatPrice(filteredPayouts.reduce((sum, p) => sum + p.net, 0))}
                 </span>
@@ -403,5 +388,6 @@ export default function PayoutsPage() {
         )}
       </motion.div>
     </div>
+    </SellerGate>
   );
 }

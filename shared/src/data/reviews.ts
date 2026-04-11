@@ -1,0 +1,20 @@
+import { Review } from "../types";
+
+export const reviews: Review[] = [
+  { id: "r1", productId: "1", userName: "SneakerHead42", rating: 5, title: "Perfect pair", body: "These are absolutely fire. Quality is top-notch and they fit true to size. The Bred colorway never gets old.", date: "2024-10-01", verified: true },
+  { id: "r2", productId: "1", userName: "Mike R.", rating: 5, title: "Grail acquired", body: "Finally got my hands on these. Leather quality is premium, comfort is great. Worth every penny.", date: "2024-10-15", verified: true },
+  { id: "r3", productId: "1", userName: "JayWalker", rating: 4, title: "Great but runs a half size big", body: "Amazing shoe overall, but I'd recommend going half a size down. The materials are excellent though.", date: "2024-09-28", verified: true },
+  { id: "r4", productId: "2", userName: "CleanKicks", rating: 5, title: "Goes with everything", body: "The Panda Dunks are a wardrobe staple. I wear these almost every day and they still look fresh.", date: "2024-10-20", verified: true },
+  { id: "r5", productId: "2", userName: "Alex T.", rating: 4, title: "Solid everyday shoe", body: "Good quality leather, comfortable right out of the box. The black and white is so versatile.", date: "2024-11-01", verified: true },
+  { id: "r6", productId: "6", userName: "AudioPhile99", rating: 5, title: "Best ANC headphones ever", body: "The noise cancellation is unreal. I use these for work, flights, and music. Battery lasts forever.", date: "2024-08-10", verified: true },
+  { id: "r7", productId: "6", userName: "Sarah M.", rating: 5, title: "Worth the upgrade", body: "Upgraded from XM4s and the difference in comfort and ANC is noticeable. Sound quality is incredible.", date: "2024-09-05", verified: true },
+  { id: "r8", productId: "11", userName: "StreetFit", rating: 5, title: "Coziest hoodie I own", body: "The Essentials hoodie is heavyweight and oversized just right. The quality you'd expect from FOG.", date: "2024-09-15", verified: true },
+  { id: "r9", productId: "11", userName: "Dom K.", rating: 4, title: "Great quality, size up", body: "Amazing fleece quality but if you want that oversized look, go one size up from your normal.", date: "2024-10-02", verified: true },
+  { id: "r10", productId: "21", userName: "WatchGuy", rating: 5, title: "The CasiOak hype is real", body: "This watch punches way above its price. The octagonal design is beautiful and it's built like a tank.", date: "2024-08-20", verified: true },
+  { id: "r11", productId: "26", userName: "ArtCollector", rating: 5, title: "Stunning display piece", body: "The KAWS BE@RBRICK is absolutely massive in person. Perfect condition and great packaging from VendFinder.", date: "2024-11-15", verified: true },
+  { id: "r12", productId: "27", userName: "CardKing", rating: 5, title: "Perfect gem mint", body: "PSA 10 is flawless. Centering is perfect, no whitening on edges. A true investment piece.", date: "2024-10-10", verified: true },
+];
+
+export function getReviewsByProductId(productId: string): Review[] {
+  return reviews.filter((r) => r.productId === productId);
+}

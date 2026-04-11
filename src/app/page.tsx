@@ -8,18 +8,40 @@ import NewArrivals from "@/components/home/NewArrivals";
 import TopRated from "@/components/home/TopRated";
 import Testimonials from "@/components/home/Testimonials";
 import Newsletter from "@/components/home/Newsletter";
+import StoriesBar from "@/components/stories/StoriesBar";
+import {
+  getNewArrivals,
+  getSaleProducts,
+  getTopRated,
+  fetchCategories,
+  getProductsByCategory,
+} from "@/lib/api";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [newArrivals, saleProducts, topRated, categories] =
+    await Promise.all([
+      getNewArrivals(),
+      getSaleProducts(),
+      getTopRated(),
+      fetchCategories(),
+    ]);
+
+  // Build category products map
+  const categoryProductEntries = await Promise.all(
+    categories.map(async (c) => [c.slug, await getProductsByCategory(c.slug)] as const)
+  );
+  const categoryProducts = Object.fromEntries(categoryProductEntries);
+
   return (
     <>
       <HeroSection />
       <BrandMarquee />
       <ValueProps />
-      <FeaturedProducts />
-      <CategoryShowcase />
-      <HotDeals />
-      <NewArrivals />
-      <TopRated />
+      <FeaturedProducts storiesBar={<StoriesBar />} />
+      <CategoryShowcase categories={categories} categoryProducts={categoryProducts} />
+      <HotDeals products={saleProducts} />
+      <NewArrivals products={newArrivals} />
+      <TopRated products={topRated} />
       <Testimonials />
       <Newsletter />
     </>

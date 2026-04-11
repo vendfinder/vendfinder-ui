@@ -1,0 +1,12 @@
+-- KYC for high-volume sellers
+ALTER TABLE users ADD COLUMN IF NOT EXISTS kyc_status VARCHAR(20) DEFAULT 'not_required';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS kyc_required_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS kyc_submitted_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS kyc_verified_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS kyc_business_name VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS kyc_business_address TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS kyc_tax_id VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS kyc_country VARCHAR(10);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS kyc_notes TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_users_kyc_status ON users(kyc_status);

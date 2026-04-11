@@ -38,6 +38,17 @@
   --font-display: var(--font-playfair);
 }
 
+/* ---- iOS Safe Areas & Tab Bar ---- */
+:root {
+  --tab-bar-height: 0px;
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --tab-bar-height: calc(60px + env(safe-area-inset-bottom));
+  }
+}
+
 /* ---- Base ---- */
 body {
   background: var(--color-background);

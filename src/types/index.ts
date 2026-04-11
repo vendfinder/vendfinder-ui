@@ -17,7 +17,18 @@ export interface Product {
   features: string[];
   specifications: Record<string, string>;
   sizes?: string[];
+  sellerId?: string;
+  sellerName?: string;
   createdAt: string;
+  translations?: Record<string, {
+    name: string;
+    description: string;
+    longDescription: string;
+    features: string[];
+  }>;
+  sourceLanguage?: string;
+  isGlobalListing?: boolean;
+  isSponsored?: boolean;
 }
 
 export interface Category {
@@ -26,7 +37,7 @@ export interface Category {
   description: string;
   image: string;
   icon: string;
-  productCount: number;
+  productCount?: number;
 }
 
 export interface Review {
@@ -51,6 +62,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  banner?: string;
   joinedDate: string;
   username?: string;
   bio?: string;
@@ -129,6 +141,7 @@ export interface Purchase {
   status: "pending_shipment" | "shipped" | "delivered" | "authenticated" | "cancelled";
   date: string;
   trackingNumber?: string;
+  carrier?: string;
   sellerId: string;
   sellerName: string;
 }
@@ -142,6 +155,23 @@ export interface Payout {
   method: string;
   date: string;
   items: string[];
+}
+
+export type PayoutMethodType = 'alipay' | 'paypal' | 'wechat';
+
+export interface PayoutMethod {
+  id: string;
+  sellerId: string;
+  methodType: PayoutMethodType;
+  label?: string;
+  accountId: string;
+  accountName?: string;
+  nationalId?: string;
+  dateOfBirth?: string;
+  address?: string;
+  isPrimary: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface FavoriteItem {
@@ -182,7 +212,117 @@ export interface Order {
   trackingNumber?: string;
 }
 
+export interface SaleOrder {
+  id: string;
+  order_number: string;
+  product_name: string;
+  product_image?: string;
+  product_category?: string;
+  size?: string;
+  item_price: number;
+  total_buyer_pays: number;
+  seller_payout: number;
+  platform_fee: number;
+  status: string;
+  created_at: string;
+  tracking_number?: string;
+  carrier?: string;
+  shipped_at?: string;
+  buyer_id: string;
+  payment_method?: string;
+  shipping_name?: string;
+  shipping_address_line1?: string;
+  shipping_address_line2?: string;
+  shipping_city?: string;
+  shipping_state?: string;
+  shipping_zip?: string;
+  shipping_country?: string;
+}
+
 export interface NavItem {
   label: string;
   href: string;
+}
+
+// Chat / Messaging
+export interface ChatParticipant {
+  id: string;
+  name: string;
+  username: string;
+  avatar?: string;
+}
+
+export interface Conversation {
+  id: string;
+  type?: "direct" | "product" | "order" | "support";
+  participants: ChatParticipant[];
+  product?: { id: string; name: string; image: string; price: number };
+  lastMessage?: { content: string; senderId: string; timestamp: string };
+  unreadCount: number;
+  isMuted?: boolean;
+  updatedAt: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  content: string;
+  type: "text" | "image" | "system" | "offer";
+  metadata?: ChatMessageMetadata;
+  isEdited?: boolean;
+  translations?: Record<string, string> | null;
+  createdAt: string;
+  readAt?: string;
+}
+
+export interface ChatMessageMetadata {
+  offerId?: string;
+  proposedPrice?: number;
+  status?: string;
+  expiresAt?: string;
+  [key: string]: unknown;
+}
+
+export interface ChatOffer {
+  id: string;
+  conversationId: string;
+  messageId: string;
+  senderId: string;
+  proposedPrice: number;
+  status: "pending" | "accepted" | "declined" | "countered" | "expired" | "cancelled";
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface TypingIndicator {
+  conversationId: string;
+  userId: string;
+  username: string;
+}
+
+// Stories
+export interface Story {
+  id: string;
+  userId: string;
+  username: string;
+  displayName: string;
+  avatarUrl?: string;
+  mediaUrl: string;
+  mediaType: "image";
+  textOverlay?: string;
+  textPosition?: "top" | "center" | "bottom";
+  createdAt: string;
+  expiresAt: string;
+  viewCount: number;
+  viewed: boolean;
+}
+
+export interface UserStoryGroup {
+  userId: string;
+  username: string;
+  displayName: string;
+  avatarUrl?: string;
+  stories: Story[];
+  hasUnviewed: boolean;
 }

@@ -1,0 +1,23 @@
+{
+  "name": "@vendfinder/order-service",
+  "version": "1.0.0",
+  "description": "VendFinder Order & Payment Service",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "migrate": "node migrate.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.11.3",
+    "cors": "^2.8.5",
+    "ioredis": "^5.3.2",
+    "node-fetch": "^3.3.2",
+    "prom-client": "^15.1.0",
+    "uuid": "^9.0.0",
+    "stripe": "^14.14.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

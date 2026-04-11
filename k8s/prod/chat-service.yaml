@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-service
+  namespace: vendfinder
+  labels:
+    app: chat-service
+    environment: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-service
+  template:
+    metadata:
+      labels:
+        app: chat-service
+    spec:
+      imagePullSecrets:
+        - name: vendfinder-registry
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - prod-app
+      containers:
+        - name: chat-service
+          image: registry.digitalocean.com/vendfinder-registry/chat-service:latest
+          ports:
+            - containerPort: 3005
+          env:
+            - name: PORT
+              value: "3005"
+            - name: DATABASE_URL
+              value: postgresql://vendfinder:vendfinder_pass@chat-db:5432/chat_db
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: url
+            - name: USER_SERVICE_URL
+              value: http://user-service:3004
+            - name: BOT_USER_ID
+              value: "00000000-0000-0000-0000-000000000001"
+            - name: INTERNAL_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: support-bot-secrets
+                  key: internal-service-key
+            - name: CORS_ORIGIN
+              value: "*"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3005
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3005
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-service
+  namespace: vendfinder
+  labels:
+    app: chat-service
+    environment: production
+spec:
+  type: ClusterIP
+  selector:
+    app: chat-service
+  ports:
+    - port: 3005
+      targetPort: 3005

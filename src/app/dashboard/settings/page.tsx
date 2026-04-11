@@ -1,24 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Settings,
   Shield,
   Bell,
-  CreditCard,
+  Wallet,
   MapPin,
   Smartphone,
   Lock,
   Plus,
   Trash2,
   ChevronRight,
-  CheckCircle2,
   AlertTriangle,
   KeyRound,
   Fingerprint,
   Mail,
-  Package,
   Tag,
   TrendingDown,
   Gavel,
@@ -26,29 +24,42 @@ import {
   Megaphone,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import Badge from "@/components/ui/Badge";
+import { useTranslations } from "next-intl";
+import PayoutMethodsManager from "@/components/dashboard/PayoutMethodsManager";
 
-type Section = "addresses" | "payment" | "notifications" | "security";
+type Section = "addresses" | "payout-methods" | "notifications" | "security";
 
-const sections: { key: Section; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; color: string; bgColor: string; desc: string }[] = [
-  { key: "addresses", label: "Shipping", icon: MapPin, color: "text-blue-400", bgColor: "bg-blue-400/10", desc: "Manage addresses" },
-  { key: "payment", label: "Payment", icon: CreditCard, color: "text-violet-400", bgColor: "bg-violet-400/10", desc: "Cards & methods" },
-  { key: "notifications", label: "Notifications", icon: Bell, color: "text-amber-400", bgColor: "bg-amber-400/10", desc: "Alert preferences" },
-  { key: "security", label: "Security", icon: Shield, color: "text-emerald-400", bgColor: "bg-emerald-400/10", desc: "Password & 2FA" },
-];
-
-const notificationItems = [
-  { label: "Bid Accepted", desc: "When one of your bids is accepted", on: true, icon: Gavel },
-  { label: "Ask Matched", desc: "When someone matches your ask price", on: true, icon: Tag },
-  { label: "Price Drops", desc: "When favorited items drop in price", on: true, icon: TrendingDown },
-  { label: "Outbid Alerts", desc: "When someone outbids you", on: true, icon: AlertTriangle },
-  { label: "Shipping Updates", desc: "Tracking and delivery notifications", on: true, icon: Truck },
-  { label: "Promotional", desc: "Deals, new releases, and recommendations", on: false, icon: Megaphone },
-];
+interface Address {
+  id: string;
+  name: string;
+  line1: string;
+  line2: string;
+  isDefault: boolean;
+}
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const t = useTranslations("dashboardSettings");
   const [activeSection, setActiveSection] = useState<Section>("addresses");
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+
+  const sections: { key: Section; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; color: string; bgColor: string; desc: string }[] = [
+    { key: "addresses", label: t("tabShipping"), icon: MapPin, color: "text-blue-400", bgColor: "bg-blue-400/10", desc: t("tabShippingDesc") },
+    { key: "payout-methods", label: t("tabPayoutMethods"), icon: Wallet, color: "text-emerald-400", bgColor: "bg-emerald-400/10", desc: t("tabPayoutMethodsDesc") },
+    { key: "notifications", label: t("tabNotifications"), icon: Bell, color: "text-amber-400", bgColor: "bg-amber-400/10", desc: t("tabNotificationsDesc") },
+    { key: "security", label: t("tabSecurity"), icon: Shield, color: "text-emerald-400", bgColor: "bg-emerald-400/10", desc: t("tabSecurityDesc") },
+  ];
+
+  const notificationItems = [
+    { label: t("notifBidAccepted"), desc: t("notifBidAcceptedDesc"), on: true, icon: Gavel },
+    { label: t("notifAskMatched"), desc: t("notifAskMatchedDesc"), on: true, icon: Tag },
+    { label: t("notifPriceDrops"), desc: t("notifPriceDropsDesc"), on: true, icon: TrendingDown },
+    { label: t("notifOutbidAlerts"), desc: t("notifOutbidAlertsDesc"), on: true, icon: AlertTriangle },
+    { label: t("notifShippingUpdates"), desc: t("notifShippingUpdatesDesc"), on: true, icon: Truck },
+    { label: t("notifPromotional"), desc: t("notifPromotionalDesc"), on: false, icon: Megaphone },
+  ];
+
   const [toggles, setToggles] = useState<Record<string, boolean>>(
     Object.fromEntries(notificationItems.map((n) => [n.label, n.on]))
   );
@@ -56,6 +67,30 @@ export default function SettingsPage() {
   const handleToggle = (label: string) => {
     setToggles((prev) => ({ ...prev, [label]: !prev[label] }));
   };
+
+  // Load user addresses
+  useEffect(() => {
+    const loadAddresses = async () => {
+      if (!token) return;
+
+      setLoadingAddresses(true);
+      try {
+        const response = await fetch('/api/users/me/addresses', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setAddresses(data);
+        }
+      } catch (error) {
+        console.error('Failed to load addresses:', error);
+      } finally {
+        setLoadingAddresses(false);
+      }
+    };
+
+    loadAddresses();
+  }, [token]);
 
   return (
     <div>
@@ -70,9 +105,9 @@ export default function SettingsPage() {
           <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <Settings size={15} className="text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
         </div>
-        <p className="text-sm text-muted">Manage your account, security, and preferences</p>
+        <p className="text-sm text-muted">{t("subtitle")}</p>
       </motion.div>
 
       {/* Section tabs */}
@@ -120,20 +155,31 @@ export default function SettingsPage() {
                     <MapPin size={16} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Shipping Addresses</p>
-                    <p className="text-[11px] text-muted">Manage your delivery locations</p>
+                    <p className="text-sm font-semibold text-foreground">{t("shippingAddresses")}</p>
+                    <p className="text-[11px] text-muted">{t("manageDeliveryLocations")}</p>
                   </div>
                 </div>
                 <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-400/10 text-blue-400 text-xs font-semibold hover:bg-blue-400/15 transition-colors">
                   <Plus size={12} />
-                  Add New
+                  {t("addNew")}
                 </button>
               </div>
 
-              {[
-                { name: "Alex Johnson", line1: "123 Main Street, Apt 4B", line2: "New York, NY 10001", isDefault: true },
-                { name: "Alex Johnson", line1: "456 Oak Avenue", line2: "Brooklyn, NY 11201", isDefault: false },
-              ].map((addr, i) => (
+              {loadingAddresses ? (
+                <div className="bg-card rounded-2xl border border-border p-6 text-center">
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-surface rounded w-1/3 mx-auto mb-2"></div>
+                    <div className="h-3 bg-surface rounded w-1/2 mx-auto"></div>
+                  </div>
+                </div>
+              ) : addresses.length === 0 ? (
+                <div className="bg-card rounded-2xl border border-border p-6 text-center">
+                  <MapPin className="mx-auto text-muted mb-3" size={32} />
+                  <p className="text-sm font-medium text-foreground mb-1">No addresses added yet</p>
+                  <p className="text-xs text-muted">Add your first shipping address to get started</p>
+                </div>
+              ) : (
+                addresses.map((addr, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, x: -6 }}
@@ -149,7 +195,7 @@ export default function SettingsPage() {
                       <p className="text-sm font-semibold text-foreground">{addr.name}</p>
                       {addr.isDefault && (
                         <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-400/10 text-blue-400">
-                          Default
+                          {t("default")}
                         </span>
                       )}
                     </div>
@@ -163,71 +209,21 @@ export default function SettingsPage() {
                     <ChevronRight size={14} className="text-muted/30" />
                   </div>
                 </motion.div>
-              ))}
+                ))
+              )}
             </motion.div>
           )}
 
-          {/* ─── PAYMENT METHODS ─── */}
-          {activeSection === "payment" && (
+          {/* ─── PAYOUT METHODS ─── */}
+          {activeSection === "payout-methods" && (
             <motion.div
-              key="payment"
+              key="payout-methods"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="space-y-4"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-violet-400/10 text-violet-400 flex items-center justify-center">
-                    <CreditCard size={16} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">Payment Methods</p>
-                    <p className="text-[11px] text-muted">Cards used for purchasing items</p>
-                  </div>
-                </div>
-                <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-violet-400/10 text-violet-400 text-xs font-semibold hover:bg-violet-400/15 transition-colors">
-                  <Plus size={12} />
-                  Add Card
-                </button>
-              </div>
-
-              {[
-                { type: "VISA", color: "bg-blue-600", number: "4242", exp: "08/27", isDefault: true },
-                { type: "MC", color: "bg-amber-500", number: "8901", exp: "12/26", isDefault: false },
-              ].map((card, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.06 }}
-                  className={`bg-card rounded-2xl border ${card.isDefault ? "border-violet-400/20" : "border-border"} p-4 flex items-center gap-4 group hover:border-violet-400/30 transition-all`}
-                >
-                  <div className={`w-12 h-8 ${card.color} rounded-lg flex items-center justify-center text-white text-[10px] font-bold shrink-0 shadow-lg`}>
-                    {card.type}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <p className="text-sm font-semibold text-foreground">
-                        {card.type === "VISA" ? "Visa" : "Mastercard"} ending in {card.number}
-                      </p>
-                      {card.isDefault && (
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-violet-400/10 text-violet-400">
-                          Default
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-muted">Expires {card.exp}</p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="p-1.5 rounded-lg hover:bg-red-500/10 text-muted hover:text-red-400 transition-colors">
-                      <Trash2 size={13} />
-                    </button>
-                    <ChevronRight size={14} className="text-muted/30" />
-                  </div>
-                </motion.div>
-              ))}
+              <PayoutMethodsManager variant="compact" />
             </motion.div>
           )}
 
@@ -246,8 +242,8 @@ export default function SettingsPage() {
                   <Bell size={16} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">Notification Preferences</p>
-                  <p className="text-[11px] text-muted">Choose which alerts you receive</p>
+                  <p className="text-sm font-semibold text-foreground">{t("notificationPreferences")}</p>
+                  <p className="text-[11px] text-muted">{t("chooseAlerts")}</p>
                 </div>
               </div>
 
@@ -295,21 +291,26 @@ export default function SettingsPage() {
                     <Mail size={15} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Email Notifications</p>
-                    <p className="text-[11px] text-muted">Sent to {user?.email || "your email"}</p>
+                    <p className="text-sm font-semibold text-foreground">{t("emailNotifications")}</p>
+                    <p className="text-[11px] text-muted">{t("sentTo", { email: user?.email || t("yourEmail") })}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 pl-12">
-                  {["Instant", "Daily Digest", "Weekly", "Off"].map((opt) => (
+                  {[
+                    { key: "instant", label: t("emailInstant") },
+                    { key: "daily", label: t("emailDailyDigest") },
+                    { key: "weekly", label: t("emailWeekly") },
+                    { key: "off", label: t("emailOff") },
+                  ].map((opt) => (
                     <button
-                      key={opt}
+                      key={opt.key}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        opt === "Instant"
+                        opt.key === "instant"
                           ? "bg-primary text-white shadow-[0_0_10px_rgba(232,136,58,0.15)]"
                           : "text-muted hover:text-foreground bg-surface hover:bg-surface/80"
                       }`}
                     >
-                      {opt}
+                      {opt.label}
                     </button>
                   ))}
                 </div>
@@ -332,8 +333,8 @@ export default function SettingsPage() {
                   <Shield size={16} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">Security</p>
-                  <p className="text-[11px] text-muted">Password, two-factor auth, and account safety</p>
+                  <p className="text-sm font-semibold text-foreground">{t("securityTitle")}</p>
+                  <p className="text-[11px] text-muted">{t("securitySubtitle")}</p>
                 </div>
               </div>
 
@@ -344,15 +345,15 @@ export default function SettingsPage() {
                     <KeyRound size={15} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Change Password</p>
-                    <p className="text-[11px] text-muted">Use a strong, unique password</p>
+                    <p className="text-sm font-semibold text-foreground">{t("changePassword")}</p>
+                    <p className="text-[11px] text-muted">{t("useStrongPassword")}</p>
                   </div>
                 </div>
                 <form onSubmit={(e) => e.preventDefault()} className="space-y-3 pl-12">
                   {[
-                    { id: "current", label: "Current Password", placeholder: "Enter current password" },
-                    { id: "new", label: "New Password", placeholder: "Enter new password" },
-                    { id: "confirm", label: "Confirm Password", placeholder: "Confirm new password" },
+                    { id: "current", label: t("currentPassword"), placeholder: t("enterCurrentPassword") },
+                    { id: "new", label: t("newPassword"), placeholder: t("enterNewPassword") },
+                    { id: "confirm", label: t("confirmPassword"), placeholder: t("confirmNewPassword") },
                   ].map((field) => (
                     <div key={field.id}>
                       <label className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-1.5 block">
@@ -372,7 +373,7 @@ export default function SettingsPage() {
                     type="submit"
                     className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark shadow-[0_0_20px_rgba(232,136,58,0.15)] hover:shadow-[0_0_30px_rgba(232,136,58,0.25)] transition-all"
                   >
-                    Update Password
+                    {t("updatePassword")}
                   </button>
                 </form>
               </div>
@@ -384,23 +385,23 @@ export default function SettingsPage() {
                     <Fingerprint size={20} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground">Two-Factor Authentication</p>
-                    <p className="text-[11px] text-muted mt-0.5">Add an extra layer of security with an authenticator app</p>
+                    <p className="text-sm font-semibold text-foreground">{t("twoFactorAuth")}</p>
+                    <p className="text-[11px] text-muted mt-0.5">{t("twoFactorAuthDesc")}</p>
                   </div>
                   <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-emerald-400/30 text-emerald-400 text-xs font-semibold hover:bg-emerald-400/10 transition-all">
                     <Shield size={12} />
-                    Enable 2FA
+                    {t("enable2FA")}
                   </button>
                 </div>
                 <div className="flex items-center gap-2 mt-4 pl-15 ml-15">
                   <div className="flex items-center gap-6 pl-[60px] text-[11px] text-muted">
                     <span className="flex items-center gap-1.5">
                       <Smartphone size={11} className="text-muted/50" />
-                      Authenticator App
+                      {t("authenticatorApp")}
                     </span>
                     <span className="flex items-center gap-1.5">
                       <Mail size={11} className="text-muted/50" />
-                      Email Backup
+                      {t("emailBackup")}
                     </span>
                   </div>
                 </div>
@@ -413,8 +414,8 @@ export default function SettingsPage() {
                     <Smartphone size={15} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Active Sessions</p>
-                    <p className="text-[11px] text-muted">Devices currently logged in</p>
+                    <p className="text-sm font-semibold text-foreground">{t("activeSessions")}</p>
+                    <p className="text-[11px] text-muted">{t("devicesLoggedIn")}</p>
                   </div>
                 </div>
                 <div className="space-y-3 pl-12">
@@ -432,11 +433,11 @@ export default function SettingsPage() {
                       </div>
                       {session.current ? (
                         <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-400/10 text-emerald-400">
-                          Current
+                          {t("current")}
                         </span>
                       ) : (
                         <button className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors">
-                          Revoke
+                          {t("revoke")}
                         </button>
                       )}
                     </div>
@@ -451,14 +452,14 @@ export default function SettingsPage() {
                     <AlertTriangle size={20} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-red-400">Delete Account</p>
+                    <p className="text-sm font-semibold text-red-400">{t("deleteAccount")}</p>
                     <p className="text-[11px] text-muted mt-0.5">
-                      Permanently remove your account and all data. This action cannot be undone.
+                      {t("deleteAccountDesc")}
                     </p>
                   </div>
                   <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-500/10 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition-all border border-red-500/20">
                     <Trash2 size={12} />
-                    Delete
+                    {t("delete")}
                   </button>
                 </div>
               </div>

@@ -1,0 +1,811 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inventory-metrics-config
+  namespace: vendfinder
+  labels:
+    app: inventory-metrics
+data:
+  config.env: |
+    PORT=9091
+    ORDER_DB_URL=postgresql://vendfinder:AVNS_dPXCNYeFQjukZJZwB0Y@vendfinder-db-do-user-31465471-0.e.db.ondigitalocean.com:25060/order_db?sslmode=require
+    PRODUCT_DB_URL=postgresql://vendfinder:AVNS_dPXCNYeFQjukZJZwB0Y@vendfinder-db-do-user-31465471-0.e.db.ondigitalocean.com:25060/product_db?sslmode=require
+    VENDOR_DB_URL=postgresql://vendfinder:AVNS_dPXCNYeFQjukZJZwB0Y@vendfinder-db-do-user-31465471-0.e.db.ondigitalocean.com:25060/vendor_db?sslmode=require
+    METRICS_COLLECT_INTERVAL=30000
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-metrics
+  namespace: vendfinder
+  labels:
+    app: inventory-metrics
+    component: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-metrics
+  template:
+    metadata:
+      labels:
+        app: inventory-metrics
+        component: monitoring
+    spec:
+      containers:
+      - name: inventory-metrics
+        image: node:18-alpine
+        workingDir: /workspace
+        command: ["/bin/sh"]
+        args:
+        - -c
+        - |
+          apk add --no-cache curl
+          cp /app/* /workspace/ 2>/dev/null || true
+          npm init -y
+          npm install express pg prom-client
+          node inventory-metrics-collector.js
+        ports:
+        - containerPort: 9091
+          name: metrics
+        env:
+        - name: PORT
+          value: "9091"
+        - name: NODE_TLS_REJECT_UNAUTHORIZED
+          value: "0"
+        - name: ORDER_DB_URL
+          value: "postgresql://vendfinder:AVNS_dPXCNYeFQjukZJZwB0Y@vendfinder-db-do-user-31465471-0.e.db.ondigitalocean.com:25060/order_db?sslmode=require"
+        - name: PRODUCT_DB_URL
+          value: "postgresql://vendfinder:AVNS_dPXCNYeFQjukZJZwB0Y@vendfinder-db-do-user-31465471-0.e.db.ondigitalocean.com:25060/product_db?sslmode=require"
+        - name: VENDOR_DB_URL
+          value: "postgresql://vendfinder:AVNS_dPXCNYeFQjukZJZwB0Y@vendfinder-db-do-user-31465471-0.e.db.ondigitalocean.com:25060/vendor_db?sslmode=require"
+        - name: METRICS_COLLECT_INTERVAL
+          value: "30000"
+        volumeMounts:
+        - name: metrics-code
+          mountPath: /app
+        - name: workspace
+          mountPath: /workspace
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9091
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9091
+          initialDelaySeconds: 60
+          periodSeconds: 15
+      volumes:
+      - name: metrics-code
+        configMap:
+          name: inventory-metrics-code
+      - name: workspace
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inventory-metrics-code
+  namespace: vendfinder
+  labels:
+    app: inventory-metrics
+data:
+  inventory-metrics-collector.js: |
+    const { Pool } = require('pg');
+    const promClient = require('prom-client');
+    const express = require('express');
+
+    // Create a Registry to register the metrics
+    const register = new promClient.Registry();
+    register.setDefaultLabels({ app: 'vendfinder' });
+    promClient.collectDefaultMetrics({ register });
+
+    // Custom VendFinder Metrics
+    const vendorProductsGauge = new promClient.Gauge({
+      name: 'vendfinder_vendor_products_total',
+      help: 'Total number of products by vendor',
+      labelNames: ['vendor_id', 'vendor_name', 'category', 'status'],
+      registers: [register]
+    });
+
+    const specificProductGauge = new promClient.Gauge({
+      name: 'vendfinder_specific_products',
+      help: 'Individual products with details',
+      labelNames: ['vendor_id', 'vendor_name', 'product_id', 'product_name', 'category', 'brand', 'price', 'status', 'in_stock'],
+      registers: [register]
+    });
+
+    const vendorSalesCounter = new promClient.Counter({
+      name: 'vendfinder_vendor_sales_total',
+      help: 'Total number of sales by vendor',
+      labelNames: ['vendor_id', 'vendor_name', 'product_name', 'category'],
+      registers: [register]
+    });
+
+    const vendorRevenueGauge = new promClient.Gauge({
+      name: 'vendfinder_vendor_revenue_dollars',
+      help: 'Total revenue by vendor in dollars',
+      labelNames: ['vendor_id', 'vendor_name'],
+      registers: [register]
+    });
+
+    const orderStatusGauge = new promClient.Gauge({
+      name: 'vendfinder_orders_by_status',
+      help: 'Number of orders by status and vendor',
+      labelNames: ['vendor_id', 'vendor_name', 'status'],
+      registers: [register]
+    });
+
+    const orderDetailsGauge = new promClient.Gauge({
+      name: 'vendfinder_order_details',
+      help: 'Individual order details',
+      labelNames: ['order_id', 'vendor_id', 'vendor_name', 'buyer_name', 'product_name', 'total_price', 'status', 'payment_method'],
+      registers: [register]
+    });
+
+    const paymentStatusGauge = new promClient.Gauge({
+      name: 'vendfinder_payments_by_status',
+      help: 'Payment counts by status and vendor',
+      labelNames: ['vendor_id', 'vendor_name', 'payment_status'],
+      registers: [register]
+    });
+
+    class InventoryMetricsCollector {
+      constructor() {
+        this.orderPool = new Pool({
+          connectionString: process.env.ORDER_DB_URL
+        });
+        this.productPool = new Pool({
+          connectionString: process.env.PRODUCT_DB_URL
+        });
+        this.vendorPool = new Pool({
+          connectionString: process.env.VENDOR_DB_URL
+        });
+        this.vendorNameCache = new Map(); // Cache vendor names
+        this.collectInterval = parseInt(process.env.METRICS_COLLECT_INTERVAL) || 30000;
+        this.isCollecting = false;
+      }
+
+      async start() {
+        console.log('🚀 Starting VendFinder Inventory Metrics Collector...');
+        await this.collectAllMetrics();
+        this.intervalId = setInterval(async () => {
+          if (!this.isCollecting) {
+            await this.collectAllMetrics();
+          }
+        }, this.collectInterval);
+        console.log('✅ Metrics collector started successfully');
+      }
+
+      async collectAllMetrics() {
+        if (this.isCollecting) return;
+        this.isCollecting = true;
+        const startTime = Date.now();
+        try {
+          console.log('📈 Collecting inventory and sales metrics...');
+          await Promise.all([
+            this.loadVendorNames(),
+            this.collectSpecificProducts(),
+            this.collectVendorProducts(),
+            this.collectVendorRevenue(),
+            this.collectOrderDetails(),
+            this.collectOrderStatuses(),
+            this.collectPaymentStatuses()
+          ]);
+          const duration = Date.now() - startTime;
+          console.log(`✅ Metrics collection completed in ${duration}ms`);
+        } catch (error) {
+          console.error('❌ Error collecting metrics:', error);
+        } finally {
+          this.isCollecting = false;
+        }
+      }
+
+      async loadVendorNames() {
+        try {
+          // First, check all databases for user/vendor information
+          console.log('🔍 Searching for vendor names across all databases...');
+
+          // Check vendor database structure
+          const vendorTablesResult = await this.vendorPool.query(`
+            SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'
+          `);
+          console.log('👥 Vendor DB tables:', vendorTablesResult.rows.map(r => r.table_name));
+
+          // Check product database for users table (might have vendor info)
+          const productTablesResult = await this.productPool.query(`
+            SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'
+          `);
+          console.log('🏪 Product DB tables:', productTablesResult.rows.map(r => r.table_name));
+
+          // Try to find users in product database first
+          const userTables = productTablesResult.rows.filter(r => r.table_name.includes('user'));
+          if (userTables.length > 0) {
+            console.log('👤 Found user tables in product DB:', userTables.map(r => r.table_name));
+
+            for (const userTable of userTables) {
+              try {
+                // Check columns in users table
+                const userColumnsQuery = `
+                  SELECT column_name FROM information_schema.columns
+                  WHERE table_name = '${userTable.table_name}' ORDER BY ordinal_position
+                `;
+                const userColumns = await this.productPool.query(userColumnsQuery);
+                console.log(`👤 ${userTable.table_name} columns:`, userColumns.rows.map(r => r.column_name));
+
+                // Get sample users data
+                const sampleUsersQuery = `SELECT * FROM ${userTable.table_name} WHERE role = 'vendor' OR role = 'seller' LIMIT 10`;
+                const sampleUsers = await this.productPool.query(sampleUsersQuery);
+                console.log(`👤 Sample ${userTable.table_name}:`, sampleUsers.rows);
+
+                // Load all vendor users
+                const allUsersQuery = `SELECT * FROM ${userTable.table_name}`;
+                const allUsers = await this.productPool.query(allUsersQuery);
+
+                for (const user of allUsers.rows) {
+                  if (user.id) {
+                    this.vendorNameCache.set(user.id, {
+                      name: user.name || user.first_name || user.email?.split('@')[0] || user.id.substring(0, 8),
+                      email: user.email,
+                      role: user.role,
+                      first_name: user.first_name,
+                      last_name: user.last_name
+                    });
+                  }
+                }
+                console.log(`👥 Loaded ${allUsers.rows.length} user entries from ${userTable.table_name}`);
+              } catch (err) {
+                console.log(`👤 Error with ${userTable.table_name}:`, err.message);
+              }
+            }
+          }
+
+          // Also try vendor database
+          if (vendorTablesResult.rows.some(r => r.table_name === 'vendors')) {
+            try {
+              const vendorColumnsQuery = `
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'vendors' ORDER BY ordinal_position
+              `;
+              const vendorColumns = await this.vendorPool.query(vendorColumnsQuery);
+              console.log('🏪 Vendors table columns:', vendorColumns.rows.map(r => r.column_name));
+
+              const allVendorsQuery = `SELECT * FROM vendors`;
+              const allVendors = await this.vendorPool.query(allVendorsQuery);
+              console.log('🏪 Sample vendors:', allVendors.rows.slice(0, 3));
+
+              for (const vendor of allVendors.rows) {
+                if (vendor.id || vendor.user_id) {
+                  const vendorId = vendor.id || vendor.user_id;
+                  this.vendorNameCache.set(vendorId, {
+                    name: vendor.business_name || vendor.name || vendor.email?.split('@')[0] || vendorId.substring(0, 8),
+                    email: vendor.email,
+                    business_name: vendor.business_name
+                  });
+                }
+              }
+              console.log(`🏪 Loaded ${allVendors.rows.length} vendors from vendors table`);
+            } catch (err) {
+              console.log('🏪 Error loading vendors table:', err.message);
+            }
+          }
+
+          // Show what we've cached
+          console.log(`🎯 Total vendor names cached: ${this.vendorNameCache.size}`);
+          const sampleCache = Array.from(this.vendorNameCache.entries()).slice(0, 5);
+          console.log('📝 Sample cached vendors:', sampleCache.map(([id, info]) => `${id.substring(0, 8)} -> ${info.name}`));
+
+          // Search for active vendor IDs across all databases
+          const activeVendorIds = ['3ad53a5d-ade0-4a33-8fb9-2a72900201f1', 'cfc1f4a9-e4f9-4a52-9186-f32b60cfd1f3', '43dc8866-7112-43d6-b104-8f17642eb453'];
+          console.log('🔍 Searching for active vendor IDs across all databases...');
+
+          for (const vendorId of activeVendorIds) {
+            console.log(`\n🔍 Searching for vendor ID: ${vendorId}`);
+
+            // Try product database
+            try {
+              const productSearchQuery = `
+                SELECT table_name
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+              `;
+              const productTables = await this.productPool.query(productSearchQuery);
+
+              for (const table of productTables.rows) {
+                const tableName = table.table_name;
+                if (tableName === 'products') continue; // Skip products, we know it's there
+
+                try {
+                  const searchQuery = `
+                    SELECT column_name
+                    FROM information_schema.columns
+                    WHERE table_name = '${tableName}' AND (column_name LIKE '%id%' OR column_name LIKE '%user%')
+                  `;
+                  const columns = await this.productPool.query(searchQuery);
+
+                  for (const col of columns.rows) {
+                    try {
+                      const findQuery = `SELECT * FROM ${tableName} WHERE ${col.column_name} = '${vendorId}' LIMIT 1`;
+                      const result = await this.productPool.query(findQuery);
+                      if (result.rows.length > 0) {
+                        console.log(`✅ Found ${vendorId.substring(0, 8)} in product_db.${tableName}.${col.column_name}:`, result.rows[0]);
+
+                        // If this is the asks table, try to get user info from all user tables
+                        if (tableName === 'asks') {
+                          // Try all possible user table names we found earlier
+                          const possibleUserTables = productTables.rows.filter(t => t.table_name.includes('user')).map(t => t.table_name);
+                          console.log(`🔍 Trying user tables for ${vendorId.substring(0, 8)}:`, possibleUserTables);
+
+                          for (const userTableName of possibleUserTables) {
+                            try {
+                              const userQuery = `SELECT * FROM ${userTableName} WHERE id = '${vendorId}' LIMIT 1`;
+                              const userResult = await this.productPool.query(userQuery);
+                              if (userResult.rows.length > 0) {
+                                const userRow = userResult.rows[0];
+                                console.log(`👤 Found user data for ${vendorId.substring(0, 8)} in ${userTableName}:`, userRow);
+
+                                const name = userRow.name || userRow.first_name || userRow.username || userRow.email?.split('@')[0] || vendorId.substring(0, 8);
+                                this.vendorNameCache.set(vendorId, {
+                                  name: name,
+                                  source: userTableName,
+                                  email: userRow.email,
+                                  role: userRow.role,
+                                  data: userRow
+                                });
+                                break; // Found it, stop searching
+                              }
+                            } catch (userErr) {
+                              // Try next table
+                              console.log(`⚠️ ${userTableName} didn't work for ${vendorId.substring(0, 8)}: ${userErr.message}`);
+                            }
+                          }
+                        }
+
+                        // Extract name if available from current row
+                        const row = result.rows[0];
+                        const name = row.name || row.first_name || row.username || row.seller_name || row.email?.split('@')[0] || vendorId.substring(0, 8);
+
+                        if (!this.vendorNameCache.has(vendorId)) {
+                          this.vendorNameCache.set(vendorId, {
+                            name: name,
+                            source: `${tableName}.${col.column_name}`,
+                            data: row
+                          });
+                        }
+                      }
+                    } catch (err) {
+                      // Skip errors for incompatible columns
+                    }
+                  }
+                } catch (err) {
+                  // Skip errors for inaccessible tables
+                }
+              }
+            } catch (err) {
+              console.log(`❌ Error searching product database for ${vendorId.substring(0, 8)}:`, err.message);
+            }
+
+            // Check if we found it
+            if (this.vendorNameCache.has(vendorId)) {
+              const vendor = this.vendorNameCache.get(vendorId);
+              console.log(`✅ Found ${vendorId.substring(0, 8)} -> ${vendor.name} (from ${vendor.source})`);
+            } else {
+              console.log(`❌ Missing ${vendorId.substring(0, 8)} - not found anywhere`);
+            }
+          }
+
+          // Manually map known vendors based on product analysis
+          console.log('🎯 Adding known vendor mappings based on product analysis...');
+
+          // Sally - vendor with Gucci bag for $298 (from conversation history)
+          this.vendorNameCache.set('3ad53a5d-ade0-4a33-8fb9-2a72900201f1', {
+            name: 'Sally (Luxury Vendor)',
+            source: 'manual_mapping',
+            description: 'Vendor with luxury accessories including Gucci bags'
+          });
+
+          // Sally's original vendor ID from conversation history
+          this.vendorNameCache.set('a3256ba6-bdb2-4893-aed6-3b148ca80e8a', {
+            name: 'Sally',
+            source: 'conversation_history',
+            description: 'Sally from conversation history'
+          });
+
+          // Other vendors - give them descriptive names based on their products
+          this.vendorNameCache.set('43dc8866-7112-43d6-b104-8f17642eb453', {
+            name: 'Nike Vendor',
+            source: 'product_analysis',
+            description: 'Vendor selling Nike Mind Slide Black sneakers'
+          });
+
+          this.vendorNameCache.set('cfc1f4a9-e4f9-4a52-9186-f32b60cfd1f3', {
+            name: 'Jordan Vendor',
+            source: 'product_analysis',
+            description: 'Vendor selling Jordan 4 sneakers'
+          });
+
+          // Also try to get vendor names from orders table seller_name field
+          try {
+            const orderVendorQuery = `
+              SELECT DISTINCT seller_id, seller_name
+              FROM orders
+              WHERE seller_id IS NOT NULL AND seller_name IS NOT NULL AND TRIM(seller_name) != ''
+            `;
+            const orderVendors = await this.orderPool.query(orderVendorQuery);
+            console.log('📋 Found seller names in orders:', orderVendors.rows);
+
+            for (const order of orderVendors.rows) {
+              if (order.seller_id && order.seller_name && order.seller_name.trim()) {
+                // Update cache with real seller names
+                this.vendorNameCache.set(order.seller_id, {
+                  name: order.seller_name.trim(),
+                  source: 'orders_seller_name',
+                  original_name: order.seller_name
+                });
+              }
+            }
+            console.log(`📋 Updated cache with ${orderVendors.rows.length} seller names from orders`);
+          } catch (err) {
+            console.log('📋 Error loading seller names from orders:', err.message);
+          }
+
+          // Final cache check - verify our manual mappings are there
+          console.log('\n🔍 Final vendor cache verification:');
+          console.log(`🎯 Total vendors in cache: ${this.vendorNameCache.size}`);
+
+          const sallysId = '3ad53a5d-ade0-4a33-8fb9-2a72900201f1';
+          if (this.vendorNameCache.has(sallysId)) {
+            const sallyData = this.vendorNameCache.get(sallysId);
+            console.log(`✅ Sally's mapping found: ${sallysId.substring(0, 8)} -> "${sallyData.name}" (source: ${sallyData.source})`);
+          } else {
+            console.log(`❌ Sally's mapping missing for ${sallysId.substring(0, 8)}`);
+          }
+
+          // Show final sample of all mappings including our manual ones
+          const allMappings = Array.from(this.vendorNameCache.entries()).slice(0, 10);
+          console.log('📝 Final cached vendors sample:', allMappings.map(([id, info]) => `${id.substring(0, 8)} -> "${info.name}"`));
+
+        } catch (error) {
+          console.error('❌ Error loading vendor names:', error.message);
+        }
+      }
+
+      async getVendorName(vendorId, fallbackName = null) {
+        if (this.vendorNameCache.has(vendorId)) {
+          return this.vendorNameCache.get(vendorId).name;
+        }
+        return fallbackName || vendorId.substring(0, 8);
+      }
+
+      async collectSpecificProducts() {
+        try {
+          // Get individual products with full details
+          const productsQuery = `
+            SELECT
+              id as product_id,
+              vendor_id,
+              name,
+              category,
+              brand,
+              retail_price,
+              status,
+              in_stock,
+              quantity_available,
+              created_at
+            FROM products
+            WHERE vendor_id IS NOT NULL
+              AND status != 'deleted'
+            ORDER BY created_at DESC
+            LIMIT 100
+          `;
+
+          const result = await this.productPool.query(productsQuery);
+
+          // Clear existing metrics
+          specificProductGauge.reset();
+
+          for (const row of result.rows) {
+            const vendorName = await this.getVendorName(row.vendor_id);
+
+            specificProductGauge.set({
+              vendor_id: row.vendor_id,
+              vendor_name: vendorName,
+              product_id: row.product_id,
+              product_name: row.name || 'Unnamed Product',
+              category: row.category || 'uncategorized',
+              brand: row.brand || 'unbranded',
+              price: row.retail_price || '0',
+              status: row.status || 'active',
+              in_stock: row.in_stock ? 'true' : 'false'
+            }, 1);
+          }
+          console.log(`📦 Updated ${result.rows.length} specific product details`);
+        } catch (error) {
+          console.error('❌ Error collecting specific products:', error);
+        }
+      }
+
+      async collectOrderDetails() {
+        try {
+          // First check orders table structure
+          const columnsQuery = `
+            SELECT column_name FROM information_schema.columns
+            WHERE table_name = 'orders' ORDER BY ordinal_position
+          `;
+          const columns = await this.orderPool.query(columnsQuery);
+          console.log('📋 Orders table columns:', columns.rows.map(r => r.column_name).slice(0, 10));
+
+          // Get individual orders with available details
+          const ordersQuery = `
+            SELECT
+              id as order_id,
+              seller_id as vendor_id,
+              seller_name as vendor_name,
+              buyer_name_or_company as buyer_name,
+              product_name,
+              total_price,
+              status,
+              payment_method,
+              created_at
+            FROM orders
+            WHERE seller_id IS NOT NULL
+            ORDER BY created_at DESC
+            LIMIT 50
+          `;
+
+          const result = await this.orderPool.query(ordersQuery);
+
+          // Clear existing metrics
+          orderDetailsGauge.reset();
+
+          for (const row of result.rows) {
+            const vendorName = await this.getVendorName(row.vendor_id, row.vendor_name);
+
+            orderDetailsGauge.set({
+              order_id: row.order_id,
+              vendor_id: row.vendor_id,
+              vendor_name: vendorName,
+              buyer_name: row.buyer_name || 'Anonymous',
+              product_name: row.product_name || 'Unknown Product',
+              total_price: row.total_price || '0',
+              status: row.status || 'unknown',
+              payment_method: row.payment_method || 'unknown'
+            }, 1);
+          }
+          console.log(`📋 Updated ${result.rows.length} order details`);
+        } catch (error) {
+          console.error('❌ Error collecting order details:', error.message);
+        }
+      }
+
+      async collectVendorProducts() {
+        try {
+          // Get actual VendFinder products by vendor and category
+          const productQuery = `
+            SELECT
+              vendor_id,
+              category,
+              status,
+              COUNT(*) as product_count,
+              SUM(CASE WHEN in_stock THEN 1 ELSE 0 END) as in_stock_count
+            FROM products
+            WHERE vendor_id IS NOT NULL
+            GROUP BY vendor_id, category, status
+          `;
+
+          const result = await this.productPool.query(productQuery);
+
+          // Clear existing metrics
+          vendorProductsGauge.reset();
+
+          for (const row of result.rows) {
+            const vendorName = await this.getVendorName(row.vendor_id);
+
+            vendorProductsGauge.set({
+              vendor_id: row.vendor_id,
+              vendor_name: vendorName,
+              category: row.category || 'uncategorized',
+              status: row.status || 'active'
+            }, parseInt(row.product_count));
+          }
+          console.log(`📦 Updated product metrics for ${result.rows.length} vendor/category combinations`);
+        } catch (error) {
+          console.error('❌ Error collecting vendor products:', error);
+        }
+      }
+
+      async collectVendorRevenue() {
+        try {
+          // Get actual VendFinder revenue by vendor from orders
+          const revenueQuery = `
+            SELECT
+              seller_id as vendor_id,
+              seller_name as vendor_name,
+              COUNT(*) as order_count,
+              SUM(seller_payout) as total_revenue,
+              SUM(total_price) as total_sales
+            FROM orders
+            WHERE seller_id IS NOT NULL
+              AND status IN ('processing', 'shipped', 'delivered', 'completed')
+            GROUP BY seller_id, seller_name
+          `;
+
+          const result = await this.orderPool.query(revenueQuery);
+
+          // Clear existing metrics
+          vendorRevenueGauge.reset();
+
+          for (const row of result.rows) {
+            const vendorName = await this.getVendorName(row.vendor_id, row.vendor_name);
+
+            vendorRevenueGauge.set({
+              vendor_id: row.vendor_id,
+              vendor_name: vendorName
+            }, parseFloat(row.total_revenue) || 0);
+          }
+          console.log(`💵 Updated revenue metrics for ${result.rows.length} vendors`);
+        } catch (error) {
+          console.error('❌ Error collecting vendor revenue:', error);
+        }
+      }
+
+      async collectOrderStatuses() {
+        try {
+          // Get actual order status distribution by vendor
+          const orderQuery = `
+            SELECT
+              seller_id as vendor_id,
+              seller_name as vendor_name,
+              status,
+              COUNT(*) as order_count
+            FROM orders
+            WHERE seller_id IS NOT NULL
+            GROUP BY seller_id, seller_name, status
+          `;
+
+          const result = await this.orderPool.query(orderQuery);
+
+          // Clear existing metrics
+          orderStatusGauge.reset();
+
+          for (const row of result.rows) {
+            const vendorName = await this.getVendorName(row.vendor_id, row.vendor_name);
+
+            orderStatusGauge.set({
+              vendor_id: row.vendor_id,
+              vendor_name: vendorName,
+              status: row.status || 'unknown'
+            }, parseInt(row.order_count));
+          }
+          console.log(`📋 Updated order status metrics for ${result.rows.length} vendor/status combinations`);
+        } catch (error) {
+          console.error('❌ Error collecting order statuses:', error);
+        }
+      }
+
+      async collectPaymentStatuses() {
+        try {
+          // Get payment status distribution by vendor
+          const paymentQuery = `
+            SELECT
+              seller_id as vendor_id,
+              seller_name as vendor_name,
+              payment_method,
+              COUNT(*) as payment_count,
+              SUM(CASE WHEN status IN ('delivered', 'completed') THEN 1 ELSE 0 END) as successful_payments
+            FROM orders
+            WHERE seller_id IS NOT NULL
+              AND payment_method IS NOT NULL
+            GROUP BY seller_id, seller_name, payment_method
+          `;
+
+          const result = await this.orderPool.query(paymentQuery);
+
+          // Clear existing metrics
+          paymentStatusGauge.reset();
+
+          for (const row of result.rows) {
+            const vendorName = await this.getVendorName(row.vendor_id, row.vendor_name);
+
+            paymentStatusGauge.set({
+              vendor_id: row.vendor_id,
+              vendor_name: vendorName,
+              payment_status: row.payment_method || 'unknown'
+            }, parseInt(row.successful_payments));
+          }
+          console.log(`💳 Updated payment status metrics for ${result.rows.length} vendor/payment combinations`);
+        } catch (error) {
+          console.error('❌ Error collecting payment statuses:', error);
+        }
+      }
+
+      async stop() {
+        if (this.intervalId) {
+          clearInterval(this.intervalId);
+        }
+        await Promise.all([
+          this.orderPool.end(),
+          this.productPool.end(),
+          this.vendorPool.end()
+        ]);
+      }
+    }
+
+    // Express app to serve metrics
+    const app = express();
+    const PORT = process.env.PORT || 9091;
+
+    app.get('/health', (req, res) => {
+      res.json({
+        status: 'healthy',
+        service: 'vendfinder-inventory-metrics',
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    app.get('/metrics', async (req, res) => {
+      try {
+        res.set('Content-Type', register.contentType);
+        const metrics = await register.metrics();
+        res.end(metrics);
+      } catch (error) {
+        console.error('❌ Error serving metrics:', error);
+        res.status(500).end('Error serving metrics');
+      }
+    });
+
+    const collector = new InventoryMetricsCollector();
+
+    // Graceful shutdown
+    process.on('SIGTERM', async () => {
+      console.log('🛑 Received SIGTERM, shutting down gracefully');
+      await collector.stop();
+      process.exit(0);
+    });
+
+    // Start everything
+    async function start() {
+      try {
+        await collector.start();
+        app.listen(PORT, () => {
+          console.log(`📊 VendFinder Inventory Metrics Collector running on port ${PORT}`);
+        });
+      } catch (error) {
+        console.error('💥 Failed to start metrics collector:', error);
+        process.exit(1);
+      }
+    }
+
+    start();
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-metrics
+  namespace: vendfinder
+  labels:
+    app: inventory-metrics
+    component: monitoring
+spec:
+  selector:
+    app: inventory-metrics
+  ports:
+  - name: metrics
+    port: 9091
+    targetPort: 9091
+    protocol: TCP
+  type: ClusterIP

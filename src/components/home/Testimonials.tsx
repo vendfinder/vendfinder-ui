@@ -1,6 +1,7 @@
 "use client";
 
 import { Star, Quote } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { testimonials } from "@/data/site";
 import {
   FadeIn,
@@ -9,16 +10,18 @@ import {
 } from "@/components/motion/MotionWrapper";
 
 export default function Testimonials() {
+  const t = useTranslations("testimonials");
+
   return (
     <section className="py-16 lg:py-24 bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn>
           <div className="text-center mb-14">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-2 block">
-              What people say
+              {t("whatPeopleSay")}
             </span>
             <h2 className="text-3xl sm:text-4xl font-display font-black text-foreground tracking-tight">
-              Trusted by Thousands
+              {t("trustedByThousands")}
             </h2>
           </div>
         </FadeIn>

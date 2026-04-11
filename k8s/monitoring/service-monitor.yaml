@@ -1,0 +1,72 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: vendfinder-services
+  namespace: vendfinder
+  labels:
+    app: vendfinder
+    component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: vendfinder
+  endpoints:
+  - port: http
+    interval: 30s
+    path: /metrics
+  namespaceSelector:
+    matchNames:
+    - vendfinder
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: vendfinder-monitoring
+  namespace: vendfinder
+  labels:
+    app: vendfinder-monitoring
+    component: monitoring
+spec:
+  selector:
+    matchLabels:
+      component: monitoring
+  endpoints:
+  - port: http
+    interval: 15s
+    path: /metrics
+  - port: metrics
+    interval: 15s
+    path: /metrics
+  namespaceSelector:
+    matchNames:
+    - vendfinder
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vendfinder-monitoring-discovery
+  namespace: vendfinder
+  labels:
+    app: vendfinder-monitoring
+    component: monitoring
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9091"
+    prometheus.io/path: "/metrics"
+spec:
+  selector:
+    component: monitoring
+  ports:
+  - name: prometheus
+    port: 9090
+    targetPort: 9090
+  - name: grafana
+    port: 3000
+    targetPort: 3000
+  - name: metrics
+    port: 9091
+    targetPort: 9091
+  type: ClusterIP

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vendor-service
+  namespace: vendfinder
+  labels:
+    app: vendor-service
+    environment: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vendor-service
+  template:
+    metadata:
+      labels:
+        app: vendor-service
+    spec:
+      imagePullSecrets:
+        - name: vendfinder-registry
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - prod-app
+      containers:
+        - name: vendor-service
+          image: registry.digitalocean.com/vendfinder-registry/vendor-service:latest
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vendor-service
+  namespace: vendfinder
+  labels:
+    app: vendor-service
+    environment: production
+spec:
+  type: ClusterIP
+  selector:
+    app: vendor-service
+  ports:
+    - port: 3000
+      targetPort: 3000

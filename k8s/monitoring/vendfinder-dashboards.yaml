@@ -1,0 +1,1128 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vendfinder-dashboards
+  namespace: vendfinder
+  labels:
+    app: grafana
+data:
+  vendor-analytics.json: |
+    {
+        "id": null,
+        "title": "VendFinder - Vendor Analytics",
+        "tags": ["vendfinder", "vendors"],
+        "style": "dark",
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Total Vendor Revenue",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(vendfinder_vendor_revenue_dollars)",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "custom": {},
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "red", "value": 80 }
+                  ]
+                },
+                "unit": "currencyUSD"
+              },
+              "overrides": []
+            },
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "values": false,
+                "calcs": ["lastNotNull"],
+                "fields": ""
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+          },
+          {
+            "id": 2,
+            "title": "Active Vendors",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "count(count by (vendor_name)(vendfinder_vendor_revenue_dollars))",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "custom": {},
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "green", "value": null }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "values": false,
+                "calcs": ["lastNotNull"],
+                "fields": ""
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+          },
+          {
+            "id": 3,
+            "title": "Vendor Revenue Breakdown",
+            "type": "barchart",
+            "targets": [
+              {
+                "expr": "vendfinder_vendor_revenue_dollars",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A",
+                "legendFormat": "{{ vendor_name }}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "palette-classic" },
+                "custom": {
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": { "legend": false, "tooltip": false, "vis": false },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": { "type": "linear" },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": { "group": "A", "mode": "none" },
+                  "thresholdsStyle": { "mode": "off" }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "red", "value": 80 }
+                  ]
+                },
+                "unit": "currencyUSD"
+              },
+              "overrides": []
+            },
+            "options": {
+              "legend": { "calcs": [], "displayMode": "visible", "placement": "bottom" },
+              "tooltip": { "mode": "single" }
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 24, "x": 0, "y": 8 }
+          },
+          {
+            "id": 4,
+            "title": "Orders by Status and Vendor",
+            "type": "table",
+            "targets": [
+              {
+                "expr": "vendfinder_orders_by_status",
+                "format": "table",
+                "instant": true,
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "custom": {
+                  "align": "auto",
+                  "displayMode": "auto"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "red", "value": 80 }
+                  ]
+                }
+              },
+              "overrides": []
+            },
+            "options": {
+              "showHeader": true
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 12, "x": 0, "y": 20 }
+          },
+          {
+            "id": 5,
+            "title": "Payment Status Distribution",
+            "type": "piechart",
+            "targets": [
+              {
+                "expr": "sum by (payment_status)(vendfinder_payments_by_status)",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A",
+                "legendFormat": "{{ payment_status }}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "palette-classic" },
+                "custom": {
+                  "hideFrom": { "legend": false, "tooltip": false, "vis": false }
+                },
+                "mappings": []
+              },
+              "overrides": []
+            },
+            "options": {
+              "reduceOptions": {
+                "values": false,
+                "calcs": ["lastNotNull"],
+                "fields": ""
+              },
+              "pieType": "pie",
+              "tooltip": { "mode": "single" },
+              "legend": { "displayMode": "visible", "placement": "right" }
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 12, "x": 12, "y": 20 }
+          }
+        ],
+        "time": { "from": "now-1h", "to": "now" },
+        "timepicker": {},
+        "templating": { "list": [] },
+        "annotations": { "list": [] },
+        "refresh": "5s",
+        "schemaVersion": 30,
+        "version": 0,
+        "links": []
+    }
+
+  vendor-details.json: |
+    {
+        "id": null,
+        "title": "VendFinder - Vendor Details (Granular)",
+        "tags": ["vendfinder", "vendors", "detailed"],
+        "style": "dark",
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Specific Products by Vendor",
+            "type": "table",
+            "targets": [
+              {
+                "expr": "vendfinder_specific_products",
+                "format": "table",
+                "instant": true,
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "custom": {
+                  "align": "auto",
+                  "displayMode": "auto"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "green", "value": null }
+                  ]
+                }
+              },
+              "overrides": [
+                {
+                  "matcher": { "id": "byName", "options": "vendor_name" },
+                  "properties": [
+                    { "id": "displayName", "value": "Vendor" }
+                  ]
+                },
+                {
+                  "matcher": { "id": "byName", "options": "product_name" },
+                  "properties": [
+                    { "id": "displayName", "value": "Product" }
+                  ]
+                },
+                {
+                  "matcher": { "id": "byName", "options": "price" },
+                  "properties": [
+                    { "id": "displayName", "value": "Price ($)" }
+                  ]
+                },
+                {
+                  "matcher": { "id": "byName", "options": "in_stock" },
+                  "properties": [
+                    { "id": "displayName", "value": "In Stock" }
+                  ]
+                }
+              ]
+            },
+            "options": {
+              "showHeader": true
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 24, "x": 0, "y": 0 }
+          },
+          {
+            "id": 2,
+            "title": "Recent Order Details",
+            "type": "table",
+            "targets": [
+              {
+                "expr": "vendfinder_order_details",
+                "format": "table",
+                "instant": true,
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "custom": {
+                  "align": "auto",
+                  "displayMode": "auto"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "green", "value": null }
+                  ]
+                }
+              },
+              "overrides": [
+                {
+                  "matcher": { "id": "byName", "options": "vendor_name" },
+                  "properties": [
+                    { "id": "displayName", "value": "Seller" }
+                  ]
+                },
+                {
+                  "matcher": { "id": "byName", "options": "buyer_name" },
+                  "properties": [
+                    { "id": "displayName", "value": "Buyer" }
+                  ]
+                },
+                {
+                  "matcher": { "id": "byName", "options": "product_name" },
+                  "properties": [
+                    { "id": "displayName", "value": "Product" }
+                  ]
+                },
+                {
+                  "matcher": { "id": "byName", "options": "total_price" },
+                  "properties": [
+                    { "id": "displayName", "value": "Total ($)" }
+                  ]
+                },
+                {
+                  "matcher": { "id": "byName", "options": "payment_method" },
+                  "properties": [
+                    { "id": "displayName", "value": "Payment" }
+                  ]
+                }
+              ]
+            },
+            "options": {
+              "showHeader": true
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 24, "x": 0, "y": 12 }
+          },
+          {
+            "id": 3,
+            "title": "Products by Vendor (Name Breakdown)",
+            "type": "barchart",
+            "targets": [
+              {
+                "expr": "sum by (vendor_name)(vendfinder_specific_products)",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A",
+                "legendFormat": "{{ vendor_name }}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "palette-classic" },
+                "custom": {
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": { "legend": false, "tooltip": false, "vis": false },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": { "type": "linear" },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": { "group": "A", "mode": "none" },
+                  "thresholdsStyle": { "mode": "off" }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "red", "value": 80 }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
+            "options": {
+              "legend": { "calcs": [], "displayMode": "visible", "placement": "bottom" },
+              "tooltip": { "mode": "single" }
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 24, "x": 0, "y": 24 }
+          }
+        ],
+        "time": { "from": "now-1h", "to": "now" },
+        "timepicker": {},
+        "templating": {
+          "list": [
+            {
+              "current": { "selected": false, "text": "All", "value": "$__all" },
+              "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+              "definition": "label_values(vendfinder_specific_products, vendor_name)",
+              "hide": 0,
+              "includeAll": true,
+              "label": "Vendor",
+              "multi": true,
+              "name": "vendor",
+              "options": [],
+              "query": {
+                "query": "label_values(vendfinder_specific_products, vendor_name)",
+                "refId": "StandardVariableQuery"
+              },
+              "refresh": 1,
+              "regex": "",
+              "skipUrlSync": false,
+              "sort": 0,
+              "type": "query"
+            }
+          ]
+        },
+        "annotations": { "list": [] },
+        "refresh": "5s",
+        "schemaVersion": 30,
+        "version": 0,
+        "links": []
+    }
+
+  vendor-profiles.json: |
+    {
+        "id": null,
+        "title": "VendFinder - Vendor Profiles",
+        "tags": ["vendfinder", "vendors", "profiles"],
+        "style": "dark",
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Vendor Performance Summary (Names)",
+            "type": "table",
+            "targets": [
+              {
+                "expr": "vendfinder_vendor_revenue_dollars",
+                "format": "table",
+                "instant": true,
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "custom": {
+                  "align": "auto",
+                  "displayMode": "auto"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "red", "value": 80 }
+                  ]
+                }
+              },
+              "overrides": [
+                {
+                  "matcher": { "id": "byName", "options": "Value" },
+                  "properties": [
+                    { "id": "unit", "value": "currencyUSD" },
+                    { "id": "custom.displayMode", "value": "color-background" },
+                    { "id": "displayName", "value": "Revenue ($)" }
+                  ]
+                },
+                {
+                  "matcher": { "id": "byName", "options": "vendor_name" },
+                  "properties": [
+                    { "id": "displayName", "value": "Vendor Name" }
+                  ]
+                },
+                {
+                  "matcher": { "id": "byName", "options": "vendor_id" },
+                  "properties": [
+                    { "id": "displayName", "value": "Vendor ID" }
+                  ]
+                }
+              ]
+            },
+            "options": {
+              "showHeader": true
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 24, "x": 0, "y": 0 }
+          },
+          {
+            "id": 2,
+            "title": "Product Inventory by Vendor",
+            "type": "table",
+            "targets": [
+              {
+                "expr": "sum by (vendor_name, vendor_id, category)(vendfinder_vendor_products_total)",
+                "format": "table",
+                "instant": true,
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "custom": {
+                  "align": "auto",
+                  "displayMode": "auto"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "yellow", "value": 5 },
+                    { "color": "red", "value": 10 }
+                  ]
+                }
+              },
+              "overrides": [
+                {
+                  "matcher": { "id": "byName", "options": "Value" },
+                  "properties": [
+                    { "id": "displayName", "value": "Product Count" },
+                    { "id": "custom.displayMode", "value": "color-background" }
+                  ]
+                },
+                {
+                  "matcher": { "id": "byName", "options": "vendor_name" },
+                  "properties": [
+                    { "id": "displayName", "value": "Vendor" }
+                  ]
+                },
+                {
+                  "matcher": { "id": "byName", "options": "category" },
+                  "properties": [
+                    { "id": "displayName", "value": "Category" }
+                  ]
+                }
+              ]
+            },
+            "options": {
+              "showHeader": true
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 12, "x": 0, "y": 12 }
+          },
+          {
+            "id": 3,
+            "title": "Vendor Activity - Orders by Status",
+            "type": "heatmap",
+            "targets": [
+              {
+                "expr": "vendfinder_orders_by_status",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A",
+                "legendFormat": "{{ vendor_name }} - {{ status }}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "spectrum" },
+                "custom": {}
+              },
+              "overrides": []
+            },
+            "options": {
+              "calculate": false,
+              "calculation": {},
+              "cellGap": 2,
+              "cellValues": {},
+              "color": { "exponent": 0.5, "fill": "dark-orange", "mode": "spectrum", "reverse": false, "scale": "exponential", "scheme": "Oranges", "steps": 64 },
+              "exemplars": { "color": "rgba(255,0,255,0.7)" },
+              "filterValues": { "le": 1e-9 },
+              "legend": { "show": false },
+              "rowsFrame": { "layout": "auto" },
+              "tooltip": { "show": true, "yHistogram": false },
+              "yAxis": { "axisPlacement": "left", "reverse": false, "unit": "short" }
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 12, "x": 12, "y": 12 }
+          }
+        ],
+        "time": { "from": "now-1h", "to": "now" },
+        "timepicker": {},
+        "templating": {
+          "list": [
+            {
+              "current": { "selected": false, "text": "All", "value": "$__all" },
+              "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+              "definition": "label_values(vendfinder_vendor_revenue_dollars, vendor_name)",
+              "hide": 0,
+              "includeAll": true,
+              "label": "Vendor",
+              "multi": true,
+              "name": "vendor",
+              "options": [],
+              "query": {
+                "query": "label_values(vendfinder_vendor_revenue_dollars, vendor_name)",
+                "refId": "StandardVariableQuery"
+              },
+              "refresh": 1,
+              "regex": "",
+              "skipUrlSync": false,
+              "sort": 0,
+              "type": "query"
+            }
+          ]
+        },
+        "annotations": { "list": [] },
+        "refresh": "5s",
+        "schemaVersion": 30,
+        "version": 0,
+        "links": []
+    }
+
+  product-analytics.json: |
+    {
+        "id": null,
+        "title": "VendFinder - Product Analytics",
+        "tags": ["vendfinder", "products", "inventory"],
+        "style": "dark",
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Total Products by Category",
+            "type": "piechart",
+            "targets": [
+              {
+                "expr": "sum by (category)(vendfinder_vendor_products_total)",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A",
+                "legendFormat": "{{ category }}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "palette-classic" },
+                "custom": {
+                  "hideFrom": { "legend": false, "tooltip": false, "vis": false }
+                },
+                "mappings": []
+              },
+              "overrides": []
+            },
+            "options": {
+              "reduceOptions": {
+                "values": false,
+                "calcs": ["lastNotNull"],
+                "fields": ""
+              },
+              "pieType": "pie",
+              "tooltip": { "mode": "single" },
+              "legend": { "displayMode": "visible", "placement": "right" }
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 12, "x": 0, "y": 0 }
+          },
+          {
+            "id": 2,
+            "title": "Products by Status",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum by (status)(vendfinder_vendor_products_total)",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "custom": {},
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "green", "value": null }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "values": false,
+                "calcs": ["lastNotNull"],
+                "fields": ""
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 12, "x": 12, "y": 0 }
+          },
+          {
+            "id": 3,
+            "title": "Vendor Product Distribution",
+            "type": "barchart",
+            "targets": [
+              {
+                "expr": "sum by (vendor_name)(vendfinder_vendor_products_total)",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A",
+                "legendFormat": "{{ vendor_name }}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "palette-classic" },
+                "custom": {
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "drawStyle": "line",
+                  "fillOpacity": 10,
+                  "gradientMode": "none",
+                  "hideFrom": { "legend": false, "tooltip": false, "vis": false },
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": { "type": "linear" },
+                  "showPoints": "never",
+                  "spanNulls": false,
+                  "stacking": { "group": "A", "mode": "none" },
+                  "thresholdsStyle": { "mode": "off" }
+                },
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "red", "value": 80 }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
+            "options": {
+              "legend": { "calcs": [], "displayMode": "visible", "placement": "bottom" },
+              "tooltip": { "mode": "single" }
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 24, "x": 0, "y": 12 }
+          },
+          {
+            "id": 4,
+            "title": "Product Inventory Details",
+            "type": "table",
+            "targets": [
+              {
+                "expr": "vendfinder_vendor_products_total",
+                "format": "table",
+                "instant": true,
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "custom": {
+                  "align": "auto",
+                  "displayMode": "auto"
+                },
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "yellow", "value": 5 },
+                    { "color": "red", "value": 10 }
+                  ]
+                }
+              },
+              "overrides": [
+                {
+                  "matcher": { "id": "byName", "options": "Value" },
+                  "properties": [
+                    { "id": "displayName", "value": "Count" },
+                    { "id": "custom.displayMode", "value": "color-background" }
+                  ]
+                }
+              ]
+            },
+            "options": {
+              "showHeader": true
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 24, "x": 0, "y": 24 }
+          }
+        ],
+        "time": { "from": "now-1h", "to": "now" },
+        "timepicker": {},
+        "templating": {
+          "list": [
+            {
+              "current": { "selected": false, "text": "All", "value": "$__all" },
+              "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+              "definition": "label_values(vendfinder_vendor_products_total, category)",
+              "hide": 0,
+              "includeAll": true,
+              "label": "Category",
+              "multi": true,
+              "name": "category",
+              "options": [],
+              "query": {
+                "query": "label_values(vendfinder_vendor_products_total, category)",
+                "refId": "StandardVariableQuery"
+              },
+              "refresh": 1,
+              "regex": "",
+              "skipUrlSync": false,
+              "sort": 0,
+              "type": "query"
+            }
+          ]
+        },
+        "annotations": { "list": [] },
+        "refresh": "5s",
+        "schemaVersion": 30,
+        "version": 0,
+        "links": []
+    }
+
+  overview-dashboard.json: |
+    {
+        "id": null,
+        "title": "VendFinder - Executive Overview",
+        "tags": ["vendfinder", "overview", "executive"],
+        "style": "dark",
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Platform Revenue",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(vendfinder_vendor_revenue_dollars)",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "custom": {},
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "green", "value": null }
+                  ]
+                },
+                "unit": "currencyUSD"
+              },
+              "overrides": []
+            },
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "values": false,
+                "calcs": ["lastNotNull"],
+                "fields": ""
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 8, "w": 6, "x": 0, "y": 0 }
+          },
+          {
+            "id": 2,
+            "title": "Active Vendors",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "count(count by (vendor_name)(vendfinder_vendor_revenue_dollars))",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "custom": {},
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "blue", "value": null }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "values": false,
+                "calcs": ["lastNotNull"],
+                "fields": ""
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 8, "w": 6, "x": 6, "y": 0 }
+          },
+          {
+            "id": 3,
+            "title": "Total Products",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(vendfinder_vendor_products_total)",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "custom": {},
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "purple", "value": null }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "values": false,
+                "calcs": ["lastNotNull"],
+                "fields": ""
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 8, "w": 6, "x": 12, "y": 0 }
+          },
+          {
+            "id": 4,
+            "title": "Total Orders",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(vendfinder_orders_by_status)",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "thresholds" },
+                "custom": {},
+                "mappings": [],
+                "thresholds": {
+                  "steps": [
+                    { "color": "orange", "value": null }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
+            "options": {
+              "colorMode": "value",
+              "graphMode": "area",
+              "justifyMode": "auto",
+              "orientation": "auto",
+              "reduceOptions": {
+                "values": false,
+                "calcs": ["lastNotNull"],
+                "fields": ""
+              },
+              "textMode": "auto"
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 8, "w": 6, "x": 18, "y": 0 }
+          },
+          {
+            "id": 5,
+            "title": "Revenue by Vendor",
+            "type": "piechart",
+            "targets": [
+              {
+                "expr": "vendfinder_vendor_revenue_dollars",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A",
+                "legendFormat": "{{ vendor_name }}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "palette-classic" },
+                "custom": {
+                  "hideFrom": { "legend": false, "tooltip": false, "vis": false }
+                },
+                "mappings": [],
+                "unit": "currencyUSD"
+              },
+              "overrides": []
+            },
+            "options": {
+              "reduceOptions": {
+                "values": false,
+                "calcs": ["lastNotNull"],
+                "fields": ""
+              },
+              "pieType": "pie",
+              "tooltip": { "mode": "single" },
+              "legend": { "displayMode": "visible", "placement": "right" }
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 12, "x": 0, "y": 8 }
+          },
+          {
+            "id": 6,
+            "title": "Order Status Breakdown",
+            "type": "piechart",
+            "targets": [
+              {
+                "expr": "sum by (status)(vendfinder_orders_by_status)",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A",
+                "legendFormat": "{{ status }}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": { "mode": "palette-classic" },
+                "custom": {
+                  "hideFrom": { "legend": false, "tooltip": false, "vis": false }
+                },
+                "mappings": []
+              },
+              "overrides": []
+            },
+            "options": {
+              "reduceOptions": {
+                "values": false,
+                "calcs": ["lastNotNull"],
+                "fields": ""
+              },
+              "pieType": "pie",
+              "tooltip": { "mode": "single" },
+              "legend": { "displayMode": "visible", "placement": "right" }
+            },
+            "pluginVersion": "10.1.0",
+            "gridPos": { "h": 12, "w": 12, "x": 12, "y": 8 }
+          }
+        ],
+        "time": { "from": "now-1h", "to": "now" },
+        "timepicker": {},
+        "templating": { "list": [] },
+        "annotations": { "list": [] },
+        "refresh": "30s",
+        "schemaVersion": 30,
+        "version": 0,
+        "links": [
+          {
+            "asDropdown": false,
+            "icon": "external link",
+            "includeVars": false,
+            "keepTime": false,
+            "tags": ["vendfinder"],
+            "targetBlank": false,
+            "title": "VendFinder Dashboards",
+            "tooltip": "",
+            "type": "dashboards",
+            "url": ""
+          }
+        ]
+    }

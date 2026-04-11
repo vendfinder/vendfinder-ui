@@ -1,6 +1,7 @@
 "use client";
 
 import { X, SlidersHorizontal, Layers } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { categories } from "@/data/categories";
 import { cn } from "@/lib/utils";
 
@@ -12,13 +13,13 @@ interface ProductFiltersProps {
   onClear: () => void;
 }
 
-const sortOptions = [
-  { value: "relevance", label: "Relevance" },
-  { value: "price-asc", label: "Price: Low to High" },
-  { value: "price-desc", label: "Price: High to Low" },
-  { value: "rating", label: "Highest Rated" },
-  { value: "newest", label: "Newest" },
-];
+const sortOptionKeys = [
+  { value: "relevance", key: "relevance" },
+  { value: "price-asc", key: "priceLowHigh" },
+  { value: "price-desc", key: "priceHighLow" },
+  { value: "rating", key: "highestRated" },
+  { value: "newest", key: "newest" },
+] as const;
 
 export default function ProductFilters({
   selectedCategory,
@@ -27,7 +28,13 @@ export default function ProductFilters({
   onSortChange,
   onClear,
 }: ProductFiltersProps) {
+  const t = useTranslations("sort");
   const hasFilters = selectedCategory || sortBy !== "relevance";
+
+  const sortOptions = sortOptionKeys.map((opt) => ({
+    value: opt.value,
+    label: t(opt.key),
+  }));
 
   return (
     <div className="space-y-6">
@@ -38,7 +45,7 @@ export default function ProductFilters({
             <SlidersHorizontal size={12} />
           </div>
           <label className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold">
-            Sort By
+            {t("sortBy")}
           </label>
         </div>
         <div className="space-y-1">
@@ -66,7 +73,7 @@ export default function ProductFilters({
             <Layers size={12} />
           </div>
           <label className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold">
-            Category
+            {t("category")}
           </label>
         </div>
         <div className="space-y-1">
@@ -79,7 +86,7 @@ export default function ProductFilters({
                 : "text-muted hover:bg-surface hover:text-foreground"
             )}
           >
-            All Categories
+            {t("allCategories")}
           </button>
           {categories.map((cat) => (
             <button
@@ -93,14 +100,6 @@ export default function ProductFilters({
               )}
             >
               {cat.name}
-              <span className={cn(
-                "text-[10px] font-bold px-1.5 py-0.5 rounded-md",
-                selectedCategory === cat.slug
-                  ? "bg-primary/15 text-primary"
-                  : "bg-surface text-muted/50"
-              )}>
-                {cat.productCount}
-              </span>
             </button>
           ))}
         </div>
@@ -113,7 +112,7 @@ export default function ProductFilters({
           className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 font-semibold transition-colors"
         >
           <X size={12} />
-          Clear Filters
+          {t("clearFilters")}
         </button>
       )}
     </div>

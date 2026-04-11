@@ -1,0 +1,38 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # VendFinder Services
+  - job_name: 'vendfinder-order-service'
+    static_configs:
+      - targets: ['order-service:3000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'vendfinder-product-service'
+    static_configs:
+      - targets: ['product-service:3000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'vendfinder-user-service'
+    static_configs:
+      - targets: ['user-service:3004']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'vendfinder-api-gateway'
+    static_configs:
+      - targets: ['api-gateway:3000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

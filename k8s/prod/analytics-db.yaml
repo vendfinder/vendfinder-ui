@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-db
+  namespace: vendfinder
+  labels:
+    app: analytics-db
+    environment: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-db
+  template:
+    metadata:
+      labels:
+        app: analytics-db
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - prod-heavy
+      containers:
+        - name: analytics-db
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: analytics-db-credentials
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              value: analytics_db
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: data
+              subPath: postgres
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: analytics-db-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-db
+  namespace: vendfinder
+  labels:
+    app: analytics-db
+    environment: production
+spec:
+  type: ClusterIP
+  selector:
+    app: analytics-db
+  ports:
+    - port: 5432
+      targetPort: 5432

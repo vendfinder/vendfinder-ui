@@ -1,11 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Outfit } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import BottomTabBar from "@/components/layout/BottomTabBar";
 import CartDrawer from "@/components/cart/CartDrawer";
+import ChatInitializer from "@/components/chat/ChatInitializer";
+import SupportChatButton from "@/components/chat/SupportChatButton";
+import CookieConsent from "@/components/CookieConsent";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -19,30 +25,53 @@ const outfit = Outfit({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "VendFinder — Find It. Love It. Own It.",
-  description:
-    "Discover trending products from top brands. Sneakers, electronics, streetwear, and more — all in one marketplace.",
+export const viewport: Viewport = {
+  viewportFit: "cover",
+  themeColor: "#0B0B0F",
 };
 
-export default function RootLayout({
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("metadata");
+  return {
+    title: t("title"),
+    description: t("description"),
+    manifest: "/manifest.json",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: "VendFinder",
+    },
+    icons: { apple: "/logo.png" },
+  };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body
         className={`${playfair.variable} ${outfit.variable} font-sans antialiased`}
       >
-        <AuthProvider>
-          <CartProvider>
-            <Navbar />
-            <main className="min-h-screen">{children}</main>
-            <Footer />
-            <CartDrawer />
-          </CartProvider>
-        </AuthProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AuthProvider>
+            <CartProvider>
+              <ChatInitializer />
+              <Navbar />
+              <main className="min-h-screen pb-[var(--tab-bar-height)]">{children}</main>
+              <Footer />
+              <CartDrawer />
+              <SupportChatButton />
+              <CookieConsent />
+              <BottomTabBar />
+            </CartProvider>
+          </AuthProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

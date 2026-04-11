@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-db
+  namespace: vendfinder-staging
+  labels:
+    app: chat-db
+    environment: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-db
+  template:
+    metadata:
+      labels:
+        app: chat-db
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - gateway
+      containers:
+        - name: chat-db
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: chat_db
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: chat-db-credentials
+                  key: password
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: chat-db-data
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+      volumes:
+        - name: chat-db-data
+          persistentVolumeClaim:
+            claimName: chat-db-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-db
+  namespace: vendfinder-staging
+  labels:
+    app: chat-db
+    environment: staging
+spec:
+  selector:
+    app: chat-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

@@ -1,0 +1,126 @@
+version: "3.8"
+
+networks:
+  vendfinder-net:
+    external: true
+
+volumes:
+  prometheus-data:
+  grafana-data:
+
+services:
+  # Prometheus - Metrics Collection
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: vendfinder-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.time=15d'
+    networks:
+      - vendfinder-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana - Visualization Dashboard
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: vendfinder-grafana
+    ports:
+      - "3001:3000"  # Using 3001 to avoid conflict with main app
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-dashboard.json:/var/lib/grafana/dashboards/vendfinder-dashboard.json:ro
+      - ./grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+      - ./grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=vendfinder123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
+    networks:
+      - vendfinder-net
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # VendFinder Inventory Metrics Collector
+  inventory-metrics:
+    build:
+      context: ..
+      dockerfile: monitoring/Dockerfile.metrics
+    container_name: vendfinder-inventory-metrics
+    ports:
+      - "9091:9091"
+    environment:
+      - PORT=9091
+      - ORDER_DB_URL=postgresql://vendfinder:vendfinder_pass@order-db:5432/order_db
+      - PRODUCT_DB_URL=postgresql://vendfinder:vendfinder_pass@product-db:5432/product_db
+      - USER_DB_URL=postgresql://vendfinder:vendfinder_pass@user-db:5432/user_db
+      - METRICS_COLLECT_INTERVAL=30000
+    networks:
+      - vendfinder-net
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Node Exporter - System Metrics
+  node-exporter:
+    image: prom/node-exporter:v1.6.1
+    container_name: vendfinder-node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude'
+      - '^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
+    networks:
+      - vendfinder-net
+    restart: unless-stopped
+
+  # cAdvisor - Container Metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    container_name: vendfinder-cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - vendfinder-net
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - /dev/kmsg

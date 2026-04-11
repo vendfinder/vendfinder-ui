@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "VendFinder",
+    "slug": "vendfinder",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "vendfinder",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0B0F"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.vendfinder.app",
+      "backgroundColor": "#0B0B0F",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Upload product images and profile photos",
+        "NSCameraUsageDescription": "Take photos of items to list for sale"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0B0B0F"
+      },
+      "package": "com.vendfinder.app"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow VendFinder to access your photos to list items for sale."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

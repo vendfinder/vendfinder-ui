@@ -7,7 +7,6 @@ export const categories: Category[] = [
     description: "Exclusive drops and classic kicks from top brands",
     image: "/images/categories/sneakers.jpg",
     icon: "Footprints",
-    productCount: 5,
   },
   {
     slug: "electronics",
@@ -15,15 +14,13 @@ export const categories: Category[] = [
     description: "Latest gadgets, audio gear, and tech accessories",
     image: "/images/categories/electronics.jpg",
     icon: "Smartphone",
-    productCount: 5,
   },
   {
-    slug: "streetwear",
-    name: "Streetwear",
+    slug: "apparel",
+    name: "Apparel",
     description: "Trending hoodies, tees, and urban fashion",
-    image: "/images/categories/streetwear.jpg",
+    image: "/images/categories/apparel.jpg",
     icon: "Shirt",
-    productCount: 5,
   },
   {
     slug: "home-living",
@@ -31,7 +28,6 @@ export const categories: Category[] = [
     description: "Elevate your space with modern home essentials",
     image: "/images/categories/home-living.jpg",
     icon: "Home",
-    productCount: 5,
   },
   {
     slug: "accessories",
@@ -39,7 +35,6 @@ export const categories: Category[] = [
     description: "Watches, bags, jewelry, and everyday carry",
     image: "/images/categories/accessories.jpg",
     icon: "Watch",
-    productCount: 5,
   },
   {
     slug: "collectibles",
@@ -47,7 +42,6 @@ export const categories: Category[] = [
     description: "Limited edition figures, cards, and rare finds",
     image: "/images/categories/collectibles.jpg",
     icon: "Trophy",
-    productCount: 4,
   },
 ];
 

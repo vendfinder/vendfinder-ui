@@ -1,0 +1,9 @@
+🚨 VENDFINDER STRIPE EMERGENCY ROLLBACK 🚨
+
+If Stripe payments break, run this command immediately:
+
+kubectl set image deployment/frontend -n vendfinder frontend=registry.digitalocean.com/vendfinder-registry/frontend:stable-backup-stripe-working-20260408
+
+This restores the verified working Stripe integration from April 8, 2026.
+
+For full instructions, see: BACKUP_AND_RECOVERY.md
