@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vendfinder-config-production
+  namespace: vendfinder
+data:
+  # Production-specific configuration
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "warn"
+  # External URLs for production
+  FRONTEND_URL: "https://vendfinder.com"
+  API_URL: "https://api.vendfinder.com"
+  # Production database URLs
+  USER_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@user-db:5432/user_db"
+  CHAT_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@chat-db:5432/chat_db"
+  PRODUCT_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@product-db:5432/product_db"
+  ORDER_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@order-db:5432/order_db"
+  # Security settings
+  SECURE_COOKIES: "true"
+  TRUST_PROXY: "true"
+  # Performance settings
+  CACHE_TTL: "300"
+  MAX_REQUEST_SIZE: "50mb"

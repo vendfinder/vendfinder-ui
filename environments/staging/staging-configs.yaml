@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vendfinder-config-staging
+  namespace: vendfinder
+data:
+  # Staging-specific overrides
+  LOG_LEVEL: "debug"
+  ENVIRONMENT: "staging"
+  # External URLs for staging
+  FRONTEND_URL: "https://staging.vendfinder.com"
+  API_URL: "https://api-staging.vendfinder.com"
+  # Database URLs (staging cluster)
+  USER_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@user-db:5432/user_db_staging"
+  CHAT_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@chat-db:5432/chat_db_staging"
+  PRODUCT_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@product-db:5432/product_db_staging"
+  ORDER_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@order-db:5432/order_db_staging"
+  # Test keys and endpoints
+  STRIPE_PUBLISHABLE_KEY: "pk_test_staging_key"
+  STRIPE_MODE: "test"

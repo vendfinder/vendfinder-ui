@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: vendfinder
+
+resources:
+  - namespace.yaml
+  - common-configs.yaml
+
+labels:
+- includeSelectors: true
+  pairs:
+    app: vendfinder
+    version: v1.0.0
+
+images:
+  - name: registry.digitalocean.com/vendfinder-registry/frontend
+    newTag: v1.0.0
+  - name: registry.digitalocean.com/vendfinder-registry/user-service
+    newTag: v1.0.0
+  - name: registry.digitalocean.com/vendfinder-registry/chat-service
+    newTag: v1.0.0
+  - name: registry.digitalocean.com/vendfinder-registry/product-service
+    newTag: v1.0.0
+  - name: registry.digitalocean.com/vendfinder-registry/order-service
+    newTag: v1.0.0
+  - name: registry.digitalocean.com/vendfinder-registry/websocket-service
+    newTag: v1.0.0
+  - name: registry.digitalocean.com/vendfinder-registry/support-bot
+    newTag: v1.0.0
+  - name: registry.digitalocean.com/vendfinder-registry/api-gateway
+    newTag: v1.0.0

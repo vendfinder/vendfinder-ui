@@ -12,6 +12,25 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Service build directories
+    ".chat-service-build/**",
+    "api-gateway-build/**",
+    "chat-service/**",
+    "order-service/**",
+    "product-service/**",
+    "user-service-oauth/**",
+    "websocket-service/**",
+    "support-bot/**",
+    // Other build/generated directories
+    "dist/**",
+    "node_modules/**",
+    "*.tsbuildinfo",
+    // Monitoring
+    "monitoring/**",
+    // Mobile
+    "mobile/**",
+    // Environment configuration files (our new files)
+    "environments/**",
   ]),
 ]);
 

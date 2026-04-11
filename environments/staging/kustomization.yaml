@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: vendfinder
+
+resources:
+  - ../base
+  - staging-configs.yaml
+
+labels:
+- includeSelectors: true
+  pairs:
+    environment: staging
+
+namePrefix: staging-
+
+images:
+  - name: registry.digitalocean.com/vendfinder-registry/frontend
+    newTag: staging-latest
+  - name: registry.digitalocean.com/vendfinder-registry/user-service
+    newTag: staging-latest
+  - name: registry.digitalocean.com/vendfinder-registry/chat-service
+    newTag: staging-latest
+  - name: registry.digitalocean.com/vendfinder-registry/product-service
+    newTag: staging-latest
+  - name: registry.digitalocean.com/vendfinder-registry/order-service
+    newTag: staging-latest
+  - name: registry.digitalocean.com/vendfinder-registry/websocket-service
+    newTag: staging-latest
+  - name: registry.digitalocean.com/vendfinder-registry/support-bot
+    newTag: staging-latest
+  - name: registry.digitalocean.com/vendfinder-registry/api-gateway
+    newTag: staging-latest

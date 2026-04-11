@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vendfinder-config
+  namespace: vendfinder
+data:
+  # Common configuration for all environments
+  APP_NAME: "VendFinder"
+  LOG_LEVEL: "info"
+  NODE_ENV: "production"
+  CORS_ORIGIN: "*"
+  # Service URLs (internal cluster communication)
+  USER_SERVICE_URL: "http://user-service:3004"
+  CHAT_SERVICE_URL: "http://chat-service:3005"
+  WEBSOCKET_SERVICE_URL: "http://websocket-service:3006"
+  PRODUCT_SERVICE_URL: "http://product-service:3000"
+  ORDER_SERVICE_URL: "http://order-service:3000"
+  SUPPORT_BOT_URL: "http://support-bot:3009"
+  # Redis and database connection patterns
+  REDIS_URL: "redis://redis:6379"
+  # Monitoring
+  METRICS_ENABLED: "true"
+  HEALTH_CHECK_INTERVAL: "30s"
