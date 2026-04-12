@@ -14,13 +14,9 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
 const promClient = require('prom-client');
-const {
-  initTranslation,
-  detectLanguage,
-  translateText,
-  translateToMultiple,
-  getSupportedLanguages
-} = require('./lib/translation.js');
+// Translation service will be initialized after Redis is set up
+let translationService = null;
+let translationEnabled = false;
 
 const app = express();
 const server = http.createServer(app);
@@ -80,6 +76,40 @@ if (REDIS_URL) {
   console.log('Redis connected for pub/sub');
 }
 
+// Initialize translation service
+translationService = require('./lib/translation.js')(redis);
+translationEnabled = translationService.init();
+
+// Add compatibility functions for the expected interface
+async function detectLanguage(text) {
+  // Basic language detection - fallback to English
+  return translationService.detectSourceLocale(text) || 'en';
+}
+
+async function translateText(text, fromLang, toLang) {
+  if (!translationEnabled) return text;
+  // Use cachedTranslate if available
+  return translationService.cachedTranslate ?
+    translationService.cachedTranslate(text, fromLang, toLang) : text;
+}
+
+async function translateToMultiple(text, fromLang, toLangs) {
+  if (!translationEnabled) return {};
+  const translations = {};
+  for (const lang of toLangs) {
+    try {
+      translations[lang] = await translateText(text, fromLang, lang);
+    } catch (err) {
+      translations[lang] = text; // fallback to original
+    }
+  }
+  return translations;
+}
+
+function getSupportedLanguages() {
+  return translationService.ALL_LOCALES || ['en-US', 'es-MX', 'zh-CN', 'fr-FR', 'de-DE'];
+}
+
 // In-memory connections map (userId -> Set of WebSocket connections)
 const connections = new Map();
 
@@ -111,8 +141,7 @@ app.get('/metrics', async (req, res) => {
   res.end(await register.metrics());
 });
 
-// Initialize translation service
-initTranslation();
+// Translation service initialized after Redis setup above
 
 // Run schema on startup
 async function initDatabase() {
