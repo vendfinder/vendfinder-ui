@@ -33,7 +33,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Run ESLint
-        run: npx eslint . --ext .ts,.tsx,.js,.jsx --format=github
+        run: npx eslint . --ext .ts,.tsx,.js,.jsx
 
       - name: Check code formatting with Prettier
         run: npx prettier --check "src/**/*.{ts,tsx,js,jsx,json,css,md}"
