@@ -1,0 +1,675 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - 'release/**'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy (e.g., v1.2.3)'
+        required: true
+        type: string
+      skip_tests:
+        description: 'Skip E2E tests (emergency deployment)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  KUBE_NAMESPACE: vendfinder
+  REGISTRY: registry.digitalocean.com/vendfinder-registry
+  PROD_URL: https://vendfinder.com
+  API_URL: https://api.vendfinder.com
+
+jobs:
+  pre-production-checks:
+    name: Pre-Production Safety Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      staging-verified: ${{ steps.staging.outputs.verified }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            # Extract version from release branch name (release/v1.2.3 -> v1.2.3)
+            VERSION=$(echo "${{ github.ref }}" | sed 's/refs\/heads\/release\///')
+          fi
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "🎯 Production deployment version: ${VERSION}"
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version format: $VERSION"
+            echo "Expected format: v1.2.3"
+            exit 1
+          fi
+          echo "✅ Version format is valid: $VERSION"
+
+      - name: Check if staging deployment exists
+        id: staging
+        run: |
+          echo "🔍 Checking staging deployment status..."
+
+          # Check if staging environment is healthy before production deployment
+          if curl -f --max-time 30 "https://staging.vendfinder.com/api/health" > /dev/null 2>&1; then
+            echo "✅ Staging environment is healthy"
+            echo "verified=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Staging environment is not responding"
+            echo "verified=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Verify no breaking changes
+        run: |
+          echo "🔍 Analyzing changes for breaking changes..."
+
+          # Get the latest tag for comparison
+          if ! git describe --tags --abbrev=0 > /dev/null 2>&1; then
+            echo "⚠️ No previous tags found - treating as initial release"
+            exit 0
+          fi
+
+          LAST_TAG=$(git describe --tags --abbrev=0)
+
+          # Check for breaking changes in commit messages
+          if git log ${LAST_TAG}..HEAD --oneline | grep -E "BREAKING CHANGE|feat!" > /dev/null; then
+            echo "⚠️ Breaking changes detected - manual review required"
+            echo "Breaking changes found in this release. Please review carefully."
+            git log ${LAST_TAG}..HEAD --oneline | grep -E "BREAKING CHANGE|feat!" || true
+          else
+            echo "✅ No breaking changes detected"
+          fi
+
+      - name: Security validation
+        run: |
+          echo "🛡️ Running pre-deployment security checks..."
+
+          # Check for common security issues in workflow
+          if grep -r "password\|secret\|key" .github/workflows/ | grep -v "secrets\." | head -5; then
+            echo "⚠️ Found potential hardcoded secrets in workflows"
+          else
+            echo "✅ No hardcoded secrets detected in workflows"
+          fi
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: pre-production-checks
+    environment:
+      name: production
+      url: https://vendfinder.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl for DigitalOcean
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+          # Silent cluster validation without exposing sensitive info
+          if kubectl auth can-i get pods -n ${{ env.KUBE_NAMESPACE }} > /dev/null 2>&1; then
+            echo "✅ kubectl authentication successful"
+          else
+            echo "❌ kubectl authentication failed"
+            exit 1
+          fi
+
+      - name: Setup Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Backup current production state
+        run: |
+          echo "💾 Creating backup of current production state..."
+
+          # Create backup directory
+          mkdir -p /tmp/backup
+
+          # Get current production image tags for rollback
+          kubectl get deployments -n ${{ env.KUBE_NAMESPACE }} -o yaml > /tmp/backup/deployments-backup.yaml
+
+          # Store current images for quick rollback reference
+          kubectl get deployments -n ${{ env.KUBE_NAMESPACE }} \
+            -o jsonpath='{range .items[*]}{.metadata.name}:{.spec.template.spec.containers[0].image}{"\n"}{end}' \
+            > /tmp/backup/current-images.txt
+
+          echo "✅ Backup completed"
+          echo "📋 Current production images:"
+          cat /tmp/backup/current-images.txt
+
+      - name: Validate deployment prerequisites
+        run: |
+          echo "🔍 Validating deployment prerequisites..."
+
+          VERSION="${{ needs.pre-production-checks.outputs.version }}"
+
+          # Check if production namespace exists
+          if kubectl get namespace ${{ env.KUBE_NAMESPACE }} > /dev/null 2>&1; then
+            echo "✅ Production namespace exists"
+          else
+            echo "❌ Production namespace not found"
+            exit 1
+          fi
+
+          # Verify required secrets exist
+          required_secrets=("kubeconfig")
+          for secret in "${required_secrets[@]}"; do
+            if [ -z "${{ secrets[secret] }}" ]; then
+              echo "❌ Required secret not found: $secret"
+              exit 1
+            fi
+          done
+          echo "✅ All required secrets are available"
+
+      - name: Update production image tags
+        run: |
+          cd environments/production
+
+          VERSION="${{ needs.pre-production-checks.outputs.version }}"
+          echo "🔧 Updating production images to version: $VERSION"
+
+          # Update all service image tags with production version
+          kustomize edit set image \
+            registry.digitalocean.com/vendfinder-registry/frontend:$VERSION \
+            registry.digitalocean.com/vendfinder-registry/user-service-oauth:$VERSION \
+            registry.digitalocean.com/vendfinder-registry/chat-service:$VERSION \
+            registry.digitalocean.com/vendfinder-registry/product-service:$VERSION \
+            registry.digitalocean.com/vendfinder-registry/order-service:$VERSION \
+            registry.digitalocean.com/vendfinder-registry/websocket-service:$VERSION \
+            registry.digitalocean.com/vendfinder-registry/support-bot:$VERSION \
+            registry.digitalocean.com/vendfinder-registry/api-gateway-build:$VERSION
+
+          echo "✅ Image tags updated"
+
+      - name: Generate and validate production manifests
+        run: |
+          echo "📋 Generating production manifests..."
+
+          kubectl kustomize environments/production > /tmp/production-deployment.yaml
+
+          # Validate manifests
+          kubectl --dry-run=client apply -f /tmp/production-deployment.yaml
+
+          echo "✅ Production manifests validated"
+
+      - name: Deploy to production with rolling update
+        run: |
+          echo "🚀 Starting production deployment..."
+          VERSION="${{ needs.pre-production-checks.outputs.version }}"
+          DEPLOY_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          # Apply the deployment
+          kubectl apply -f /tmp/production-deployment.yaml
+
+          # Annotate all deployments with version info
+          deployments=("frontend" "user-service" "chat-service" "product-service" "order-service" "websocket-service" "support-bot" "api-gateway")
+
+          for deployment in "${deployments[@]}"; do
+            kubectl annotate deployment $deployment -n ${{ env.KUBE_NAMESPACE }} \
+              vendfinder.com/deployed-version="$VERSION" \
+              vendfinder.com/deployed-at="$DEPLOY_TIME" \
+              vendfinder.com/deployed-by="github-actions" \
+              vendfinder.com/backup-available="true" \
+              vendfinder.com/environment="production" \
+              --overwrite || echo "Warning: Failed to annotate $deployment"
+          done
+
+          echo "✅ Deployment initiated"
+
+      - name: Monitor deployment progress
+        run: |
+          echo "⏳ Monitoring deployment rollout..."
+
+          # Function to check deployment status with enhanced error handling
+          check_deployment() {
+            local deployment=$1
+            local namespace=$2
+            local timeout=${3:-600}
+
+            echo "🔍 Checking $deployment deployment..."
+
+            # Check if deployment exists
+            if ! kubectl get deployment/$deployment -n $namespace > /dev/null 2>&1; then
+              echo "❌ $deployment deployment not found"
+              return 1
+            fi
+
+            # Monitor rollout status with timeout
+            if kubectl rollout status deployment/$deployment -n $namespace --timeout=${timeout}s; then
+              echo "✅ $deployment deployment successful"
+
+              # Verify pod status
+              local ready_pods=$(kubectl get deployment/$deployment -n $namespace -o jsonpath='{.status.readyReplicas}' 2>/dev/null || echo "0")
+              local desired_pods=$(kubectl get deployment/$deployment -n $namespace -o jsonpath='{.spec.replicas}' 2>/dev/null || echo "1")
+
+              if [ "$ready_pods" -eq "$desired_pods" ] && [ "$ready_pods" -gt 0 ]; then
+                echo "✅ $deployment has $ready_pods/$desired_pods pods ready"
+                return 0
+              else
+                echo "⚠️ $deployment pod count mismatch: $ready_pods/$desired_pods"
+                return 1
+              fi
+            else
+              echo "❌ $deployment deployment failed or timed out"
+              return 1
+            fi
+          }
+
+          # Check each deployment with individual timeouts
+          deployments=("frontend" "user-service" "chat-service" "product-service" "order-service" "websocket-service" "support-bot" "api-gateway")
+
+          failed_deployments=()
+          for deployment in "${deployments[@]}"; do
+            if ! check_deployment "$deployment" "${{ env.KUBE_NAMESPACE }}" 600; then
+              failed_deployments+=("$deployment")
+
+              # Show deployment status for debugging
+              echo "📊 Debug info for $deployment:"
+              kubectl describe deployment/$deployment -n ${{ env.KUBE_NAMESPACE }} | tail -20 || true
+            fi
+
+            # Small delay between checks
+            sleep 5
+          done
+
+          if [ ${#failed_deployments[@]} -gt 0 ]; then
+            echo "❌ Failed deployments: ${failed_deployments[*]}"
+            echo "🔍 Pod status summary:"
+            kubectl get pods -n ${{ env.KUBE_NAMESPACE }} -l environment=production || true
+            exit 1
+          fi
+
+          echo "✅ All deployments completed successfully"
+
+      - name: Run production health checks
+        run: |
+          echo "🏥 Running production health checks..."
+
+          # Wait for services to stabilize
+          echo "⏳ Waiting 120 seconds for services to stabilize..."
+          sleep 120
+
+          # Production health check function
+          check_endpoint() {
+            local url=$1
+            local description=$2
+            local max_attempts=3
+            local attempt=1
+
+            while [ $attempt -le $max_attempts ]; do
+              echo "🔍 Checking $description (attempt $attempt/$max_attempts)..."
+
+              if curl -f --max-time 30 "$url" > /dev/null 2>&1; then
+                echo "✅ $description is responding"
+                return 0
+              fi
+
+              echo "⚠️ $description check failed, retrying..."
+              sleep 10
+              ((attempt++))
+            done
+
+            echo "❌ $description failed after $max_attempts attempts"
+            return 1
+          }
+
+          # Critical health checks
+          failed_checks=()
+
+          if ! check_endpoint "${{ env.PROD_URL }}/" "Main site"; then
+            failed_checks+=("main-site")
+          fi
+
+          if ! check_endpoint "${{ env.PROD_URL }}/api/health" "API health"; then
+            failed_checks+=("api-health")
+          fi
+
+          if ! check_endpoint "${{ env.PROD_URL }}/api/users/health" "User service"; then
+            failed_checks+=("user-service")
+          fi
+
+          if ! check_endpoint "${{ env.PROD_URL }}/api/products/health" "Product service"; then
+            failed_checks+=("product-service")
+          fi
+
+          if ! check_endpoint "${{ env.PROD_URL }}/api/orders/health" "Order service"; then
+            failed_checks+=("order-service")
+          fi
+
+          if [ ${#failed_checks[@]} -gt 0 ]; then
+            echo "❌ Failed health checks: ${failed_checks[*]}"
+            exit 1
+          fi
+
+          echo "✅ All health checks passed"
+
+      - name: Run production smoke tests
+        if: ${{ github.event.inputs.skip_tests != 'true' }}
+        run: |
+          echo "🧪 Running production smoke tests..."
+
+          # Install dependencies
+          npm ci
+          npx playwright install chromium
+
+          # Set production environment for tests
+          export PLAYWRIGHT_BASE_URL="${{ env.PROD_URL }}"
+          export TEST_ENV="production"
+
+          # Run critical smoke tests only
+          if npm run test:e2e -- --grep="@smoke" --timeout=60000; then
+            echo "✅ Production smoke tests passed"
+          else
+            echo "❌ Production smoke tests failed"
+            exit 1
+          fi
+
+      - name: Performance baseline check
+        run: |
+          echo "⚡ Running performance baseline check..."
+
+          # Function to measure response time
+          measure_response_time() {
+            local url=$1
+            local description=$2
+
+            echo "📊 Measuring response time for $description..."
+
+            # Measure response time with curl
+            local response_time=$(curl -o /dev/null -s -w "%{time_total}" "$url" --max-time 10)
+            local response_time_ms=$(echo "$response_time * 1000" | bc -l | cut -d. -f1)
+
+            echo "⏱️ $description response time: ${response_time_ms}ms"
+
+            # Alert if response time > 3 seconds for main page, 5 seconds for API
+            local threshold=3000
+            if [[ "$description" == *"API"* ]]; then
+              threshold=5000
+            fi
+
+            if [ "$response_time_ms" -gt "$threshold" ]; then
+              echo "⚠️ High response time detected for $description: ${response_time_ms}ms (threshold: ${threshold}ms)"
+              return 1
+            else
+              echo "✅ $description response time within acceptable range"
+              return 0
+            fi
+          }
+
+          # Install bc for calculations if not available
+          if ! command -v bc > /dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y bc
+          fi
+
+          performance_issues=()
+
+          if ! measure_response_time "${{ env.PROD_URL }}/" "Main page"; then
+            performance_issues+=("main-page")
+          fi
+
+          if ! measure_response_time "${{ env.PROD_URL }}/api/health" "API health"; then
+            performance_issues+=("api-health")
+          fi
+
+          if [ ${#performance_issues[@]} -gt 0 ]; then
+            echo "⚠️ Performance issues detected: ${performance_issues[*]}"
+            echo "Consider investigating performance after deployment"
+          else
+            echo "✅ All performance checks passed"
+          fi
+
+      - name: Update production deployment record
+        run: |
+          VERSION="${{ needs.pre-production-checks.outputs.version }}"
+          DEPLOY_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          # Create comprehensive deployment record
+          cat > /tmp/deployment-record.json << EOF
+          {
+            "version": "$VERSION",
+            "deployedAt": "$DEPLOY_TIME",
+            "deployedBy": "github-actions",
+            "branch": "${{ github.ref }}",
+            "commit": "${{ github.sha }}",
+            "commitMessage": "${{ github.event.head_commit.message }}",
+            "environment": "production",
+            "status": "successful",
+            "healthChecks": "passed",
+            "smokeTests": "${{ github.event.inputs.skip_tests != 'true' && 'passed' || 'skipped' }}",
+            "performanceCheck": "completed",
+            "rolloutDuration": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "backupAvailable": true
+          }
+          EOF
+
+          echo "📝 Deployment record created:"
+          cat /tmp/deployment-record.json
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          VERSION="${{ needs.pre-production-checks.outputs.version }}"
+          DEPLOY_TIME=$(date -u)
+
+          echo "🎉 Production deployment successful!"
+          echo "Version: $VERSION"
+          echo "URL: ${{ env.PROD_URL }}"
+          echo "Deployed at: $DEPLOY_TIME"
+
+          # Send success notification to Slack if webhook is configured
+          if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+            curl -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"🚀 VendFinder production deployment successful!\n*Version:* $VERSION\n*URL:* ${{ env.PROD_URL }}\n*Commit:* \`${{ github.sha }}\`\n*Deployed by:* GitHub Actions\n*Time:* $DEPLOY_TIME\"}" \
+              ${{ secrets.SLACK_WEBHOOK_URL }}
+          fi
+
+  post-deployment-monitoring:
+    name: Post-Deployment Monitoring
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [pre-production-checks, deploy-production]
+    if: success()
+
+    steps:
+      - name: Monitor for 10 minutes
+        run: |
+          echo "👀 Monitoring production for 10 minutes..."
+
+          end_time=$(($(date +%s) + 600)) # 10 minutes from now
+          check_interval=60 # Check every minute
+          failed_checks=0
+          max_failures=2 # Allow 2 consecutive failures before alerting
+
+          while [ $(date +%s) -lt $end_time ]; do
+            current_time=$(date)
+
+            # Check if site is still responding
+            if curl -f --max-time 10 "${{ env.PROD_URL }}/api/health" > /dev/null 2>&1; then
+              echo "✅ $current_time: Health check passed"
+              failed_checks=0 # Reset failure counter
+            else
+              ((failed_checks++))
+              echo "⚠️ $current_time: Health check failed ($failed_checks/$max_failures)"
+
+              if [ $failed_checks -ge $max_failures ]; then
+                echo "❌ Multiple consecutive health check failures detected!"
+                echo "🚨 Production may be experiencing issues"
+                exit 1
+              fi
+            fi
+
+            sleep $check_interval
+          done
+
+          echo "✅ 10-minute monitoring period completed successfully"
+
+      - name: Final deployment confirmation
+        run: |
+          VERSION="${{ needs.pre-production-checks.outputs.version }}"
+
+          echo "🎯 Production deployment of $VERSION confirmed stable"
+          echo "📊 Monitoring period completed successfully"
+          echo "🚀 Deployment is ready for users"
+
+          # Final success notification
+          if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+            curl -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"✅ VendFinder $VERSION deployment confirmed stable after 10-minute monitoring period\n🚀 Production is ready for users!\"}" \
+              ${{ secrets.SLACK_WEBHOOK_URL }}
+          fi
+
+  rollback-on-failure:
+    name: Emergency Rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [pre-production-checks, deploy-production]
+    if: failure()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl for DigitalOcean
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Execute emergency rollback
+        run: |
+          echo "🚨 Production deployment failed - executing emergency rollback..."
+
+          VERSION="${{ needs.pre-production-checks.outputs.version }}"
+
+          # Function to rollback deployment with verification
+          rollback_deployment() {
+            local deployment=$1
+            local namespace=$2
+
+            echo "🔄 Rolling back $deployment..."
+
+            if kubectl rollout undo deployment/$deployment -n $namespace; then
+              echo "⏳ Waiting for $deployment rollback to complete..."
+              if kubectl rollout status deployment/$deployment -n $namespace --timeout=300s; then
+                echo "✅ $deployment rollback successful"
+                return 0
+              else
+                echo "❌ $deployment rollback status check failed"
+                return 1
+              fi
+            else
+              echo "❌ $deployment rollback command failed"
+              return 1
+            fi
+          }
+
+          # Rollback all deployments
+          deployments=("frontend" "user-service" "chat-service" "product-service" "order-service" "websocket-service" "support-bot" "api-gateway")
+
+          failed_rollbacks=()
+          successful_rollbacks=()
+
+          for deployment in "${deployments[@]}"; do
+            if rollback_deployment "$deployment" "${{ env.KUBE_NAMESPACE }}"; then
+              successful_rollbacks+=("$deployment")
+            else
+              failed_rollbacks+=("$deployment")
+            fi
+
+            sleep 5 # Small delay between rollbacks
+          done
+
+          # Summary
+          echo "📊 Rollback Summary:"
+          echo "✅ Successful rollbacks: ${successful_rollbacks[*]}"
+          if [ ${#failed_rollbacks[@]} -gt 0 ]; then
+            echo "❌ Failed rollbacks: ${failed_rollbacks[*]}"
+          fi
+
+          echo "✅ Emergency rollback completed"
+
+      - name: Verify rollback success
+        run: |
+          echo "🔍 Verifying rollback success..."
+
+          # Wait for services to stabilize after rollback
+          echo "⏳ Waiting 60 seconds for services to stabilize..."
+          sleep 60
+
+          # Check critical services
+          health_check_passed=true
+
+          echo "🔍 Checking main site..."
+          if ! curl -f --max-time 30 "${{ env.PROD_URL }}/" > /dev/null 2>&1; then
+            echo "❌ Main site not responding after rollback"
+            health_check_passed=false
+          else
+            echo "✅ Main site is responding"
+          fi
+
+          echo "🔍 Checking API health..."
+          if ! curl -f --max-time 30 "${{ env.PROD_URL }}/api/health" > /dev/null 2>&1; then
+            echo "❌ API not responding after rollback"
+            health_check_passed=false
+          else
+            echo "✅ API is responding"
+          fi
+
+          if [ "$health_check_passed" = true ]; then
+            echo "✅ Rollback verification successful - services responding normally"
+          else
+            echo "❌ Rollback verification failed - manual intervention required"
+            echo "🆘 CRITICAL: Production may require immediate manual attention"
+            exit 1
+          fi
+
+      - name: Notify rollback
+        run: |
+          VERSION="${{ needs.pre-production-checks.outputs.version }}"
+          ROLLBACK_TIME=$(date -u)
+
+          echo "📢 Notifying stakeholders about rollback..."
+
+          # Determine failure reason from job context
+          FAILURE_REASON="Unknown deployment failure"
+          if [ "${{ contains(needs.deploy-production.result, 'failure') }}" = "true" ]; then
+            FAILURE_REASON="Production deployment job failed"
+          fi
+
+          # Send detailed rollback notification
+          if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+            curl -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"🚨 *PRODUCTION DEPLOYMENT FAILED - EMERGENCY ROLLBACK EXECUTED*\n\n*Failed Version:* $VERSION\n*Rollback Time:* $ROLLBACK_TIME\n*Status:* Rolled back to previous version\n*Reason:* $FAILURE_REASON\n\n*Action Required:*\n• Investigate deployment failure\n• Review logs and error messages\n• Test fix in staging before retry\n• Monitor production stability\n\n*Production Status:* System should be stable on previous version\"}" \
+              ${{ secrets.SLACK_WEBHOOK_URL }}
+          fi
+
+          echo "📧 Rollback notification sent"
