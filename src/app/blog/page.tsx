@@ -1,10 +1,10 @@
-import { BookOpen, Bell } from "lucide-react";
-import { FadeIn } from "@/components/motion/MotionWrapper";
+import { BookOpen, Bell } from 'lucide-react';
+import { FadeIn } from '@/components/motion/MotionWrapper';
 
 export const metadata = {
-  title: "Blog | VendFinder",
+  title: 'Blog | VendFinder',
   description:
-    "The VendFinder blog — stories, guides, and updates from the global marketplace. Coming soon.",
+    'The VendFinder blog — stories, guides, and updates from the global marketplace. Coming soon.',
 };
 
 export default function BlogPage() {
@@ -42,8 +42,8 @@ export default function BlogPage() {
               </h2>
               <p className="text-muted leading-relaxed mb-10 max-w-xl mx-auto">
                 We&apos;re putting the finishing touches on our first posts.
-                Expect deep dives on cross-border commerce, vendor
-                spotlights, and practical guides for buyers.
+                Expect deep dives on cross-border commerce, vendor spotlights,
+                and practical guides for buyers.
               </p>
 
               <div className="max-w-md mx-auto">
@@ -53,9 +53,7 @@ export default function BlogPage() {
                 <div className="flex gap-2">
                   <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl bg-surface border border-border">
                     <Bell size={16} className="text-muted flex-shrink-0" />
-                    <span className="text-sm text-muted">
-                      your@email.com
-                    </span>
+                    <span className="text-sm text-muted">your@email.com</span>
                   </div>
                   <button
                     type="button"

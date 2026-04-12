@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Wallet,
   CreditCard,
@@ -12,31 +12,32 @@ import {
   ChevronRight,
   Loader2,
   X,
-} from "lucide-react";
-import { usePayoutMethods } from "@/hooks/usePayoutMethods";
-import { useTranslations } from "next-intl";
-import type { PayoutMethodType } from "@/types";
+} from 'lucide-react';
+import { usePayoutMethods } from '@/hooks/usePayoutMethods';
+import { useTranslations } from 'next-intl';
+import type { PayoutMethodType } from '@/types';
 
 interface Props {
-  variant?: "standard" | "compact";
+  variant?: 'standard' | 'compact';
 }
 
-export default function PayoutMethodsManager({ variant = "standard" }: Props) {
-  const { methods, loading, addMethod, setPrimary, removeMethod } = usePayoutMethods();
-  const t = useTranslations("dashboardPayouts");
+export default function PayoutMethodsManager({ variant = 'standard' }: Props) {
+  const { methods, loading, addMethod, setPrimary, removeMethod } =
+    usePayoutMethods();
+  const t = useTranslations('dashboardPayouts');
   const [showAddForm, setShowAddForm] = useState(false);
-  const [formType, setFormType] = useState<PayoutMethodType>("paypal");
-  const [formAccountId, setFormAccountId] = useState("");
-  const [formLabel, setFormLabel] = useState("");
-  const [formAccountName, setFormAccountName] = useState("");
-  const [formNationalId, setFormNationalId] = useState("");
-  const [formDateOfBirth, setFormDateOfBirth] = useState("");
-  const [formAddress, setFormAddress] = useState("");
+  const [formType, setFormType] = useState<PayoutMethodType>('paypal');
+  const [formAccountId, setFormAccountId] = useState('');
+  const [formLabel, setFormLabel] = useState('');
+  const [formAccountName, setFormAccountName] = useState('');
+  const [formNationalId, setFormNationalId] = useState('');
+  const [formDateOfBirth, setFormDateOfBirth] = useState('');
+  const [formAddress, setFormAddress] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
 
-  const needsWiseFields = formType === "alipay" || formType === "wechat";
+  const needsWiseFields = formType === 'alipay' || formType === 'wechat';
 
   const METHOD_CONFIG: Record<
     PayoutMethodType,
@@ -51,31 +52,31 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
     }
   > = {
     alipay: {
-      label: t("alipay"),
+      label: t('alipay'),
       icon: Wallet,
-      color: "text-sky-400",
-      bgColor: "bg-sky-400/10",
-      borderColor: "border-sky-400/15",
-      fieldLabel: t("alipayId"),
-      placeholder: t("alipayPlaceholder"),
+      color: 'text-sky-400',
+      bgColor: 'bg-sky-400/10',
+      borderColor: 'border-sky-400/15',
+      fieldLabel: t('alipayId'),
+      placeholder: t('alipayPlaceholder'),
     },
     paypal: {
-      label: t("paypalLabel"),
+      label: t('paypalLabel'),
       icon: CreditCard,
-      color: "text-blue-400",
-      bgColor: "bg-blue-400/10",
-      borderColor: "border-blue-400/15",
-      fieldLabel: t("paypalEmail"),
-      placeholder: t("paypalPlaceholder"),
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-400/10',
+      borderColor: 'border-blue-400/15',
+      fieldLabel: t('paypalEmail'),
+      placeholder: t('paypalPlaceholder'),
     },
     wechat: {
-      label: t("wechat"),
+      label: t('wechat'),
       icon: MessageCircle,
-      color: "text-green-400",
-      bgColor: "bg-green-400/10",
-      borderColor: "border-green-400/15",
-      fieldLabel: t("wechatId"),
-      placeholder: t("wechatPlaceholder"),
+      color: 'text-green-400',
+      bgColor: 'bg-green-400/10',
+      borderColor: 'border-green-400/15',
+      fieldLabel: t('wechatId'),
+      placeholder: t('wechatPlaceholder'),
     },
   };
 
@@ -87,20 +88,20 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
     // CNY payouts (Alipay/WeChat) require full legal name, Chinese national ID, DOB, and address
     if (needsWiseFields) {
       if (!formAccountName.trim()) {
-        setFormError(t("accountNameRequired"));
+        setFormError(t('accountNameRequired'));
         return;
       }
       const idNormalized = formNationalId.trim().toUpperCase();
       if (!/^\d{17}[\dX]$/.test(idNormalized)) {
-        setFormError(t("nationalIdInvalid"));
+        setFormError(t('nationalIdInvalid'));
         return;
       }
       if (!formDateOfBirth.trim()) {
-        setFormError(t("dateOfBirthRequired"));
+        setFormError(t('dateOfBirthRequired'));
         return;
       }
       if (!formAddress.trim()) {
-        setFormError(t("addressRequired"));
+        setFormError(t('addressRequired'));
         return;
       }
     }
@@ -112,19 +113,21 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
         account_id: formAccountId.trim(),
         label: formLabel.trim() || undefined,
         account_name: formAccountName.trim() || undefined,
-        national_id: needsWiseFields ? formNationalId.trim().toUpperCase() : undefined,
+        national_id: needsWiseFields
+          ? formNationalId.trim().toUpperCase()
+          : undefined,
         date_of_birth: needsWiseFields ? formDateOfBirth.trim() : undefined,
         address: needsWiseFields ? formAddress.trim() : undefined,
       });
-      setFormAccountId("");
-      setFormLabel("");
-      setFormAccountName("");
-      setFormNationalId("");
-      setFormDateOfBirth("");
-      setFormAddress("");
+      setFormAccountId('');
+      setFormLabel('');
+      setFormAccountName('');
+      setFormNationalId('');
+      setFormDateOfBirth('');
+      setFormAddress('');
       setShowAddForm(false);
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : t("addMethodError"));
+      setFormError(err instanceof Error ? err.message : t('addMethodError'));
     } finally {
       setSubmitting(false);
     }
@@ -148,10 +151,10 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
     }
   };
 
-  const isCompact = variant === "compact";
+  const isCompact = variant === 'compact';
 
   return (
-    <div className={isCompact ? "space-y-4" : ""}>
+    <div className={isCompact ? 'space-y-4' : ''}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -163,13 +166,15 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
           <div>
             {!isCompact && (
               <p className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold mb-3">
-                {t("payoutMethods")}
+                {t('payoutMethods')}
               </p>
             )}
             {isCompact && (
               <>
-                <p className="text-sm font-semibold text-foreground">{t("payoutMethods")}</p>
-                <p className="text-[11px] text-muted">{t("managePayouts")}</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {t('payoutMethods')}
+                </p>
+                <p className="text-[11px] text-muted">{t('managePayouts')}</p>
               </>
             )}
           </div>
@@ -178,12 +183,12 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
           onClick={() => setShowAddForm(true)}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-colors ${
             isCompact
-              ? "bg-emerald-400/10 text-emerald-400 hover:bg-emerald-400/15"
-              : "bg-primary/10 text-primary hover:bg-primary/15"
+              ? 'bg-emerald-400/10 text-emerald-400 hover:bg-emerald-400/15'
+              : 'bg-primary/10 text-primary hover:bg-primary/15'
           }`}
         >
           <Plus size={12} />
-          {t("addMethod")}
+          {t('addMethod')}
         </button>
       </div>
 
@@ -192,7 +197,7 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
         {showAddForm && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
+            animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
@@ -202,7 +207,9 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
               className="bg-card rounded-2xl border border-border p-5 space-y-4"
             >
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-foreground">{t("addPayoutMethod")}</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {t('addPayoutMethod')}
+                </p>
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
@@ -214,26 +221,28 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
 
               {/* Method type selector */}
               <div className="flex gap-2">
-                {(Object.keys(METHOD_CONFIG) as PayoutMethodType[]).map((type) => {
-                  const cfg = METHOD_CONFIG[type];
-                  const Icon = cfg.icon;
-                  const isSelected = formType === type;
-                  return (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setFormType(type)}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all border ${
-                        isSelected
-                          ? `${cfg.bgColor} ${cfg.color} ${cfg.borderColor}`
-                          : "bg-surface border-border text-muted hover:text-foreground hover:border-border-hover"
-                      }`}
-                    >
-                      <Icon size={14} />
-                      {cfg.label}
-                    </button>
-                  );
-                })}
+                {(Object.keys(METHOD_CONFIG) as PayoutMethodType[]).map(
+                  (type) => {
+                    const cfg = METHOD_CONFIG[type];
+                    const Icon = cfg.icon;
+                    const isSelected = formType === type;
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setFormType(type)}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all border ${
+                          isSelected
+                            ? `${cfg.bgColor} ${cfg.color} ${cfg.borderColor}`
+                            : 'bg-surface border-border text-muted hover:text-foreground hover:border-border-hover'
+                        }`}
+                      >
+                        <Icon size={14} />
+                        {cfg.label}
+                      </button>
+                    );
+                  }
+                )}
               </div>
 
               {/* Account ID */}
@@ -256,47 +265,53 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
                 <>
                   <div className="rounded-xl border border-sky-400/20 bg-sky-400/[0.04] p-3">
                     <p className="text-[11px] text-sky-300/90 leading-relaxed">
-                      {t("wiseInfoBanner")}
+                      {t('wiseInfoBanner')}
                     </p>
                   </div>
 
                   {/* Account Holder Name */}
                   <div>
                     <label className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-1.5 block">
-                      {t("accountHolderName")}
+                      {t('accountHolderName')}
                     </label>
                     <input
                       type="text"
                       value={formAccountName}
                       onChange={(e) => setFormAccountName(e.target.value)}
-                      placeholder={t("accountHolderNamePlaceholder")}
+                      placeholder={t('accountHolderNamePlaceholder')}
                       className="w-full bg-surface border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted/30 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all"
                       required
                     />
-                    <p className="text-[10px] text-muted/70 mt-1">{t("accountHolderNameHint")}</p>
+                    <p className="text-[10px] text-muted/70 mt-1">
+                      {t('accountHolderNameHint')}
+                    </p>
                   </div>
 
                   {/* National ID (身份证号) */}
                   <div>
                     <label className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-1.5 block">
-                      {t("nationalId")}
+                      {t('nationalId')}
                     </label>
                     <input
                       type="text"
                       value={formNationalId}
-                      onChange={(e) => setFormNationalId(e.target.value.toUpperCase())}
-                      placeholder={t("nationalIdPlaceholder")}
+                      onChange={(e) =>
+                        setFormNationalId(e.target.value.toUpperCase())
+                      }
+                      placeholder={t('nationalIdPlaceholder')}
                       maxLength={18}
                       className="w-full bg-surface border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted/30 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all font-mono"
                       required
                     />
-                    <p className="text-[10px] text-muted/70 mt-1">{t("nationalIdHint")}</p>
+                    <p className="text-[10px] text-muted/70 mt-1">
+                      {t('nationalIdHint')}
+                    </p>
                   </div>
 
                   {/* Date of Birth */}
                   <div>
                     <label className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-1.5 block">
-                      {t("dateOfBirth")}
+                      {t('dateOfBirth')}
                     </label>
                     <input
                       type="date"
@@ -305,23 +320,27 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
                       className="w-full bg-surface border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted/30 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all"
                       required
                     />
-                    <p className="text-[10px] text-muted/70 mt-1">{t("dateOfBirthHint")}</p>
+                    <p className="text-[10px] text-muted/70 mt-1">
+                      {t('dateOfBirthHint')}
+                    </p>
                   </div>
 
                   {/* Address */}
                   <div>
                     <label className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-1.5 block">
-                      {t("address")}
+                      {t('address')}
                     </label>
                     <textarea
                       value={formAddress}
                       onChange={(e) => setFormAddress(e.target.value)}
-                      placeholder={t("addressPlaceholder")}
+                      placeholder={t('addressPlaceholder')}
                       rows={3}
                       className="w-full bg-surface border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted/30 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all resize-none"
                       required
                     />
-                    <p className="text-[10px] text-muted/70 mt-1">{t("addressHint")}</p>
+                    <p className="text-[10px] text-muted/70 mt-1">
+                      {t('addressHint')}
+                    </p>
                   </div>
                 </>
               )}
@@ -329,13 +348,13 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
               {/* Label (optional) */}
               <div>
                 <label className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-1.5 block">
-                  {t("label")}
+                  {t('label')}
                 </label>
                 <input
                   type="text"
                   value={formLabel}
                   onChange={(e) => setFormLabel(e.target.value)}
-                  placeholder={t("labelPlaceholder")}
+                  placeholder={t('labelPlaceholder')}
                   className="w-full bg-surface border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted/30 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all"
                 />
               </div>
@@ -352,7 +371,7 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
                 className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark shadow-[0_0_20px_rgba(232,136,58,0.15)] hover:shadow-[0_0_30px_rgba(232,136,58,0.25)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting && <Loader2 size={14} className="animate-spin" />}
-                {t("addMethod")}
+                {t('addMethod')}
               </button>
             </form>
           </motion.div>
@@ -365,15 +384,21 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
           <Loader2 size={20} className="animate-spin text-muted mx-auto" />
         </div>
       ) : methods.length === 0 && !showAddForm ? (
-        <div className={`bg-card rounded-2xl border border-border py-10 text-center ${isCompact ? "" : "mt-0"}`}>
+        <div
+          className={`bg-card rounded-2xl border border-border py-10 text-center ${isCompact ? '' : 'mt-0'}`}
+        >
           <div className="w-14 h-14 rounded-2xl bg-surface border border-border flex items-center justify-center mx-auto mb-3">
             <Wallet size={22} className="text-muted/30" />
           </div>
-          <p className="text-sm font-medium text-foreground">{t("noPayoutMethods")}</p>
-          <p className="text-[12px] text-muted mt-1">{t("addMethodDesc")}</p>
+          <p className="text-sm font-medium text-foreground">
+            {t('noPayoutMethods')}
+          </p>
+          <p className="text-[12px] text-muted mt-1">{t('addMethodDesc')}</p>
         </div>
       ) : (
-        <div className={`grid grid-cols-1 ${isCompact ? "" : "sm:grid-cols-2"} gap-3`}>
+        <div
+          className={`grid grid-cols-1 ${isCompact ? '' : 'sm:grid-cols-2'} gap-3`}
+        >
           <AnimatePresence>
             {methods.map((method, i) => {
               const cfg = METHOD_CONFIG[method.methodType];
@@ -387,7 +412,7 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
                   exit={{ opacity: 0, x: 6 }}
                   transition={{ duration: 0.3, delay: i * 0.04 }}
                   className={`bg-card rounded-2xl border ${
-                    method.isPrimary ? cfg.borderColor : "border-border"
+                    method.isPrimary ? cfg.borderColor : 'border-border'
                   } p-4 flex items-center gap-4 group hover:border-primary/20 transition-all`}
                 >
                   <div
@@ -402,17 +427,22 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
                       </p>
                       {method.isPrimary && (
                         <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-400/10 text-emerald-400">
-                          {t("primary")}
+                          {t('primary')}
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-muted truncate">{method.accountId}</p>
+                    <p className="text-[11px] text-muted truncate">
+                      {method.accountId}
+                    </p>
                     {method.accountName && (
-                      <p className="text-[10px] text-muted/80 truncate mt-0.5">{method.accountName}</p>
+                      <p className="text-[10px] text-muted/80 truncate mt-0.5">
+                        {method.accountName}
+                      </p>
                     )}
                     {method.nationalId && (
                       <p className="text-[10px] text-muted/60 truncate font-mono mt-0.5">
-                        {method.nationalId.slice(0, 6)}••••••••{method.nationalId.slice(-2)}
+                        {method.nationalId.slice(0, 6)}••••••••
+                        {method.nationalId.slice(-2)}
                       </p>
                     )}
                   </div>
@@ -421,7 +451,7 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
                       <button
                         onClick={() => handleSetPrimary(method.id)}
                         disabled={isActing}
-                        title={t("setAsPrimary")}
+                        title={t('setAsPrimary')}
                         className="p-1.5 rounded-lg hover:bg-amber-400/10 text-muted hover:text-amber-400 transition-colors disabled:opacity-50"
                       >
                         <Star size={13} />
@@ -430,7 +460,7 @@ export default function PayoutMethodsManager({ variant = "standard" }: Props) {
                     <button
                       onClick={() => handleDelete(method.id)}
                       disabled={isActing}
-                      title={t("remove")}
+                      title={t('remove')}
                       className="p-1.5 rounded-lg hover:bg-red-500/10 text-muted hover:text-red-400 transition-colors disabled:opacity-50"
                     >
                       <Trash2 size={13} />

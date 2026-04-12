@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { ArrowRight, Sparkles } from "lucide-react";
-import type { Product } from "@/types";
-import ProductCard from "@/components/product/ProductCard";
-import Button from "@/components/ui/Button";
+import { useTranslations } from 'next-intl';
+import { ArrowRight, Sparkles } from 'lucide-react';
+import type { Product } from '@/types';
+import ProductCard from '@/components/product/ProductCard';
+import Button from '@/components/ui/Button';
 import {
   FadeIn,
   StaggerContainer,
   StaggerItem,
-} from "@/components/motion/MotionWrapper";
+} from '@/components/motion/MotionWrapper';
 
 export default function NewArrivals({ products }: { products: Product[] }) {
-  const t = useTranslations("newArrivals");
+  const t = useTranslations('newArrivals');
   const arrivals = products;
 
   return (
@@ -24,11 +24,11 @@ export default function NewArrivals({ products }: { products: Product[] }) {
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles size={16} className="text-primary" />
                 <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                  {t("badge")}
+                  {t('badge')}
                 </span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-display font-black text-foreground tracking-tight">
-                {t("title")}
+                {t('title')}
               </h2>
             </div>
             <Button
@@ -36,7 +36,7 @@ export default function NewArrivals({ products }: { products: Product[] }) {
               variant="ghost"
               className="hidden sm:inline-flex text-muted hover:text-primary"
             >
-              {t("seeAll")} <ArrowRight size={16} className="ml-1" />
+              {t('seeAll')} <ArrowRight size={16} className="ml-1" />
             </Button>
           </div>
         </FadeIn>
@@ -50,8 +50,12 @@ export default function NewArrivals({ products }: { products: Product[] }) {
         </StaggerContainer>
 
         <div className="mt-10 text-center sm:hidden">
-          <Button href="/products" variant="outline" className="border-border text-foreground hover:border-primary hover:text-primary">
-            {t("viewAllProducts")} <ArrowRight size={16} className="ml-1" />
+          <Button
+            href="/products"
+            variant="outline"
+            className="border-border text-foreground hover:border-primary hover:text-primary"
+          >
+            {t('viewAllProducts')} <ArrowRight size={16} className="ml-1" />
           </Button>
         </div>
       </div>

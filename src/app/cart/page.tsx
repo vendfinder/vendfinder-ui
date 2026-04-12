@@ -1,12 +1,21 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import { Minus, Plus, Trash2, ShoppingBag, Package, ArrowRight, Shield, Truck } from "lucide-react";
-import { useCart } from "@/context/CartContext";
-import { formatPrice } from "@/lib/utils";
-import { useTranslations } from "next-intl";
+import Link from 'next/link';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import {
+  Minus,
+  Plus,
+  Trash2,
+  ShoppingBag,
+  Package,
+  ArrowRight,
+  Shield,
+  Truck,
+} from 'lucide-react';
+import { useCart } from '@/context/CartContext';
+import { formatPrice } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 export default function CartPage() {
   const { items, totalPrice, removeItem, updateQuantity } = useCart();
@@ -23,15 +32,15 @@ export default function CartPage() {
           <div className="w-20 h-20 rounded-2xl bg-surface border border-border flex items-center justify-center mx-auto mb-5">
             <ShoppingBag size={32} className="text-muted/30" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">{t("cart.emptyTitle")}</h1>
-          <p className="text-sm text-muted mb-6">
-            {t("cart.emptyDesc")}
-          </p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            {t('cart.emptyTitle')}
+          </h1>
+          <p className="text-sm text-muted mb-6">{t('cart.emptyDesc')}</p>
           <Link
             href="/products"
             className="inline-flex items-center gap-1.5 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark shadow-[0_0_20px_rgba(232,136,58,0.15)] transition-all"
           >
-            {t("common.browseProducts")}
+            {t('common.browseProducts')}
             <ArrowRight size={14} />
           </Link>
         </motion.div>
@@ -55,10 +64,12 @@ export default function CartPage() {
           <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <ShoppingBag size={15} className="text-primary" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t("cart.shoppingCart")}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            {t('cart.shoppingCart')}
+          </h1>
         </div>
         <p className="text-sm text-muted">
-          {t("cart.itemsInCart", { count: items.length })}
+          {t('cart.itemsInCart', { count: items.length })}
         </p>
       </motion.div>
 
@@ -67,7 +78,7 @@ export default function CartPage() {
         <div className="flex-1 space-y-3">
           {items.map((item, i) => (
             <motion.div
-              key={`${item.product.id}-${item.size || "default"}`}
+              key={`${item.product.id}-${item.size || 'default'}`}
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: i * 0.05 }}
@@ -95,13 +106,15 @@ export default function CartPage() {
                 </Link>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-[11px] text-muted capitalize">
-                    {item.product.category.replace("-", " & ")}
+                    {item.product.category.replace('-', ' & ')}
                   </span>
                   {item.size && (
                     <>
                       <span className="text-muted/30">&middot;</span>
                       <span className="text-[11px] text-muted bg-surface px-1.5 py-0.5 rounded">
-                        {item.product.category === "sneakers" ? t("cart.sizeUS", { size: item.size }) : item.size}
+                        {item.product.category === 'sneakers'
+                          ? t('cart.sizeUS', { size: item.size })
+                          : item.size}
                       </span>
                     </>
                   )}
@@ -119,7 +132,13 @@ export default function CartPage() {
                 </button>
                 <div className="flex items-center border border-border rounded-xl overflow-hidden">
                   <button
-                    onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.size)}
+                    onClick={() =>
+                      updateQuantity(
+                        item.product.id,
+                        item.quantity - 1,
+                        item.size
+                      )
+                    }
                     className="px-2.5 py-1.5 text-muted hover:text-foreground hover:bg-surface transition-colors cursor-pointer"
                   >
                     <Minus size={13} />
@@ -128,7 +147,13 @@ export default function CartPage() {
                     {item.quantity}
                   </span>
                   <button
-                    onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.size)}
+                    onClick={() =>
+                      updateQuantity(
+                        item.product.id,
+                        item.quantity + 1,
+                        item.size
+                      )
+                    }
                     className="px-2.5 py-1.5 text-muted hover:text-foreground hover:bg-surface transition-colors cursor-pointer"
                   >
                     <Plus size={13} />
@@ -148,25 +173,35 @@ export default function CartPage() {
         >
           <div className="bg-card rounded-2xl border border-border p-6 sticky top-24">
             <h2 className="text-sm font-bold text-foreground uppercase tracking-wider mb-5">
-              {t("cart.orderSummary")}
+              {t('cart.orderSummary')}
             </h2>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between text-muted">
-                <span>{t("cart.subtotal")}</span>
-                <span className="text-foreground font-medium">{formatPrice(totalPrice)}</span>
-              </div>
-              <div className="flex justify-between text-muted">
-                <span>{t("cart.shipping")}</span>
-                <span className={shipping === 0 ? "text-emerald-400 font-medium" : "text-foreground font-medium"}>
-                  {shipping === 0 ? t("common.free") : formatPrice(shipping)}
+                <span>{t('cart.subtotal')}</span>
+                <span className="text-foreground font-medium">
+                  {formatPrice(totalPrice)}
                 </span>
               </div>
               <div className="flex justify-between text-muted">
-                <span>{t("cart.tax")}</span>
-                <span className="text-foreground font-medium">{formatPrice(tax)}</span>
+                <span>{t('cart.shipping')}</span>
+                <span
+                  className={
+                    shipping === 0
+                      ? 'text-emerald-400 font-medium'
+                      : 'text-foreground font-medium'
+                  }
+                >
+                  {shipping === 0 ? t('common.free') : formatPrice(shipping)}
+                </span>
+              </div>
+              <div className="flex justify-between text-muted">
+                <span>{t('cart.tax')}</span>
+                <span className="text-foreground font-medium">
+                  {formatPrice(tax)}
+                </span>
               </div>
               <div className="border-t border-white/[0.06] pt-3 flex justify-between font-bold text-foreground text-base">
-                <span>{t("cart.total")}</span>
+                <span>{t('cart.total')}</span>
                 <span>{formatPrice(grandTotal)}</span>
               </div>
             </div>
@@ -175,25 +210,25 @@ export default function CartPage() {
               href="/checkout"
               className="flex items-center justify-center gap-2 w-full mt-6 px-6 py-3.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark shadow-[0_0_20px_rgba(232,136,58,0.15)] hover:shadow-[0_0_30px_rgba(232,136,58,0.25)] transition-all"
             >
-              {t("cart.proceedToCheckout")}
+              {t('cart.proceedToCheckout')}
               <ArrowRight size={14} />
             </Link>
             <Link
               href="/products"
               className="flex items-center justify-center w-full mt-2 px-6 py-2.5 rounded-xl text-sm font-medium text-muted hover:text-foreground hover:bg-surface transition-all"
             >
-              {t("common.continueShopping")}
+              {t('common.continueShopping')}
             </Link>
 
             {/* Trust signals */}
             <div className="flex items-center gap-4 mt-5 pt-4 border-t border-white/[0.04] text-[10px] text-muted">
               <span className="flex items-center gap-1">
                 <Shield size={10} className="text-emerald-400" />
-                {t("cart.secure")}
+                {t('cart.secure')}
               </span>
               <span className="flex items-center gap-1">
                 <Truck size={10} className="text-blue-400" />
-                {t("cart.fastDelivery")}
+                {t('cart.fastDelivery')}
               </span>
             </div>
           </div>

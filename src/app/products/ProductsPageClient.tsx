@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
-import { SlidersHorizontal, X, ShoppingBag } from "lucide-react";
-import type { Product } from "@/types";
-import SearchBar from "@/components/ui/SearchBar";
-import ProductGrid from "@/components/product/ProductGrid";
-import ProductFilters from "@/components/product/ProductFilters";
+import { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
+import { motion } from 'framer-motion';
+import { SlidersHorizontal, X, ShoppingBag } from 'lucide-react';
+import type { Product } from '@/types';
+import SearchBar from '@/components/ui/SearchBar';
+import ProductGrid from '@/components/product/ProductGrid';
+import ProductFilters from '@/components/product/ProductFilters';
 
 export default function ProductsPageClient({
   products,
 }: {
   products: Product[];
 }) {
-  const t = useTranslations("productsPage");
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
-  const [sortBy, setSortBy] = useState("relevance");
+  const t = useTranslations('productsPage');
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('');
+  const [sortBy, setSortBy] = useState('relevance');
   const [showFilters, setShowFilters] = useState(false);
 
   const filtered = useMemo(() => {
@@ -38,16 +38,16 @@ export default function ProductsPageClient({
     }
 
     switch (sortBy) {
-      case "price-asc":
+      case 'price-asc':
         result.sort((a, b) => a.price - b.price);
         break;
-      case "price-desc":
+      case 'price-desc':
         result.sort((a, b) => b.price - a.price);
         break;
-      case "rating":
+      case 'rating':
         result.sort((a, b) => b.rating - a.rating);
         break;
-      case "newest":
+      case 'newest':
         result.sort(
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -59,9 +59,9 @@ export default function ProductsPageClient({
   }, [products, search, category, sortBy]);
 
   const clearFilters = () => {
-    setSearch("");
-    setCategory("");
-    setSortBy("relevance");
+    setSearch('');
+    setCategory('');
+    setSortBy('relevance');
   };
 
   return (
@@ -77,11 +77,11 @@ export default function ProductsPageClient({
             <ShoppingBag size={15} className="text-primary" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-            {t("title")}
+            {t('title')}
           </h1>
         </div>
         <p className="text-sm text-muted">
-          {t("showingOf", { shown: filtered.length, total: products.length })}
+          {t('showingOf', { shown: filtered.length, total: products.length })}
         </p>
       </motion.div>
 
@@ -96,14 +96,14 @@ export default function ProductsPageClient({
           value={search}
           onChange={setSearch}
           className="flex-1"
-          placeholder={t("searchPlaceholder")}
+          placeholder={t('searchPlaceholder')}
         />
         <button
           onClick={() => setShowFilters(!showFilters)}
           className="lg:hidden flex items-center gap-2 px-4 py-2.5 border border-border rounded-xl text-sm font-medium text-muted hover:text-foreground hover:border-border-hover transition-all"
         >
           {showFilters ? <X size={16} /> : <SlidersHorizontal size={16} />}
-          {t("filters")}
+          {t('filters')}
         </button>
       </motion.div>
 
@@ -135,7 +135,9 @@ export default function ProductsPageClient({
             />
             <div className="fixed left-0 top-0 h-full w-72 bg-card border-r border-border p-6 shadow-2xl overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-foreground">{t("filters")}</h2>
+                <h2 className="text-lg font-bold text-foreground">
+                  {t('filters')}
+                </h2>
                 <button
                   onClick={() => setShowFilters(false)}
                   className="p-1.5 rounded-lg hover:bg-surface text-muted hover:text-foreground transition-colors"

@@ -1,12 +1,8 @@
-"use client";
+'use client';
 
-import { create } from "zustand";
-import type {
-  Conversation,
-  ChatMessage,
-  TypingIndicator,
-} from "@/types";
-import * as chatApi from "@/lib/api-chat";
+import { create } from 'zustand';
+import type { Conversation, ChatMessage, TypingIndicator } from '@/types';
+import * as chatApi from '@/lib/api-chat';
 
 interface ChatStore {
   // State
@@ -25,14 +21,42 @@ interface ChatStore {
   fetchConversations: (token: string) => Promise<void>;
   loadMessages: (conversationId: string, token: string) => Promise<void>;
   loadMoreMessages: (conversationId: string, token: string) => Promise<void>;
-  sendMessage: (conversationId: string, content: string, token: string, locale?: string) => Promise<void>;
-  sendOffer: (conversationId: string, price: number, token: string) => Promise<void>;
-  respondToOffer: (offerId: string, action: string, token: string, counterPrice?: number) => Promise<void>;
-  startConversation: (productId: string, sellerId: string, token: string, productInfo?: { name: string; image: string; price: number }) => Promise<string | null>;
-  startSupportConversation: (token: string, message: string, category?: string) => Promise<string | null>;
+  sendMessage: (
+    conversationId: string,
+    content: string,
+    token: string,
+    locale?: string
+  ) => Promise<void>;
+  sendOffer: (
+    conversationId: string,
+    price: number,
+    token: string
+  ) => Promise<void>;
+  respondToOffer: (
+    offerId: string,
+    action: string,
+    token: string,
+    counterPrice?: number
+  ) => Promise<void>;
+  startConversation: (
+    productId: string,
+    sellerId: string,
+    token: string,
+    productInfo?: { name: string; image: string; price: number }
+  ) => Promise<string | null>;
+  startSupportConversation: (
+    token: string,
+    message: string,
+    category?: string
+  ) => Promise<string | null>;
   markAsRead: (conversationId: string, token: string) => void;
   setActiveConversation: (id: string | null) => void;
-  reportMessage: (messageId: string, reason: string, token: string, details?: string) => Promise<void>;
+  reportMessage: (
+    messageId: string,
+    reason: string,
+    token: string,
+    details?: string
+  ) => Promise<void>;
   reset: () => void;
 
   // Socket handlers
@@ -41,7 +65,11 @@ interface ChatStore {
   onTypingStop: (conversationId: string, userId: string) => void;
   onPresenceUpdate: (userId: string, status: string) => void;
   onReadUpdate: (conversationId: string, userId: string) => void;
-  onMessageTranslated: (messageId: string, conversationId: string, translations: Record<string, string>) => void;
+  onMessageTranslated: (
+    messageId: string,
+    conversationId: string,
+    translations: Record<string, string>
+  ) => void;
   onOfferUpdate: (offerId: string, status: string) => void;
   onUnreadUpdate: (counts: Record<string, string>, total: number) => void;
   setConnected: (connected: boolean) => void;
@@ -62,10 +90,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   fetchConversations: async (token) => {
     try {
       const conversations = await chatApi.fetchConversations(token);
-      const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+      const totalUnread = conversations.reduce(
+        (sum, c) => sum + c.unreadCount,
+        0
+      );
       set({ conversations, totalUnread, conversationsLoaded: true });
     } catch (err) {
-      console.error("Failed to fetch conversations:", err);
+      console.error('Failed to fetch conversations:', err);
     }
   },
 
@@ -77,11 +108,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const result = await chatApi.fetchMessages(conversationId, token);
       set((state) => ({
         messages: { ...state.messages, [conversationId]: result.messages },
-        messagesHasMore: { ...state.messagesHasMore, [conversationId]: result.hasMore },
-        messagesCursors: { ...state.messagesCursors, [conversationId]: result.nextCursor },
+        messagesHasMore: {
+          ...state.messagesHasMore,
+          [conversationId]: result.hasMore,
+        },
+        messagesCursors: {
+          ...state.messagesCursors,
+          [conversationId]: result.nextCursor,
+        },
       }));
     } catch (err) {
-      console.error("Failed to load messages:", err);
+      console.error('Failed to load messages:', err);
     }
   },
 
@@ -94,19 +131,34 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       set((state) => ({
         messages: {
           ...state.messages,
-          [conversationId]: [...result.messages, ...(state.messages[conversationId] || [])],
+          [conversationId]: [
+            ...result.messages,
+            ...(state.messages[conversationId] || []),
+          ],
         },
-        messagesHasMore: { ...state.messagesHasMore, [conversationId]: result.hasMore },
-        messagesCursors: { ...state.messagesCursors, [conversationId]: result.nextCursor },
+        messagesHasMore: {
+          ...state.messagesHasMore,
+          [conversationId]: result.hasMore,
+        },
+        messagesCursors: {
+          ...state.messagesCursors,
+          [conversationId]: result.nextCursor,
+        },
       }));
     } catch (err) {
-      console.error("Failed to load more messages:", err);
+      console.error('Failed to load more messages:', err);
     }
   },
 
   sendMessage: async (conversationId, content, token, locale) => {
     try {
-      const msg = await chatApi.sendMessage(conversationId, content, token, undefined, locale);
+      const msg = await chatApi.sendMessage(
+        conversationId,
+        content,
+        token,
+        undefined,
+        locale
+      );
       // Optimistic update: message will also arrive via socket
       set((state) => {
         const existing = state.messages[conversationId] || [];
@@ -116,13 +168,21 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           messages: { ...state.messages, [conversationId]: [...existing, msg] },
           conversations: state.conversations.map((c) =>
             c.id === conversationId
-              ? { ...c, lastMessage: { content, senderId: msg.senderId, timestamp: msg.createdAt }, updatedAt: msg.createdAt }
+              ? {
+                  ...c,
+                  lastMessage: {
+                    content,
+                    senderId: msg.senderId,
+                    timestamp: msg.createdAt,
+                  },
+                  updatedAt: msg.createdAt,
+                }
               : c
           ),
         };
       });
     } catch (err) {
-      console.error("Failed to send message:", err);
+      console.error('Failed to send message:', err);
     }
   },
 
@@ -135,12 +195,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           const existing = state.messages[conversationId] || [];
           if (existing.some((m) => m.id === result.message.id)) return state;
           return {
-            messages: { ...state.messages, [conversationId]: [...existing, result.message] },
+            messages: {
+              ...state.messages,
+              [conversationId]: [...existing, result.message],
+            },
           };
         });
       }
     } catch (err) {
-      console.error("Failed to send offer:", err);
+      console.error('Failed to send offer:', err);
     }
   },
 
@@ -148,13 +211,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     try {
       await chatApi.respondToOffer(offerId, action, token, counterPrice);
     } catch (err) {
-      console.error("Failed to respond to offer:", err);
+      console.error('Failed to respond to offer:', err);
     }
   },
 
   startConversation: async (productId, sellerId, token, productInfo?) => {
     try {
-      const result = await chatApi.createConversation(productId, sellerId, token, productInfo);
+      const result = await chatApi.createConversation(
+        productId,
+        sellerId,
+        token,
+        productInfo
+      );
       if (result.id) {
         // Refresh conversations to get the full object
         await get().fetchConversations(token);
@@ -162,21 +230,25 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }
       return null;
     } catch (err) {
-      console.error("Failed to start conversation:", err);
+      console.error('Failed to start conversation:', err);
       return null;
     }
   },
 
   startSupportConversation: async (token, message, category?) => {
     try {
-      const result = await chatApi.createSupportConversation(token, message, category);
+      const result = await chatApi.createSupportConversation(
+        token,
+        message,
+        category
+      );
       if (result.id) {
         await get().fetchConversations(token);
         return result.id;
       }
       return null;
     } catch (err) {
-      console.error("Failed to start support conversation:", err);
+      console.error('Failed to start support conversation:', err);
       return null;
     }
   },
@@ -234,13 +306,21 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           c.id === msg.conversationId
             ? {
                 ...c,
-                lastMessage: { content: msg.content, senderId: msg.senderId, timestamp: msg.createdAt },
+                lastMessage: {
+                  content: msg.content,
+                  senderId: msg.senderId,
+                  timestamp: msg.createdAt,
+                },
                 updatedAt: msg.createdAt,
-                unreadCount: isActive ? c.unreadCount : c.unreadCount + newUnread,
+                unreadCount: isActive
+                  ? c.unreadCount
+                  : c.unreadCount + newUnread,
               }
             : c
         ),
-        totalUnread: isActive ? state.totalUnread : state.totalUnread + newUnread,
+        totalUnread: isActive
+          ? state.totalUnread
+          : state.totalUnread + newUnread,
       };
     });
   },
@@ -272,7 +352,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   onPresenceUpdate: (userId, status) => {
     set((state) => {
       const newSet = new Set(state.onlineUsers);
-      if (status === "online") {
+      if (status === 'online') {
         newSet.add(userId);
       } else {
         newSet.delete(userId);

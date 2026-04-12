@@ -6,13 +6,15 @@ class SallyDataVerifier {
   constructor() {
     // Use the same database URL as the order service
     this.orderPool = new Pool({
-      connectionString: process.env.DATABASE_URL || 'postgresql://vendfinder:vendfinder_pass@localhost:5435/order_db'
+      connectionString:
+        process.env.DATABASE_URL ||
+        'postgresql://vendfinder:vendfinder_pass@localhost:5435/order_db',
     });
   }
 
   async verifyData() {
     try {
-      console.log('🔍 Verifying Sally\'s corrected vendor data...\n');
+      console.log("🔍 Verifying Sally's corrected vendor data...\n");
 
       const sallyVendorId = 'a3256ba6-bdb2-4893-aed6-3b148ca80e8a';
 
@@ -37,9 +39,11 @@ class SallyDataVerifier {
         ORDER BY o.created_at DESC;
       `;
 
-      const ordersResult = await this.orderPool.query(ordersQuery, [sallyVendorId]);
+      const ordersResult = await this.orderPool.query(ordersQuery, [
+        sallyVendorId,
+      ]);
 
-      console.log('📦 Sally\'s Orders:');
+      console.log("📦 Sally's Orders:");
       console.log('==================');
 
       if (ordersResult.rows.length === 0) {
@@ -56,12 +60,17 @@ class SallyDataVerifier {
           console.log(`   Stripe ID: ${row.stripe_payment_intent_id || 'N/A'}`);
           console.log(`   Date: ${row.created_at}`);
 
-          if (row.payment_status === 'succeeded' || row.payment_status === 'paid') {
+          if (
+            row.payment_status === 'succeeded' ||
+            row.payment_status === 'paid'
+          ) {
             totalRevenue += parseFloat(row.payment_amount) || 0;
           }
         });
 
-        console.log(`\n💰 Total Revenue (Successful Payments): $${totalRevenue.toFixed(2)}`);
+        console.log(
+          `\n💰 Total Revenue (Successful Payments): $${totalRevenue.toFixed(2)}`
+        );
       }
 
       // Check vendor stats calculation
@@ -81,11 +90,15 @@ class SallyDataVerifier {
         WHERE oi.vendor_id = $1;
       `;
 
-      const statsResult = await this.orderPool.query(statsQuery, [sallyVendorId]);
+      const statsResult = await this.orderPool.query(statsQuery, [
+        sallyVendorId,
+      ]);
       const stats = statsResult.rows[0];
 
       console.log(`Total Orders: ${stats.total_orders}`);
-      console.log(`Total Revenue: $${parseFloat(stats.total_revenue).toFixed(2)}`);
+      console.log(
+        `Total Revenue: $${parseFloat(stats.total_revenue).toFixed(2)}`
+      );
       console.log(`Processing: ${stats.orders_processing}`);
       console.log(`Shipped: ${stats.orders_shipped}`);
       console.log(`Delivered: ${stats.orders_delivered}`);
@@ -110,13 +123,16 @@ class SallyDataVerifier {
         );
       `;
 
-      const incorrectResult = await this.orderPool.query(incorrectProductsQuery, [sallyVendorId]);
+      const incorrectResult = await this.orderPool.query(
+        incorrectProductsQuery,
+        [sallyVendorId]
+      );
 
       if (incorrectResult.rows.length === 0) {
         console.log('✅ No incorrect product assignments found');
       } else {
         console.log('❌ Found incorrect product assignments:');
-        incorrectResult.rows.forEach(row => {
+        incorrectResult.rows.forEach((row) => {
           console.log(`   - ${row.product_name} (Order: ${row.order_number})`);
         });
       }
@@ -142,13 +158,15 @@ class SallyDataVerifier {
         );
       `;
 
-      const correctResult = await this.orderPool.query(correctProductsQuery, [sallyVendorId]);
+      const correctResult = await this.orderPool.query(correctProductsQuery, [
+        sallyVendorId,
+      ]);
 
       if (correctResult.rows.length === 0) {
         console.log('⚠️  No Gucci products found for Sally');
       } else {
-        console.log('Products that should appear in Sally\'s dashboard:');
-        correctResult.rows.forEach(row => {
+        console.log("Products that should appear in Sally's dashboard:");
+        correctResult.rows.forEach((row) => {
           console.log(`   ✅ ${row.product_name}`);
           console.log(`      Order: ${row.order_number}`);
           console.log(`      Status: ${row.status}`);
@@ -161,11 +179,10 @@ class SallyDataVerifier {
         totalRevenue: parseFloat(stats.total_revenue),
         hasIncorrectProducts: incorrectResult.rows.length > 0,
         hasCorrectProducts: correctResult.rows.length > 0,
-        orders: ordersResult.rows
+        orders: ordersResult.rows,
       };
-
     } catch (error) {
-      console.error('❌ Error verifying Sally\'s data:', error);
+      console.error("❌ Error verifying Sally's data:", error);
       if (error.code === 'ECONNREFUSED') {
         console.log('\n💡 Tip: Make sure the order database is running:');
         console.log('   docker compose up -d order-db');
@@ -197,16 +214,23 @@ async function main() {
     console.log(`✅ Data verification completed`);
     console.log(`📦 Total Orders: ${result.totalOrders}`);
     console.log(`💰 Total Revenue: $${result.totalRevenue.toFixed(2)}`);
-    console.log(`${result.hasIncorrectProducts ? '❌' : '✅'} Incorrect Products: ${result.hasIncorrectProducts ? 'Found' : 'None'}`);
-    console.log(`${result.hasCorrectProducts ? '✅' : '⚠️'} Correct Products: ${result.hasCorrectProducts ? 'Found' : 'Missing'}`);
+    console.log(
+      `${result.hasIncorrectProducts ? '❌' : '✅'} Incorrect Products: ${result.hasIncorrectProducts ? 'Found' : 'None'}`
+    );
+    console.log(
+      `${result.hasCorrectProducts ? '✅' : '⚠️'} Correct Products: ${result.hasCorrectProducts ? 'Found' : 'Missing'}`
+    );
 
-    if (result.totalRevenue > 0 && !result.hasIncorrectProducts && result.hasCorrectProducts) {
-      console.log('\n🎉 Sally\'s data appears to be correctly fixed!');
+    if (
+      result.totalRevenue > 0 &&
+      !result.hasIncorrectProducts &&
+      result.hasCorrectProducts
+    ) {
+      console.log("\n🎉 Sally's data appears to be correctly fixed!");
       console.log('Her dashboard should now show the right sales information.');
     } else {
-      console.log('\n⚠️  Sally\'s data may need further investigation.');
+      console.log("\n⚠️  Sally's data may need further investigation.");
     }
-
   } catch (error) {
     console.error('💥 Verification failed:', error.message);
     process.exit(1);

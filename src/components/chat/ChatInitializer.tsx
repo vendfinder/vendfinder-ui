@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { useChatStore } from "@/stores/chat";
-import { useSocket } from "@/hooks/useSocket";
+import { useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { useChatStore } from '@/stores/chat';
+import { useSocket } from '@/hooks/useSocket';
 
 export default function ChatInitializer() {
   const { user, isAuthenticated } = useAuth();
@@ -11,8 +11,8 @@ export default function ChatInitializer() {
 
   // Get token from localStorage
   const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("vendfinder-token")
+    typeof window !== 'undefined'
+      ? localStorage.getItem('vendfinder-token')
       : null;
 
   // Initialize socket connection

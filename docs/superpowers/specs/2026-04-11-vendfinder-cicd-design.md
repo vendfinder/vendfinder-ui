@@ -9,6 +9,7 @@ type: project
 ## Project Overview
 
 **Goal:** Implement a comprehensive CI/CD pipeline for VendFinder platform using GitHub Actions to solve current deployment issues:
+
 - Improper image tagging (manual v20260408-custom tags)
 - Breaking changes reaching production
 - No automated rollback capability
@@ -89,12 +90,14 @@ vendfinder-platform/
 ### Automated Version Generation
 
 **Conventional Commits Format:**
+
 - `feat: description` → Minor version bump (v1.1.0 → v1.2.0)
 - `fix: description` → Patch version bump (v1.1.0 → v1.1.1)
 - `feat!: description` or `BREAKING CHANGE:` → Major version bump (v1.1.0 → v2.0.0)
 - `chore: description` → No version bump (documentation, build changes)
 
 **Examples:**
+
 ```bash
 # Current problematic approach:
 git tag v20260408-custom
@@ -107,6 +110,7 @@ git commit -m "feat: add user profile verification system"
 ### Docker Image Tagging Strategy
 
 **Consistent Multi-Service Tagging:**
+
 ```bash
 # All services get same semantic version for consistency
 registry.digitalocean.com/vendfinder-registry/frontend:v1.2.3
@@ -126,11 +130,13 @@ registry.digitalocean.com/vendfinder-registry/frontend:v1.2.3-production
 ### Release Branch Strategy
 
 **Branch Flow:**
+
 - `main` → Continuous integration + automatic staging deployment
 - `release/v1.2.3` → Production deployment trigger
 - `hotfix/v1.2.4` → Emergency production fixes with expedited process
 
 **Workflow:**
+
 1. Develop features on feature branches → merge to `main`
 2. `main` automatically deploys to staging for testing
 3. Create `release/v1.2.3` branch when staging is validated → triggers production deployment
@@ -141,16 +147,17 @@ registry.digitalocean.com/vendfinder-registry/frontend:v1.2.3-production
 ### GitHub Secrets Management
 
 **Required Secrets:**
+
 ```yaml
 Repository Secrets:
-  - DIGITALOCEAN_ACCESS_TOKEN     # DigitalOcean API access
-  - KUBECONFIG                    # Kubernetes cluster access
-  - DOCKER_REGISTRY_TOKEN         # DigitalOcean Container Registry
-  - STRIPE_SECRET_KEY            # Stripe API (production)
-  - STRIPE_WEBHOOK_SECRET        # Stripe webhook validation
-  - DATABASE_ENCRYPTION_KEY      # Database encryption
-  - JWT_SECRET_PRODUCTION        # Production JWT signing
-  - SLACK_WEBHOOK_URL            # Deployment notifications (optional)
+  - DIGITALOCEAN_ACCESS_TOKEN # DigitalOcean API access
+  - KUBECONFIG # Kubernetes cluster access
+  - DOCKER_REGISTRY_TOKEN # DigitalOcean Container Registry
+  - STRIPE_SECRET_KEY # Stripe API (production)
+  - STRIPE_WEBHOOK_SECRET # Stripe webhook validation
+  - DATABASE_ENCRYPTION_KEY # Database encryption
+  - JWT_SECRET_PRODUCTION # Production JWT signing
+  - SLACK_WEBHOOK_URL # Deployment notifications (optional)
 
 Environment-Specific Secrets:
   Staging:
@@ -166,11 +173,13 @@ Environment-Specific Secrets:
 ### Environment Configuration
 
 **Environment Variable Strategy:**
+
 - **Build-time variables:** Injected during Docker build (public keys, API endpoints)
 - **Runtime variables:** Injected during Kubernetes deployment (secrets, private configs)
 - **Environment-specific overlays:** Using Kustomize for staging vs production differences
 
 **Configuration Files:**
+
 ```yaml
 environments/
 ├── base/
@@ -181,9 +190,9 @@ environments/
 │   ├── staging-configs.yaml
 │   └── staging-secrets.yaml
 └── production/
-    ├── kustomization.yaml
-    ├── production-configs.yaml
-    └── production-secrets.yaml
+├── kustomization.yaml
+├── production-configs.yaml
+└── production-secrets.yaml
 ```
 
 ## Section 3: CI/CD Pipeline Architecture
@@ -191,7 +200,7 @@ environments/
 ### Three-Stage Pipeline
 
 **Stage 1: Continuous Integration**
-*Trigger: Push to any branch*
+_Trigger: Push to any branch_
 
 ```yaml
 Jobs:
@@ -214,7 +223,7 @@ Jobs:
 ```
 
 **Stage 2: Staging Deployment**
-*Trigger: Successful CI + push to main branch*
+_Trigger: Successful CI + push to main branch_
 
 ```yaml
 Jobs:
@@ -240,7 +249,7 @@ Jobs:
 ```
 
 **Stage 3: Production Deployment**
-*Trigger: Push to release/* branch*
+_Trigger: Push to release/_ branch\*
 
 ```yaml
 Jobs:
@@ -271,6 +280,7 @@ Jobs:
 ### Multi-Layer Testing Strategy
 
 **Layer 1: Pre-commit Validation**
+
 ```yaml
 Static Analysis:
   - TypeScript strict mode compilation
@@ -294,6 +304,7 @@ Code Quality Gates:
 ```
 
 **Layer 2: Integration Testing**
+
 ```yaml
 API Integration:
   - User authentication flow testing
@@ -317,6 +328,7 @@ Database Integration:
 ```
 
 **Layer 3: End-to-End Testing**
+
 ```yaml
 Critical User Journeys:
   - User Registration → Profile Setup → First Purchase
@@ -340,6 +352,7 @@ Production-Like Environment Testing:
 ### Quality Gates & Blocking Conditions
 
 **Staging Deployment Blockers:**
+
 - Any unit test failures
 - Code coverage below threshold
 - Security vulnerabilities (high/critical)
@@ -347,6 +360,7 @@ Production-Like Environment Testing:
 - Kubernetes manifest validation errors
 
 **Production Deployment Blockers:**
+
 - Staging deployment failures
 - E2E test failures
 - Performance regression (>20% slowdown)
@@ -358,6 +372,7 @@ Production-Like Environment Testing:
 ### Automatic Rollback Triggers
 
 **Health Check Failures:**
+
 ```yaml
 Immediate Rollback Conditions:
   - HTTP 5xx error rate > 5% for 2 consecutive minutes
@@ -368,6 +383,7 @@ Immediate Rollback Conditions:
 ```
 
 **Performance Degradation:**
+
 ```yaml
 Automatic Rollback Conditions:
   - API response times > 3x baseline for 5 consecutive minutes
@@ -402,11 +418,13 @@ Automatic Rollback Conditions:
 ### Database Migration Handling
 
 **Migration Tooling:**
+
 - **Primary Tool:** Prisma Migrate or similar ORM-based migrations for TypeScript services
 - **Raw SQL migrations:** For complex operations requiring direct PostgreSQL features
 - **Migration verification:** Automated testing of migration scripts on staging data clone
 
 **Safe Migration Strategy:**
+
 ```yaml
 Migration Safety Rules:
   - All migrations must be backwards compatible
@@ -416,8 +434,7 @@ Migration Safety Rules:
   - Large data migrations done in background jobs
   - Migration scripts tested on production data clones
 
-Migration Execution Process:
-  1. Generate migration scripts during development
+Migration Execution Process: 1. Generate migration scripts during development
   2. Test migrations on local development database
   3. Validate migrations on staging with production-like data volume
   4. Automatic backup creation before production migration
@@ -442,6 +459,7 @@ Zero-Downtime Deployment:
 ### Real-Time Deployment Monitoring
 
 **GitHub Actions Integration:**
+
 ```yaml
 Deployment Visibility:
   - Real-time build progress in GitHub Actions UI
@@ -467,12 +485,13 @@ Performance Metrics:
 ### Smart Notification System
 
 **Slack Integration:**
+
 ```yaml
 Deployment Notifications:
-  Success: "✅ v1.2.3 deployed to staging - Test at https://staging.vendfinder.com"
-  Production: "🚀 v1.2.3 deployed to production successfully"
-  Failure: "🚨 v1.2.3 deployment failed at [stage] - [reason]"
-  Rollback: "⚡ Auto-rollback executed: v1.2.3 → v1.2.2 due to [trigger]"
+  Success: '✅ v1.2.3 deployed to staging - Test at https://staging.vendfinder.com'
+  Production: '🚀 v1.2.3 deployed to production successfully'
+  Failure: '🚨 v1.2.3 deployment failed at [stage] - [reason]'
+  Rollback: '⚡ Auto-rollback executed: v1.2.3 → v1.2.2 due to [trigger]'
 
 Test Results:
   - Daily test summary with pass/fail counts
@@ -490,6 +509,7 @@ System Health:
 ### Enhanced Operational Dashboard
 
 **Integration with Existing Monitoring Stack:**
+
 ```yaml
 Prometheus Integration:
   - Custom metrics endpoint for each service (/metrics)
@@ -513,6 +533,7 @@ Alert Manager Configuration:
 ```
 
 **CI/CD Pipeline Health Metrics:**
+
 ```yaml
 Deployment Analytics:
   - Build success rate (target: >95%)
@@ -528,6 +549,7 @@ Quality Metrics:
 ```
 
 **Business & Technical Metrics Integration:**
+
 ```yaml
 Application Performance:
   - Business KPIs (user registrations, orders, revenue)
@@ -547,6 +569,7 @@ Infrastructure Monitoring:
 ### Primary Goals Achievement
 
 **Solve Current Problems:**
+
 1. ✅ **Proper Image Tags:** Semantic versioning replaces manual v20260408-custom tags
 2. ✅ **Prevent Breaking Changes:** Multi-layer testing and staging validation
 3. ✅ **Enable Quick Rollback:** Automated rollback with 30-second emergency option
@@ -554,40 +577,48 @@ Infrastructure Monitoring:
 
 ### Key Performance Indicators
 
-**Deployment Frequency:** 
+**Deployment Frequency:**
+
 - Current: Manual, infrequent
 - Target: 5-10 deployments per week
 
 **Lead Time:**
+
 - Current: Manual process, hours
 - Target: Commit to production in <2 hours
 
 **Mean Time to Recovery:**
+
 - Current: Manual intervention required
 - Target: <5 minutes automated recovery
 
 **Change Failure Rate:**
+
 - Current: Unknown, likely high due to lack of testing
 - Target: <5% of deployments cause issues
 
 ### Success Metrics Timeline
 
 **Week 1-2: Foundation**
+
 - Repository migration completed
 - Basic CI/CD pipeline operational
 - Staging environment automated
 
 **Week 3-4: Enhancement**
+
 - Production deployment automation
 - Rollback mechanisms tested
 - Monitoring and alerting configured
 
 **Month 2: Optimization**
+
 - Performance metrics baseline established
 - Advanced testing strategies implemented
 - Team workflow optimized
 
 **Month 3+: Continuous Improvement**
+
 - Regular metrics review and pipeline optimization
 - Advanced features (feature flags, A/B testing)
 - Process refinement based on real usage data
@@ -597,30 +628,36 @@ Infrastructure Monitoring:
 ### High-Risk Areas
 
 **Database Migrations:**
+
 - **Risk:** Data loss during rollback
 - **Mitigation:** Backwards-compatible migrations only, automatic backups
 
 **Service Dependencies:**
+
 - **Risk:** Breaking API changes between services
 - **Mitigation:** API versioning, contract testing, gradual rollouts
 
 **External Service Failures:**
+
 - **Risk:** Stripe, DigitalOcean outages affecting deployments
 - **Mitigation:** Circuit breakers, retry logic, degraded mode operations
 
 ### Contingency Plans
 
 **GitHub Actions Outage:**
+
 - Manual deployment scripts maintained and tested
 - Local CI/CD capability using existing Docker Compose setup
 - Emergency procedures documented
 
 **Kubernetes Cluster Issues:**
+
 - Multi-zone deployment for high availability
 - Infrastructure as Code for quick cluster recreation
 - Regular backup and disaster recovery testing
 
 **Rollback Failures:**
+
 - Manual intervention procedures documented
 - Emergency contact procedures
 - Infrastructure snapshots for worst-case recovery

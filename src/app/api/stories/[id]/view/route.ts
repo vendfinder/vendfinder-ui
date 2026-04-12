@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.API_BASE_URL || "http://api-gateway:3000";
+const API_BASE_URL = process.env.API_BASE_URL || 'http://api-gateway:3000';
 
 // POST /api/stories/:id/view — mark story as viewed
 export async function POST(
@@ -9,12 +9,12 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const authHeader = request.headers.get("authorization");
+    const authHeader = request.headers.get('authorization');
     const headers: Record<string, string> = {};
-    if (authHeader) headers["Authorization"] = authHeader;
+    if (authHeader) headers['Authorization'] = authHeader;
 
     const res = await fetch(`${API_BASE_URL}/api/stories/${id}/view`, {
-      method: "POST",
+      method: 'POST',
       headers,
     });
 

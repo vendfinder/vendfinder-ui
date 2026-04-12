@@ -1,31 +1,32 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { createPortal } from "react-dom";
-import { useTranslations } from "next-intl";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Eye, Trash2, Pause, Send } from "lucide-react";
-import type { Story, UserStoryGroup } from "@/types";
-import { useAuth } from "@/context/AuthContext";
-import { useStoryStore } from "@/stores/stories";
-import { createConversation, sendMessage } from "@/lib/api-chat";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Eye, Trash2, Pause, Send } from 'lucide-react';
+import type { Story, UserStoryGroup } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import { useStoryStore } from '@/stores/stories';
+import { createConversation, sendMessage } from '@/lib/api-chat';
 
 const STORY_DURATION = 5000; // 5 seconds per story
 
-function timeAgo(dateStr: string, t: (key: string, values?: Record<string, string | number | Date>) => string): string {
-  const seconds = Math.floor(
-    (Date.now() - new Date(dateStr).getTime()) / 1000
-  );
-  if (seconds < 60) return t("justNow");
+function timeAgo(
+  dateStr: string,
+  t: (key: string, values?: Record<string, string | number | Date>) => string
+): string {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (seconds < 60) return t('justNow');
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return t("minutesAgo", { count: minutes });
+  if (minutes < 60) return t('minutesAgo', { count: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return t("hoursAgo", { count: hours });
-  return t("daysAgo", { count: Math.floor(hours / 24) });
+  if (hours < 24) return t('hoursAgo', { count: hours });
+  return t('daysAgo', { count: Math.floor(hours / 24) });
 }
 
 export default function StoryViewer() {
-  const t = useTranslations("stories");
+  const t = useTranslations('stories');
   const { user, token } = useAuth();
   const {
     feed,
@@ -42,7 +43,7 @@ export default function StoryViewer() {
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState(0);
   const [deleting, setDeleting] = useState(false);
-  const [replyText, setReplyText] = useState("");
+  const [replyText, setReplyText] = useState('');
   const [replySending, setReplySending] = useState(false);
   const [replySent, setReplySent] = useState(false);
   const replyInputRef = useRef<HTMLInputElement>(null);
@@ -66,9 +67,9 @@ export default function StoryViewer() {
   // Lock body scroll
   useEffect(() => {
     if (!viewerOpen) return;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = '';
     };
   }, [viewerOpen]);
 
@@ -91,7 +92,14 @@ export default function StoryViewer() {
     else {
       closeViewer();
     }
-  }, [group, viewerStoryIndex, viewerGroupIndex, feed.length, setViewerIndex, closeViewer]);
+  }, [
+    group,
+    viewerStoryIndex,
+    viewerGroupIndex,
+    feed.length,
+    setViewerIndex,
+    closeViewer,
+  ]);
 
   const goBack = useCallback(() => {
     if (viewerStoryIndex > 0) {
@@ -142,13 +150,16 @@ export default function StoryViewer() {
   useEffect(() => {
     if (!viewerOpen) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeViewer();
-      if (e.key === "ArrowRight") goNext();
-      if (e.key === "ArrowLeft") goBack();
-      if (e.key === " ") { e.preventDefault(); setPaused((p) => !p); }
+      if (e.key === 'Escape') closeViewer();
+      if (e.key === 'ArrowRight') goNext();
+      if (e.key === 'ArrowLeft') goBack();
+      if (e.key === ' ') {
+        e.preventDefault();
+        setPaused((p) => !p);
+      }
     };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
   }, [viewerOpen, goNext, goBack, closeViewer]);
 
   const handleDelete = async () => {
@@ -163,9 +174,17 @@ export default function StoryViewer() {
     if (!replyText.trim() || !token || !group || replySending) return;
     setReplySending(true);
     try {
-      const { id: convId } = await createConversation(null, group.userId, token);
-      await sendMessage(convId, `Replied to your story: "${replyText.trim()}"`, token);
-      setReplyText("");
+      const { id: convId } = await createConversation(
+        null,
+        group.userId,
+        token
+      );
+      await sendMessage(
+        convId,
+        `Replied to your story: "${replyText.trim()}"`,
+        token
+      );
+      setReplyText('');
       setReplySent(true);
       setTimeout(() => setReplySent(false), 2000);
     } catch {
@@ -176,7 +195,7 @@ export default function StoryViewer() {
 
   // Reset reply state on story change
   useEffect(() => {
-    setReplyText("");
+    setReplyText('');
     setReplySent(false);
   }, [viewerGroupIndex, viewerStoryIndex]);
 
@@ -206,11 +225,11 @@ export default function StoryViewer() {
                   style={{
                     width:
                       i < viewerStoryIndex
-                        ? "100%"
+                        ? '100%'
                         : i === viewerStoryIndex
                           ? `${progress * 100}%`
-                          : "0%",
-                    transitionDuration: i === viewerStoryIndex ? "30ms" : "0ms",
+                          : '0%',
+                    transitionDuration: i === viewerStoryIndex ? '30ms' : '0ms',
                   }}
                 />
               </div>
@@ -229,7 +248,7 @@ export default function StoryViewer() {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white text-xs font-bold">
-                  {group.displayName?.charAt(0) || "?"}
+                  {group.displayName?.charAt(0) || '?'}
                 </div>
               )}
             </div>
@@ -246,7 +265,7 @@ export default function StoryViewer() {
             <div className="flex items-center gap-1">
               {paused && (
                 <div className="px-2 py-1 rounded-lg bg-white/10 text-white/60 text-[10px] font-semibold flex items-center gap-1">
-                  <Pause size={10} /> {t("paused")}
+                  <Pause size={10} /> {t('paused')}
                 </div>
               )}
               {isOwnStory && (
@@ -297,11 +316,11 @@ export default function StoryViewer() {
             {story.textOverlay && (
               <div
                 className={`absolute left-0 right-0 z-10 px-6 text-center ${
-                  story.textPosition === "top"
-                    ? "top-24"
-                    : story.textPosition === "bottom"
-                      ? "bottom-20"
-                      : "top-1/2 -translate-y-1/2"
+                  story.textPosition === 'top'
+                    ? 'top-24'
+                    : story.textPosition === 'bottom'
+                      ? 'bottom-20'
+                      : 'top-1/2 -translate-y-1/2'
                 }`}
               >
                 <motion.p
@@ -351,7 +370,7 @@ export default function StoryViewer() {
                   <Eye size={14} />
                   <span className="font-medium">{story.viewCount}</span>
                   <span className="text-white/40">
-                    {t("viewCount", { count: story.viewCount })}
+                    {t('viewCount', { count: story.viewCount })}
                   </span>
                 </div>
               </div>
@@ -361,7 +380,7 @@ export default function StoryViewer() {
                 {replySent ? (
                   <div className="flex justify-center">
                     <div className="px-4 py-2.5 rounded-full bg-primary/20 backdrop-blur-md text-primary text-sm font-medium border border-primary/30">
-                      {t("replySent")}
+                      {t('replySent')}
                     </div>
                   </div>
                 ) : (
@@ -381,7 +400,9 @@ export default function StoryViewer() {
                       onBlur={() => {
                         if (!replyText.trim()) setPaused(false);
                       }}
-                      placeholder={t("replyPlaceholder", { name: group.displayName })}
+                      placeholder={t('replyPlaceholder', {
+                        name: group.displayName,
+                      })}
                       className="flex-1 px-4 py-2.5 rounded-full bg-white/10 backdrop-blur-md text-white text-sm placeholder:text-white/40 border border-white/15 focus:border-white/30 focus:outline-none transition-colors"
                     />
                     {replyText.trim() && (

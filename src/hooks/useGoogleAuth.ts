@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef } from 'react';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
@@ -48,11 +48,11 @@ export function useGoogleAuth(
     if (!GOOGLE_CLIENT_ID) return;
 
     // Load Google Identity Services SDK
-    if (document.getElementById("google-gsi-script")) return;
+    if (document.getElementById('google-gsi-script')) return;
 
-    const script = document.createElement("script");
-    script.id = "google-gsi-script";
-    script.src = "https://accounts.google.com/gsi/client";
+    const script = document.createElement('script');
+    script.id = 'google-gsi-script';
+    script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.defer = true;
     script.onload = () => {
@@ -68,11 +68,11 @@ export function useGoogleAuth(
 
   const triggerGoogleLogin = useCallback(() => {
     if (!GOOGLE_CLIENT_ID) {
-      errorRef.current?.("Google sign-in is not configured");
+      errorRef.current?.('Google sign-in is not configured');
       return;
     }
     if (!window.google) {
-      errorRef.current?.("Google SDK not loaded yet. Please try again.");
+      errorRef.current?.('Google SDK not loaded yet. Please try again.');
       return;
     }
     window.google.accounts.id.prompt();

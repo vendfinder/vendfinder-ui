@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import Link from "next/link";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
 import {
   CreditCard,
   DollarSign,
@@ -13,10 +13,10 @@ import {
   ShieldCheck,
   Loader2,
   ArrowLeft,
-} from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { useTranslations } from "next-intl";
-import TierSelectionModal from "@/components/dashboard/TierSelectionModal";
+} from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useTranslations } from 'next-intl';
+import TierSelectionModal from '@/components/dashboard/TierSelectionModal';
 
 interface SellerGateProps {
   children: React.ReactNode;
@@ -24,8 +24,12 @@ interface SellerGateProps {
   backLabel?: string;
 }
 
-export default function SellerGate({ children, backHref = "/dashboard", backLabel }: SellerGateProps) {
-  const t = useTranslations("sellerGate");
+export default function SellerGate({
+  children,
+  backHref = '/dashboard',
+  backLabel,
+}: SellerGateProps) {
+  const t = useTranslations('sellerGate');
   const { token } = useAuth();
   const router = useRouter();
   const [canList, setCanList] = useState<boolean | null>(null);
@@ -45,10 +49,10 @@ export default function SellerGate({ children, backHref = "/dashboard", backLabe
 
     async function checkSellerStatus() {
       try {
-        const res = await fetch("/api/auth/seller-status", {
+        const res = await fetch('/api/auth/seller-status', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error("Failed to check seller status");
+        if (!res.ok) throw new Error('Failed to check seller status');
         const data = await res.json();
         if (!cancelled) {
           setCanList(data.canList);
@@ -64,7 +68,9 @@ export default function SellerGate({ children, backHref = "/dashboard", backLabe
     }
 
     checkSellerStatus();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const handleActivateAccount = () => {
@@ -78,7 +84,7 @@ export default function SellerGate({ children, backHref = "/dashboard", backLabe
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
           <Loader2 size={28} className="text-primary animate-spin" />
-          <p className="text-sm text-muted">{t("checking")}</p>
+          <p className="text-sm text-muted">{t('checking')}</p>
         </div>
       </div>
     );
@@ -97,7 +103,7 @@ export default function SellerGate({ children, backHref = "/dashboard", backLabe
             className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground mb-8 transition-colors"
           >
             <ArrowLeft size={14} />
-            {backLabel || t("backToDashboard")}
+            {backLabel || t('backToDashboard')}
           </Link>
 
           <div className="relative rounded-2xl overflow-hidden border border-red-500/20">
@@ -110,10 +116,10 @@ export default function SellerGate({ children, backHref = "/dashboard", backLabe
               </div>
 
               <h1 className="text-2xl font-bold text-foreground mb-2">
-                {t("title")}
+                {t('title')}
               </h1>
               <p className="text-sm text-muted leading-relaxed max-w-md mx-auto mb-8">
-                {t("description")}
+                {t('description')}
               </p>
 
               <button
@@ -124,12 +130,12 @@ export default function SellerGate({ children, backHref = "/dashboard", backLabe
                 {activating ? (
                   <>
                     <Loader2 size={18} className="animate-spin" />
-                    {t("redirecting")}
+                    {t('redirecting')}
                   </>
                 ) : (
                   <>
                     <CreditCard size={18} />
-                    {t("activateNow")}
+                    {t('activateNow')}
                   </>
                 )}
               </button>
@@ -142,23 +148,50 @@ export default function SellerGate({ children, backHref = "/dashboard", backLabe
 
               <div className="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-white/[0.06]">
                 {[
-                  { icon: DollarSign, title: t("oneTimeFee"), description: t("oneTimeFeeDesc"), color: "text-emerald-400", bgColor: "bg-emerald-400/10" },
-                  { icon: Infinity, title: t("unlimitedListings"), description: t("unlimitedListingsDesc"), color: "text-blue-400", bgColor: "bg-blue-400/10" },
-                  { icon: Store, title: t("fullAccess"), description: t("fullAccessDesc"), color: "text-violet-400", bgColor: "bg-violet-400/10" },
+                  {
+                    icon: DollarSign,
+                    title: t('oneTimeFee'),
+                    description: t('oneTimeFeeDesc'),
+                    color: 'text-emerald-400',
+                    bgColor: 'bg-emerald-400/10',
+                  },
+                  {
+                    icon: Infinity,
+                    title: t('unlimitedListings'),
+                    description: t('unlimitedListingsDesc'),
+                    color: 'text-blue-400',
+                    bgColor: 'bg-blue-400/10',
+                  },
+                  {
+                    icon: Store,
+                    title: t('fullAccess'),
+                    description: t('fullAccessDesc'),
+                    color: 'text-violet-400',
+                    bgColor: 'bg-violet-400/10',
+                  },
                 ].map((signal) => (
-                  <div key={signal.title} className="flex flex-col items-center gap-2">
-                    <div className={`w-10 h-10 rounded-xl ${signal.bgColor} ${signal.color} flex items-center justify-center`}>
+                  <div
+                    key={signal.title}
+                    className="flex flex-col items-center gap-2"
+                  >
+                    <div
+                      className={`w-10 h-10 rounded-xl ${signal.bgColor} ${signal.color} flex items-center justify-center`}
+                    >
                       <signal.icon size={18} />
                     </div>
-                    <p className="text-xs font-semibold text-foreground">{signal.title}</p>
-                    <p className="text-[10px] text-muted">{signal.description}</p>
+                    <p className="text-xs font-semibold text-foreground">
+                      {signal.title}
+                    </p>
+                    <p className="text-[10px] text-muted">
+                      {signal.description}
+                    </p>
                   </div>
                 ))}
               </div>
 
               <div className="flex items-center justify-center gap-2 mt-6 text-[11px] text-muted">
                 <ShieldCheck size={12} className="text-emerald-400" />
-                {t("securePayment")}
+                {t('securePayment')}
               </div>
             </div>
           </div>
@@ -188,9 +221,9 @@ export default function SellerGate({ children, backHref = "/dashboard", backLabe
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground">
-                {t("renewalTitle", { days: daysRemaining })}
+                {t('renewalTitle', { days: daysRemaining })}
               </p>
-              <p className="text-[11px] text-muted">{t("renewalDesc")}</p>
+              <p className="text-[11px] text-muted">{t('renewalDesc')}</p>
             </div>
           </div>
           <button
@@ -198,7 +231,7 @@ export default function SellerGate({ children, backHref = "/dashboard", backLabe
             disabled={activating}
             className="shrink-0 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition-colors disabled:opacity-50"
           >
-            {activating ? t("redirecting") : t("renewNow")}
+            {activating ? t('redirecting') : t('renewNow')}
           </button>
         </motion.div>
       )}

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   Tag,
@@ -18,48 +18,56 @@ import {
   ChevronRight,
   MessageCircle,
   Shield,
-} from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useAuth } from "@/context/AuthContext";
-import { useTotalUnread } from "@/stores/chat";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useAuth } from '@/context/AuthContext';
+import { useTotalUnread } from '@/stores/chat';
+import { cn } from '@/lib/utils';
 
 export default function DashboardSidebar() {
-  const t = useTranslations("dashboard");
+  const t = useTranslations('dashboard');
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const totalUnread = useTotalUnread();
 
   const sidebarSections = [
     {
-      label: t("sidebarDashboard"),
+      label: t('sidebarDashboard'),
       items: [
-        { href: "/dashboard", label: t("overview"), icon: LayoutDashboard },
-        { href: "/dashboard/messages", label: t("messages"), icon: MessageCircle },
-        { href: "/dashboard/profile", label: t("myProfile"), icon: User },
+        { href: '/dashboard', label: t('overview'), icon: LayoutDashboard },
+        {
+          href: '/dashboard/messages',
+          label: t('messages'),
+          icon: MessageCircle,
+        },
+        { href: '/dashboard/profile', label: t('myProfile'), icon: User },
       ],
     },
     {
-      label: t("sidebarSelling"),
+      label: t('sidebarSelling'),
       items: [
-        { href: "/dashboard/selling", label: t("selling"), icon: Tag },
-        { href: "/dashboard/listings/new", label: t("newListing"), icon: Plus },
-        { href: "/dashboard/payouts", label: t("payouts"), icon: Wallet },
-        { href: "/dashboard/kyc", label: t("verification"), icon: Shield },
+        { href: '/dashboard/selling', label: t('selling'), icon: Tag },
+        { href: '/dashboard/listings/new', label: t('newListing'), icon: Plus },
+        { href: '/dashboard/payouts', label: t('payouts'), icon: Wallet },
+        { href: '/dashboard/kyc', label: t('verification'), icon: Shield },
       ],
     },
     {
-      label: t("sidebarBuying"),
+      label: t('sidebarBuying'),
       items: [
-        { href: "/dashboard/buying", label: t("buying"), icon: ShoppingBag },
-        { href: "/dashboard/favorites", label: t("favorites"), icon: Heart },
-        { href: "/dashboard/portfolio", label: t("portfolio"), icon: Briefcase },
+        { href: '/dashboard/buying', label: t('buying'), icon: ShoppingBag },
+        { href: '/dashboard/favorites', label: t('favorites'), icon: Heart },
+        {
+          href: '/dashboard/portfolio',
+          label: t('portfolio'),
+          icon: Briefcase,
+        },
       ],
     },
     {
-      label: t("sidebarAccount"),
+      label: t('sidebarAccount'),
       items: [
-        { href: "/dashboard/settings", label: t("settings"), icon: Settings },
+        { href: '/dashboard/settings', label: t('settings'), icon: Settings },
       ],
     },
   ];
@@ -68,7 +76,7 @@ export default function DashboardSidebar() {
     <nav className="space-y-1">
       {/* Profile card */}
       <Link
-        href={`/profile/${user?.username || "me"}`}
+        href={`/profile/${user?.username || 'me'}`}
         className="block px-4 py-4 mb-4 rounded-2xl bg-gradient-to-br from-primary/[0.08] to-violet-500/[0.04] border border-primary/15 hover:border-primary/30 transition-all group relative overflow-hidden"
       >
         {/* Subtle shimmer */}
@@ -78,9 +86,13 @@ export default function DashboardSidebar() {
           <div className="relative">
             <div className="w-11 h-11 rounded-xl bg-primary/20 border-2 border-primary/50 flex items-center justify-center text-primary font-bold text-sm shadow-[0_0_15px_rgba(232,136,58,0.1)] overflow-hidden">
               {user?.avatar ? (
-                <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={user.avatar}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                user?.name?.charAt(0) || "?"
+                user?.name?.charAt(0) || '?'
               )}
             </div>
             {user?.verified && (
@@ -94,7 +106,9 @@ export default function DashboardSidebar() {
             <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
               {user?.name}
             </p>
-            <p className="text-[11px] text-muted truncate">@{user?.username || "user"}</p>
+            <p className="text-[11px] text-muted truncate">
+              @{user?.username || 'user'}
+            </p>
           </div>
           <ChevronRight
             size={14}
@@ -110,11 +124,15 @@ export default function DashboardSidebar() {
           </div>
           <div className="w-px h-3 bg-white/[0.06]" />
           <span className="text-[11px] text-muted">
-            <span className="font-semibold text-foreground">—</span> {t("sales")}
+            <span className="font-semibold text-foreground">—</span>{' '}
+            {t('sales')}
           </span>
           <div className="w-px h-3 bg-white/[0.06]" />
           <span className="text-[11px] text-muted">
-            {t("lvl")} <span className="font-semibold text-primary">{user?.sellerLevel || 1}</span>
+            {t('lvl')}{' '}
+            <span className="font-semibold text-primary">
+              {user?.sellerLevel || 1}
+            </span>
           </span>
         </div>
       </Link>
@@ -133,10 +151,10 @@ export default function DashboardSidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all relative group",
+                  'flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all relative group',
                   isActive
-                    ? "bg-primary/[0.1] text-primary"
-                    : "text-muted hover:bg-surface/80 hover:text-foreground"
+                    ? 'bg-primary/[0.1] text-primary'
+                    : 'text-muted hover:bg-surface/80 hover:text-foreground'
                 )}
               >
                 {isActive && (
@@ -144,16 +162,16 @@ export default function DashboardSidebar() {
                 )}
                 <div
                   className={cn(
-                    "w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
+                    'w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0',
                     isActive
-                      ? "bg-primary/15 text-primary"
-                      : "bg-transparent text-muted group-hover:bg-surface group-hover:text-foreground"
+                      ? 'bg-primary/15 text-primary'
+                      : 'bg-transparent text-muted group-hover:bg-surface group-hover:text-foreground'
                   )}
                 >
                   <Icon size={16} />
                 </div>
                 <span className="flex-1">{item.label}</span>
-                {item.href === "/dashboard/messages" && totalUnread > 0 && (
+                {item.href === '/dashboard/messages' && totalUnread > 0 && (
                   <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center shrink-0">
                     {totalUnread}
                   </span>
@@ -173,7 +191,7 @@ export default function DashboardSidebar() {
           <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-red-500/10 transition-colors">
             <LogOut size={16} />
           </div>
-          {t("logOut")}
+          {t('logOut')}
         </button>
       </div>
     </nav>

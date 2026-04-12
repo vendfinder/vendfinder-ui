@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useLocale } from "next-intl";
-import { useMemo } from "react";
-import type { Product } from "@/types";
+import { useLocale } from 'next-intl';
+import { useMemo } from 'react';
+import type { Product } from '@/types';
 
 export function useTranslatedProduct(product: Product) {
   const locale = useLocale();

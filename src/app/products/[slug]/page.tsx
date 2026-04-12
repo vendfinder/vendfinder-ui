@@ -1,10 +1,10 @@
-import Link from "next/link";
-import { Package } from "lucide-react";
-import { fetchProductBySlug, getProductsByCategory } from "@/lib/api";
-import ProductDetailClient from "./ProductDetailClient";
-import type { Review } from "@/types";
+import Link from 'next/link';
+import { Package } from 'lucide-react';
+import { fetchProductBySlug, getProductsByCategory } from '@/lib/api';
+import ProductDetailClient from './ProductDetailClient';
+import type { Review } from '@/types';
 
-const API_BASE_URL = process.env.API_BASE_URL || "http://api-gateway:3000";
+const API_BASE_URL = process.env.API_BASE_URL || 'http://api-gateway:3000';
 
 interface Ask {
   id: string;
@@ -39,10 +39,13 @@ async function fetchReviewsForProduct(productId: string): Promise<Review[]> {
     return (data.reviews || []).map((r: Record<string, unknown>) => ({
       id: r.id as string,
       productId: (r.product_id as string) || productId,
-      userName: (r.author as { username?: string })?.username || (r.author_name as string) || "Anonymous",
+      userName:
+        (r.author as { username?: string })?.username ||
+        (r.author_name as string) ||
+        'Anonymous',
       rating: r.rating as number,
-      title: (r.title as string) || "",
-      body: (r.content as string) || "",
+      title: (r.title as string) || '',
+      body: (r.content as string) || '',
       date: new Date(r.created_at as string).toLocaleDateString(),
       verified: (r.verified_purchase as boolean) || false,
     }));
@@ -93,7 +96,7 @@ export default async function ProductDetailPage({
   // Build a map of size → lowest ask price for available sizes
   const sizeAvailability: Record<string, number> = {};
   for (const ask of asks) {
-    const size = ask.size || "one-size";
+    const size = ask.size || 'one-size';
     const price = parseFloat(ask.ask_price);
     if (!sizeAvailability[size] || price < sizeAvailability[size]) {
       sizeAvailability[size] = price;
@@ -103,7 +106,7 @@ export default async function ProductDetailPage({
   // Collect unique conditions from active asks
   const askConditions: string[] = [];
   for (const ask of asks) {
-    const cond = ask.condition || "new";
+    const cond = ask.condition || 'new';
     if (!askConditions.includes(cond)) {
       askConditions.push(cond);
     }

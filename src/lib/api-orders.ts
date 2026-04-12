@@ -1,10 +1,17 @@
-import { Purchase, Payout, SellerStats, PortfolioItem, PayoutMethod, PayoutMethodType } from "@/types";
+import {
+  Purchase,
+  Payout,
+  SellerStats,
+  PortfolioItem,
+  PayoutMethod,
+  PayoutMethodType,
+} from '@/types';
 
-const BASE = "/api/orders";
+const BASE = '/api/orders';
 
 function authHeaders(token: string) {
   return {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
   };
 }
@@ -49,13 +56,13 @@ export async function createCheckout(
   token: string
 ): Promise<CheckoutResponse> {
   const res = await fetch(`${BASE}/checkout`, {
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify(data),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Checkout failed" }));
-    throw new Error(err.error || "Checkout failed");
+    const err = await res.json().catch(() => ({ error: 'Checkout failed' }));
+    throw new Error(err.error || 'Checkout failed');
   }
   return res.json();
 }
@@ -81,13 +88,15 @@ export async function createPayPalCheckout(
   token: string
 ): Promise<PayPalCheckoutResponse> {
   const res = await fetch(`${BASE}/checkout/paypal`, {
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify(data),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "PayPal checkout failed" }));
-    throw new Error(err.error || "PayPal checkout failed");
+    const err = await res
+      .json()
+      .catch(() => ({ error: 'PayPal checkout failed' }));
+    throw new Error(err.error || 'PayPal checkout failed');
   }
   return res.json();
 }
@@ -97,24 +106,29 @@ export async function capturePayPalPayment(
   token: string
 ): Promise<{ orderId: string; orderNumber: string; status: string }> {
   const res = await fetch(`${BASE}/checkout/paypal/capture`, {
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify({ paypalOrderId }),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "PayPal capture failed" }));
-    throw new Error(err.error || "PayPal capture failed");
+    const err = await res
+      .json()
+      .catch(() => ({ error: 'PayPal capture failed' }));
+    throw new Error(err.error || 'PayPal capture failed');
   }
   return res.json();
 }
 
 // --- Orders ---
 
-export async function fetchMyOrders(token: string, role: "buyer" | "seller" = "buyer") {
+export async function fetchMyOrders(
+  token: string,
+  role: 'buyer' | 'seller' = 'buyer'
+) {
   const res = await fetch(`${BASE}?role=${role}`, {
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to fetch orders");
+  if (!res.ok) throw new Error('Failed to fetch orders');
   return res.json();
 }
 
@@ -122,7 +136,7 @@ export async function fetchMyPurchases(token: string): Promise<Purchase[]> {
   const res = await fetch(`${BASE}/me/purchases`, {
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to fetch purchases");
+  if (!res.ok) throw new Error('Failed to fetch purchases');
   const data = await res.json();
   return data.purchases || [];
 }
@@ -131,7 +145,7 @@ export async function fetchMySales(token: string) {
   const res = await fetch(`${BASE}/me/sales`, {
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to fetch sales");
+  if (!res.ok) throw new Error('Failed to fetch sales');
   const data = await res.json();
   return data.sales || [];
 }
@@ -140,7 +154,7 @@ export async function fetchMyPayouts(token: string): Promise<Payout[]> {
   const res = await fetch(`${BASE}/me/payouts`, {
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to fetch payouts");
+  if (!res.ok) throw new Error('Failed to fetch payouts');
   const data = await res.json();
   return data.payouts || [];
 }
@@ -149,7 +163,7 @@ export async function fetchSellerStats(token: string): Promise<SellerStats> {
   const res = await fetch(`${BASE}/me/stats`, {
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to fetch stats");
+  if (!res.ok) throw new Error('Failed to fetch stats');
   const data = await res.json();
   return data.stats;
 }
@@ -160,7 +174,12 @@ export async function fetchPublicSellerStats(userId: string): Promise<{
   avgShipTime: string;
   completionRate: number;
   sellerRating: number;
-  verification?: { verified: boolean; proSeller: boolean; topRated: boolean; kycVerified: boolean };
+  verification?: {
+    verified: boolean;
+    proSeller: boolean;
+    topRated: boolean;
+    kycVerified: boolean;
+  };
 } | null> {
   try {
     const res = await fetch(`${BASE}/sellers/${userId}/stats`);
@@ -176,7 +195,7 @@ export async function fetchPortfolio(token: string): Promise<PortfolioItem[]> {
   // Portfolio is derived from completed purchases
   const purchases = await fetchMyPurchases(token);
   return purchases
-    .filter((p) => p.status === "delivered" || p.status === "authenticated")
+    .filter((p) => p.status === 'delivered' || p.status === 'authenticated')
     .map((p) => ({
       id: p.id,
       productId: p.id,
@@ -189,17 +208,19 @@ export async function fetchPortfolio(token: string): Promise<PortfolioItem[]> {
       gainLoss: 0,
       gainLossPercent: 0,
       purchaseDate: p.date,
-      condition: "new",
+      condition: 'new',
     }));
 }
 
 // --- Payout Methods ---
 
-export async function fetchPayoutMethods(token: string): Promise<PayoutMethod[]> {
+export async function fetchPayoutMethods(
+  token: string
+): Promise<PayoutMethod[]> {
   const res = await fetch(`${BASE}/me/payout-methods`, {
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to fetch payout methods");
+  if (!res.ok) throw new Error('Failed to fetch payout methods');
   const data = await res.json();
   return data.methods || [];
 }
@@ -217,13 +238,15 @@ export async function createPayoutMethod(
   token: string
 ): Promise<PayoutMethod> {
   const res = await fetch(`${BASE}/me/payout-methods`, {
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify(data),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Failed to add payout method" }));
-    throw new Error(err.error || "Failed to add payout method");
+    const err = await res
+      .json()
+      .catch(() => ({ error: 'Failed to add payout method' }));
+    throw new Error(err.error || 'Failed to add payout method');
   }
   const json = await res.json();
   return json.method;
@@ -231,35 +254,48 @@ export async function createPayoutMethod(
 
 export async function updatePayoutMethod(
   id: string,
-  data: { label?: string; account_id?: string; account_name?: string; national_id?: string; date_of_birth?: string; address?: string },
+  data: {
+    label?: string;
+    account_id?: string;
+    account_name?: string;
+    national_id?: string;
+    date_of_birth?: string;
+    address?: string;
+  },
   token: string
 ): Promise<PayoutMethod> {
   const res = await fetch(`${BASE}/me/payout-methods/${id}`, {
-    method: "PUT",
+    method: 'PUT',
     headers: authHeaders(token),
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Failed to update payout method");
+  if (!res.ok) throw new Error('Failed to update payout method');
   const json = await res.json();
   return json.method;
 }
 
-export async function setPrimaryPayoutMethod(id: string, token: string): Promise<PayoutMethod> {
+export async function setPrimaryPayoutMethod(
+  id: string,
+  token: string
+): Promise<PayoutMethod> {
   const res = await fetch(`${BASE}/me/payout-methods/${id}/primary`, {
-    method: "PUT",
+    method: 'PUT',
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to set primary payout method");
+  if (!res.ok) throw new Error('Failed to set primary payout method');
   const json = await res.json();
   return json.method;
 }
 
-export async function deletePayoutMethod(id: string, token: string): Promise<void> {
+export async function deletePayoutMethod(
+  id: string,
+  token: string
+): Promise<void> {
   const res = await fetch(`${BASE}/me/payout-methods/${id}`, {
-    method: "DELETE",
+    method: 'DELETE',
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to delete payout method");
+  if (!res.ok) throw new Error('Failed to delete payout method');
 }
 
 // --- Order Lifecycle ---
@@ -270,31 +306,33 @@ export async function shipOrder(
   token: string
 ) {
   const res = await fetch(`${BASE}/${orderId}/ship`, {
-    method: "PATCH",
+    method: 'PATCH',
     headers: authHeaders(token),
     body: JSON.stringify(data),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Failed to ship order" }));
-    throw new Error(err.error || "Failed to ship order");
+    const err = await res
+      .json()
+      .catch(() => ({ error: 'Failed to ship order' }));
+    throw new Error(err.error || 'Failed to ship order');
   }
   return res.json();
 }
 
 export async function confirmDelivery(orderId: string, token: string) {
   const res = await fetch(`${BASE}/${orderId}/confirm-delivery`, {
-    method: "PATCH",
+    method: 'PATCH',
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to confirm delivery");
+  if (!res.ok) throw new Error('Failed to confirm delivery');
   return res.json();
 }
 
 export async function cancelOrder(orderId: string, token: string) {
   const res = await fetch(`${BASE}/${orderId}/cancel`, {
-    method: "PATCH",
+    method: 'PATCH',
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to cancel order");
+  if (!res.ok) throw new Error('Failed to cancel order');
   return res.json();
 }

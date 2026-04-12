@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { X, Minus, Plus, ShoppingBag } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useCart } from "@/context/CartContext";
-import { useFormattedPrice } from "@/hooks/useFormattedPrice";
-import { useTranslations } from "next-intl";
-import Button from "@/components/ui/Button";
+import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useCart } from '@/context/CartContext';
+import { useFormattedPrice } from '@/hooks/useFormattedPrice';
+import { useTranslations } from 'next-intl';
+import Button from '@/components/ui/Button';
 
 export default function CartDrawer() {
   const {
@@ -33,7 +33,7 @@ export default function CartDrawer() {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-bold text-foreground">
-            {t("cart.title", { count: totalItems })}
+            {t('cart.title', { count: totalItems })}
           </h2>
           <button
             onClick={() => setDrawerOpen(false)}
@@ -48,13 +48,11 @@ export default function CartDrawer() {
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
             <ShoppingBag size={48} className="text-border mb-4" />
             <p className="text-lg font-medium text-foreground mb-1">
-              {t("cart.emptyTitle")}
+              {t('cart.emptyTitle')}
             </p>
-            <p className="text-sm text-muted mb-6">
-              {t("cart.emptyDesc")}
-            </p>
+            <p className="text-sm text-muted mb-6">{t('cart.emptyDesc')}</p>
             <Button href="/products" onClick={() => setDrawerOpen(false)}>
-              {t("common.startShopping")}
+              {t('common.startShopping')}
             </Button>
           </div>
         ) : (
@@ -62,7 +60,7 @@ export default function CartDrawer() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {items.map((item) => (
                 <div
-                  key={`${item.product.id}-${item.size || "default"}`}
+                  key={`${item.product.id}-${item.size || 'default'}`}
                   className="flex gap-4 p-3 rounded-lg border border-border bg-card"
                 >
                   <div className="w-20 h-20 rounded-lg bg-surface flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -84,10 +82,11 @@ export default function CartDrawer() {
                     </h3>
                     {item.size && (
                       <p className="text-xs text-muted mt-0.5">
-                        {t("cart.size", {
-                          size: item.product.category === "sneakers"
-                            ? t("cart.sizeUS", { size: item.size })
-                            : item.size,
+                        {t('cart.size', {
+                          size:
+                            item.product.category === 'sneakers'
+                              ? t('cart.sizeUS', { size: item.size })
+                              : item.size,
                         })}
                       </p>
                     )}
@@ -123,12 +122,10 @@ export default function CartDrawer() {
                         <Plus size={14} />
                       </button>
                       <button
-                        onClick={() =>
-                          removeItem(item.product.id, item.size)
-                        }
+                        onClick={() => removeItem(item.product.id, item.size)}
                         className="ml-auto text-xs text-muted hover:text-error cursor-pointer"
                       >
-                        {t("common.remove")}
+                        {t('common.remove')}
                       </button>
                     </div>
                   </div>
@@ -139,26 +136,24 @@ export default function CartDrawer() {
             {/* Footer */}
             <div className="p-4 border-t border-border space-y-4">
               <div className="flex justify-between text-sm">
-                <span className="text-muted">{t("cart.subtotal")}</span>
+                <span className="text-muted">{t('cart.subtotal')}</span>
                 <span className="font-semibold text-foreground">
                   {formatPrice(totalPrice)}
                 </span>
               </div>
-              <p className="text-xs text-muted">
-                {t("cart.shippingNote")}
-              </p>
+              <p className="text-xs text-muted">{t('cart.shippingNote')}</p>
               <Link
                 href="/checkout"
                 onClick={() => setDrawerOpen(false)}
                 className="block w-full text-center px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-dark transition-colors"
               >
-                {t("cart.checkout")}
+                {t('cart.checkout')}
               </Link>
               <button
                 onClick={() => setDrawerOpen(false)}
                 className="block w-full text-center text-sm text-muted hover:text-foreground transition-colors cursor-pointer"
               >
-                {t("common.continueShopping")}
+                {t('common.continueShopping')}
               </button>
             </div>
           </>

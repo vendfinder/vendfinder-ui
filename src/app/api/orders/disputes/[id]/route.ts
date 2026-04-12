@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.API_BASE_URL || "http://api-gateway:3000";
+const API_BASE_URL = process.env.API_BASE_URL || 'http://api-gateway:3000';
 
 // GET /api/orders/disputes/[id] — Get dispute details
 export async function GET(
@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const token = request.headers.get("authorization");
+    const token = request.headers.get('authorization');
     const res = await fetch(`${API_BASE_URL}/api/disputes/${id}`, {
       headers: {
         ...(token ? { Authorization: token } : {}),
@@ -19,7 +19,7 @@ export async function GET(
     return NextResponse.json(data, { status: res.status });
   } catch {
     return NextResponse.json(
-      { error: "Failed to connect to order service" },
+      { error: 'Failed to connect to order service' },
       { status: 502 }
     );
   }

@@ -1,47 +1,47 @@
-import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Outfit } from "next/font/google";
-import "./globals.css";
-import { AuthProvider } from "@/context/AuthContext";
-import { CartProvider } from "@/context/CartContext";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import BottomTabBar from "@/components/layout/BottomTabBar";
-import CartDrawer from "@/components/cart/CartDrawer";
-import ChatInitializer from "@/components/chat/ChatInitializer";
-import SupportChatButton from "@/components/chat/SupportChatButton";
-import CookieConsent from "@/components/CookieConsent";
-import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages, getTranslations } from "next-intl/server";
+import type { Metadata, Viewport } from 'next';
+import { Playfair_Display, Outfit } from 'next/font/google';
+import './globals.css';
+import { AuthProvider } from '@/context/AuthContext';
+import { CartProvider } from '@/context/CartContext';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import BottomTabBar from '@/components/layout/BottomTabBar';
+import CartDrawer from '@/components/cart/CartDrawer';
+import ChatInitializer from '@/components/chat/ChatInitializer';
+import SupportChatButton from '@/components/chat/SupportChatButton';
+import CookieConsent from '@/components/CookieConsent';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 
 const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-  display: "swap",
+  variable: '--font-playfair',
+  subsets: ['latin'],
+  display: 'swap',
 });
 
 const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-  display: "swap",
+  variable: '--font-outfit',
+  subsets: ['latin'],
+  display: 'swap',
 });
 
 export const viewport: Viewport = {
-  viewportFit: "cover",
-  themeColor: "#0B0B0F",
+  viewportFit: 'cover',
+  themeColor: '#0B0B0F',
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("metadata");
+  const t = await getTranslations('metadata');
   return {
-    title: t("title"),
-    description: t("description"),
-    manifest: "/manifest.json",
+    title: t('title'),
+    description: t('description'),
+    manifest: '/manifest.json',
     appleWebApp: {
       capable: true,
-      statusBarStyle: "black-translucent",
-      title: "VendFinder",
+      statusBarStyle: 'black-translucent',
+      title: 'VendFinder',
     },
-    icons: { apple: "/logo.png" },
+    icons: { apple: '/logo.png' },
   };
 }
 
@@ -63,7 +63,9 @@ export default async function RootLayout({
             <CartProvider>
               <ChatInitializer />
               <Navbar />
-              <main className="min-h-screen pb-[var(--tab-bar-height)]">{children}</main>
+              <main className="min-h-screen pb-[var(--tab-bar-height)]">
+                {children}
+              </main>
               <Footer />
               <CartDrawer />
               <SupportChatButton />

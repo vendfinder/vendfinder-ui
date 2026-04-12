@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import { loadStripe } from "@stripe/stripe-js";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
   CardElement,
   useStripe,
   useElements,
-} from "@stripe/react-stripe-js";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+} from '@stripe/react-stripe-js';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import {
   CreditCard,
   Lock,
@@ -25,17 +25,17 @@ import {
   Phone,
   Home,
   Loader2,
-} from "lucide-react";
-import { useCart } from "@/context/CartContext";
-import { useAuth } from "@/context/AuthContext";
-import { useFormattedPrice } from "@/hooks/useFormattedPrice";
-import { useTranslations } from "next-intl";
+} from 'lucide-react';
+import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
+import { useFormattedPrice } from '@/hooks/useFormattedPrice';
+import { useTranslations } from 'next-intl';
 import {
   createCheckout,
   createPayPalCheckout,
   capturePayPalPayment,
   type CheckoutData,
-} from "@/lib/api-orders";
+} from '@/lib/api-orders';
 
 const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!;
 
@@ -47,7 +47,7 @@ const getStripePromise = () => {
   return Promise.resolve(null);
 };
 
-type PaymentMethod = "card" | "paypal";
+type PaymentMethod = 'card' | 'paypal';
 
 function CheckoutForm() {
   const { items, totalPrice, clearCart } = useCart();
@@ -59,16 +59,16 @@ function CheckoutForm() {
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const paymentMethod = "card"; // Stripe only
+  const paymentMethod = 'card'; // Stripe only
 
   const [shipping, setShipping] = useState({
-    firstName: "",
-    lastName: "",
-    address: "",
-    city: "",
-    state: "",
-    zip: "",
-    phone: "",
+    firstName: '',
+    lastName: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    phone: '',
   });
 
   if (items.length === 0) {
@@ -78,14 +78,14 @@ function CheckoutForm() {
           <Package size={32} className="text-muted/30" />
         </div>
         <h1 className="text-2xl font-bold text-foreground mb-2">
-          {t("checkout.emptyTitle")}
+          {t('checkout.emptyTitle')}
         </h1>
-        <p className="text-sm text-muted mb-6">{t("checkout.emptyDesc")}</p>
+        <p className="text-sm text-muted mb-6">{t('checkout.emptyDesc')}</p>
         <Link
           href="/products"
           className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark transition-all"
         >
-          {t("common.browseProducts")}
+          {t('common.browseProducts')}
         </Link>
       </div>
     );
@@ -105,7 +105,7 @@ function CheckoutForm() {
       size: item.size,
       item_price: item.product.price,
       seller_id:
-        item.product.sellerId || "00000000-0000-0000-0000-000000000099",
+        item.product.sellerId || '00000000-0000-0000-0000-000000000099',
       seller_name: item.product.sellerName || undefined,
       shipping_name: `${shipping.firstName} ${shipping.lastName}`,
       shipping_address_line1: shipping.address,
@@ -137,7 +137,7 @@ function CheckoutForm() {
       const { clientSecret } = await createCheckout(getCheckoutData(), token);
 
       const cardElement = elements.getElement(CardElement);
-      if (!cardElement) throw new Error(t("checkout.cardNotFound"));
+      if (!cardElement) throw new Error(t('checkout.cardNotFound'));
 
       const { error: stripeError, paymentIntent } =
         await stripe.confirmCardPayment(clientSecret, {
@@ -151,20 +151,18 @@ function CheckoutForm() {
         });
 
       if (stripeError) {
-        setError(stripeError.message || t("checkout.paymentFailed"));
+        setError(stripeError.message || t('checkout.paymentFailed'));
         setLoading(false);
         return;
       }
 
-      if (paymentIntent?.status === "succeeded") {
+      if (paymentIntent?.status === 'succeeded') {
         clearCart();
-        router.push("/checkout/success");
+        router.push('/checkout/success');
       }
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : t("checkout.checkoutError")
+        err instanceof Error ? err.message : t('checkout.checkoutError')
       );
     } finally {
       setLoading(false);
@@ -172,58 +170,58 @@ function CheckoutForm() {
   };
 
   const steps = [
-    t("checkout.stepCart"),
-    t("checkout.stepCheckout"),
-    t("checkout.stepConfirmation"),
+    t('checkout.stepCart'),
+    t('checkout.stepCheckout'),
+    t('checkout.stepConfirmation'),
   ];
 
   const shippingFields = [
     {
-      id: "firstName",
-      label: t("checkout.firstName"),
-      placeholder: t("checkout.firstNamePlaceholder"),
+      id: 'firstName',
+      label: t('checkout.firstName'),
+      placeholder: t('checkout.firstNamePlaceholder'),
       icon: User,
       span: false,
     },
     {
-      id: "lastName",
-      label: t("checkout.lastName"),
-      placeholder: t("checkout.lastNamePlaceholder"),
+      id: 'lastName',
+      label: t('checkout.lastName'),
+      placeholder: t('checkout.lastNamePlaceholder'),
       icon: User,
       span: false,
     },
     {
-      id: "address",
-      label: t("checkout.address"),
-      placeholder: t("checkout.addressPlaceholder"),
+      id: 'address',
+      label: t('checkout.address'),
+      placeholder: t('checkout.addressPlaceholder'),
       icon: Home,
       span: true,
     },
     {
-      id: "city",
-      label: t("checkout.city"),
-      placeholder: t("checkout.cityPlaceholder"),
+      id: 'city',
+      label: t('checkout.city'),
+      placeholder: t('checkout.cityPlaceholder'),
       icon: MapPin,
       span: false,
     },
     {
-      id: "state",
-      label: t("checkout.state"),
-      placeholder: t("checkout.statePlaceholder"),
+      id: 'state',
+      label: t('checkout.state'),
+      placeholder: t('checkout.statePlaceholder'),
       icon: MapPin,
       span: false,
     },
     {
-      id: "zip",
-      label: t("checkout.zipCode"),
-      placeholder: t("checkout.zipPlaceholder"),
+      id: 'zip',
+      label: t('checkout.zipCode'),
+      placeholder: t('checkout.zipPlaceholder'),
       icon: Mail,
       span: false,
     },
     {
-      id: "phone",
-      label: t("checkout.phone"),
-      placeholder: t("checkout.phonePlaceholder"),
+      id: 'phone',
+      label: t('checkout.phone'),
+      placeholder: t('checkout.phonePlaceholder'),
       icon: Phone,
       span: false,
     },
@@ -242,10 +240,10 @@ function CheckoutForm() {
             <CheckCircle2 size={15} className="text-emerald-400" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-            {t("checkout.title")}
+            {t('checkout.title')}
           </h1>
         </div>
-        <p className="text-sm text-muted">{t("checkout.subtitle")}</p>
+        <p className="text-sm text-muted">{t('checkout.subtitle')}</p>
       </motion.div>
 
       {/* Progress */}
@@ -261,9 +259,9 @@ function CheckoutForm() {
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold ${
                 i <= 1
                   ? i === 1
-                    ? "bg-primary text-white"
-                    : "bg-emerald-400/10 text-emerald-400"
-                  : "bg-surface text-muted border border-border"
+                    ? 'bg-primary text-white'
+                    : 'bg-emerald-400/10 text-emerald-400'
+                  : 'bg-surface text-muted border border-border'
               }`}
             >
               {i < 1 ? <CheckCircle2 size={12} /> : <span>{i + 1}</span>}
@@ -272,7 +270,7 @@ function CheckoutForm() {
             {i < 2 && (
               <div
                 className={`flex-1 h-px ${
-                  i < 1 ? "bg-emerald-400/40" : "bg-border"
+                  i < 1 ? 'bg-emerald-400/40' : 'bg-border'
                 }`}
               />
             )}
@@ -297,10 +295,10 @@ function CheckoutForm() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-foreground">
-                    {t("checkout.shippingTitle")}
+                    {t('checkout.shippingTitle')}
                   </p>
                   <p className="text-[11px] text-muted">
-                    {t("checkout.shippingSubtitle")}
+                    {t('checkout.shippingSubtitle')}
                   </p>
                 </div>
               </div>
@@ -310,7 +308,7 @@ function CheckoutForm() {
                   return (
                     <div
                       key={field.id}
-                      className={field.span ? "sm:col-span-2" : ""}
+                      className={field.span ? 'sm:col-span-2' : ''}
                     >
                       <label className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-1.5 block">
                         {field.label}
@@ -323,7 +321,7 @@ function CheckoutForm() {
                         <input
                           required
                           value={
-                            shipping[field.id as keyof typeof shipping] || ""
+                            shipping[field.id as keyof typeof shipping] || ''
                           }
                           onChange={(e) =>
                             setShipping((s) => ({
@@ -354,10 +352,10 @@ function CheckoutForm() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-foreground">
-                    {t("checkout.paymentTitle")}
+                    {t('checkout.paymentTitle')}
                   </p>
                   <p className="text-[11px] text-muted">
-                    {t("checkout.paymentSubtitle")}
+                    {t('checkout.paymentSubtitle')}
                   </p>
                 </div>
               </div>
@@ -366,7 +364,7 @@ function CheckoutForm() {
               <div className="mb-5">
                 <div className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-primary bg-primary/10 text-primary text-sm font-semibold">
                   <CreditCard size={16} />
-                  {t("checkout.creditCard")}
+                  {t('checkout.creditCard')}
                 </div>
               </div>
 
@@ -376,23 +374,21 @@ function CheckoutForm() {
                   options={{
                     style: {
                       base: {
-                        fontSize: "14px",
-                        color: "#e2e8f0",
-                        "::placeholder": { color: "#64748b" },
-                        iconColor: "#94a3b8",
+                        fontSize: '14px',
+                        color: '#e2e8f0',
+                        '::placeholder': { color: '#64748b' },
+                        iconColor: '#94a3b8',
                       },
-                      invalid: { color: "#ef4444" },
+                      invalid: { color: '#ef4444' },
                     },
                   }}
                 />
               </div>
-              {error && (
-                <p className="text-red-400 text-sm mt-3">{error}</p>
-              )}
+              {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
 
               <div className="flex items-center gap-1.5 mt-4 text-[11px] text-muted">
                 <Lock size={11} className="text-emerald-400" />
-                {t("checkout.securityNotice")}
+                {t('checkout.securityNotice')}
               </div>
             </motion.div>
           </div>
@@ -406,7 +402,7 @@ function CheckoutForm() {
           >
             <div className="bg-card rounded-2xl border border-border p-6 sticky top-24">
               <h2 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4">
-                {t("checkout.orderSummary")}
+                {t('checkout.orderSummary')}
               </h2>
               <div className="space-y-3 mb-4">
                 {items.map((item) => (
@@ -431,9 +427,7 @@ function CheckoutForm() {
                       <p className="text-[12px] font-medium text-foreground truncate">
                         {item.product.name}
                       </p>
-                      <p className="text-[11px] text-muted">
-                        x{item.quantity}
-                      </p>
+                      <p className="text-[11px] text-muted">x{item.quantity}</p>
                     </div>
                     <span className="text-sm font-semibold text-foreground">
                       {formatPrice(item.product.price * item.quantity)}
@@ -443,33 +437,33 @@ function CheckoutForm() {
               </div>
               <div className="border-t border-white/[0.06] pt-3 space-y-2.5 text-sm">
                 <div className="flex justify-between text-muted">
-                  <span>{t("cart.subtotal")}</span>
+                  <span>{t('cart.subtotal')}</span>
                   <span className="text-foreground font-medium">
                     {formatPrice(totalPrice)}
                   </span>
                 </div>
                 <div className="flex justify-between text-muted">
-                  <span>{t("checkout.shipping")}</span>
+                  <span>{t('checkout.shipping')}</span>
                   <span
                     className={
                       shippingFee === 0
-                        ? "text-emerald-400 font-medium"
-                        : "text-foreground font-medium"
+                        ? 'text-emerald-400 font-medium'
+                        : 'text-foreground font-medium'
                     }
                   >
                     {shippingFee === 0
-                      ? t("common.free")
+                      ? t('common.free')
                       : formatPrice(shippingFee)}
                   </span>
                 </div>
                 <div className="flex justify-between text-muted">
-                  <span>{t("checkout.tax")}</span>
+                  <span>{t('checkout.tax')}</span>
                   <span className="text-foreground font-medium">
                     {formatPrice(tax)}
                   </span>
                 </div>
                 <div className="border-t border-white/[0.06] pt-3 flex justify-between font-bold text-foreground text-base">
-                  <span>{t("checkout.total")}</span>
+                  <span>{t('checkout.total')}</span>
                   <span>{formatPrice(grandTotal)}</span>
                 </div>
               </div>
@@ -485,17 +479,17 @@ function CheckoutForm() {
                 ) : (
                   <Lock size={14} />
                 )}
-                {loading ? t("checkout.processing") : t("checkout.placeOrder")}
+                {loading ? t('checkout.processing') : t('checkout.placeOrder')}
               </button>
 
               <div className="flex items-center justify-center gap-3 mt-4 text-[10px] text-muted">
                 <span className="flex items-center gap-1">
                   <Shield size={10} className="text-emerald-400" />
-                  {t("common.sslEncrypted")}
+                  {t('common.sslEncrypted')}
                 </span>
                 <span className="flex items-center gap-1">
                   <CheckCircle2 size={10} className="text-blue-400" />
-                  {t("common.buyerProtection")}
+                  {t('common.buyerProtection')}
                 </span>
               </div>
             </div>

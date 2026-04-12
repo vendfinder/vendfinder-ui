@@ -3,11 +3,13 @@
 ## 🛡️ CRITICAL BACKUP INFORMATION
 
 **Current Working Image (VERIFIED STRIPE INTEGRATION):**
+
 ```
 registry.digitalocean.com/vendfinder-registry/frontend:stable-backup-stripe-working-20260408
 ```
 
 **✅ This image contains:**
+
 - Live Stripe keys properly configured
 - Working credit card payment form
 - Verified production deployment (April 8, 2026)
@@ -66,12 +68,14 @@ kubectl logs $POD_NAME -n vendfinder
 ## 📝 Deployment Best Practices
 
 **ALWAYS use the deployment scripts:**
+
 ```bash
 cd /Users/anthonyhudnall/vendfinder-ui
 ./deploy.sh
 ```
 
 **NEVER deploy manually without Stripe keys:**
+
 ```bash
 # ❌ THIS WILL BREAK PAYMENTS
 docker build -t frontend .
@@ -80,8 +84,8 @@ kubectl set image deployment/frontend frontend=...
 
 ## 🗂️ Backup History
 
-| Date | Image Tag | Status | Notes |
-|------|-----------|---------|-------|
+| Date       | Image Tag                               | Status      | Notes                                 |
+| ---------- | --------------------------------------- | ----------- | ------------------------------------- |
 | 2026-04-08 | `stable-backup-stripe-working-20260408` | ✅ VERIFIED | Working Stripe integration, live keys |
 
 ---

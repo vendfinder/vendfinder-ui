@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import {
   fetchPayoutMethods,
   createPayoutMethod,
   updatePayoutMethod,
   setPrimaryPayoutMethod,
   deletePayoutMethod,
-} from "@/lib/api-orders";
-import type { PayoutMethod, PayoutMethodType } from "@/types";
+} from '@/lib/api-orders';
+import type { PayoutMethod, PayoutMethodType } from '@/types';
 
 interface UsePayoutMethodsReturn {
   methods: PayoutMethod[];
@@ -26,7 +26,14 @@ interface UsePayoutMethodsReturn {
   }) => Promise<void>;
   editMethod: (
     id: string,
-    data: { label?: string; account_id?: string; account_name?: string; national_id?: string; date_of_birth?: string; address?: string }
+    data: {
+      label?: string;
+      account_id?: string;
+      account_name?: string;
+      national_id?: string;
+      date_of_birth?: string;
+      address?: string;
+    }
   ) => Promise<void>;
   setPrimary: (id: string) => Promise<void>;
   removeMethod: (id: string) => Promise<void>;
@@ -89,7 +96,14 @@ export function usePayoutMethods(): UsePayoutMethodsReturn {
   const editMethod = useCallback(
     async (
       id: string,
-      data: { label?: string; account_id?: string; account_name?: string; national_id?: string; date_of_birth?: string; address?: string }
+      data: {
+        label?: string;
+        account_id?: string;
+        account_name?: string;
+        national_id?: string;
+        date_of_birth?: string;
+        address?: string;
+      }
     ) => {
       if (!token) return;
       await updatePayoutMethod(id, data, token);

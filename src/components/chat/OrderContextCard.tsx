@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { Package, CheckCircle2, AlertTriangle, Star } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { useTranslations } from 'next-intl';
+import { Package, CheckCircle2, AlertTriangle, Star } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
 
 interface OrderContextCardProps {
   order: {
@@ -15,17 +15,36 @@ interface OrderContextCardProps {
 }
 
 function useStatusConfig() {
-  const t = useTranslations("chat");
+  const t = useTranslations('chat');
   return {
-    pending_shipment: { label: t("pendingShipment"), color: "text-amber-400", icon: <Package size={12} /> },
-    shipped: { label: t("shipped"), color: "text-blue-400", icon: <Package size={12} /> },
-    delivered: { label: t("delivered"), color: "text-emerald-400", icon: <CheckCircle2 size={12} /> },
-    authenticated: { label: t("authenticated"), color: "text-primary", icon: <CheckCircle2 size={12} /> },
+    pending_shipment: {
+      label: t('pendingShipment'),
+      color: 'text-amber-400',
+      icon: <Package size={12} />,
+    },
+    shipped: {
+      label: t('shipped'),
+      color: 'text-blue-400',
+      icon: <Package size={12} />,
+    },
+    delivered: {
+      label: t('delivered'),
+      color: 'text-emerald-400',
+      icon: <CheckCircle2 size={12} />,
+    },
+    authenticated: {
+      label: t('authenticated'),
+      color: 'text-primary',
+      icon: <CheckCircle2 size={12} />,
+    },
   } as Record<string, { label: string; color: string; icon: React.ReactNode }>;
 }
 
-export default function OrderContextCard({ order, onAction }: OrderContextCardProps) {
-  const t = useTranslations("chat");
+export default function OrderContextCard({
+  order,
+  onAction,
+}: OrderContextCardProps) {
+  const t = useTranslations('chat');
   const statusConfig = useStatusConfig();
   const status = statusConfig[order.status] || statusConfig.pending_shipment;
 
@@ -43,28 +62,30 @@ export default function OrderContextCard({ order, onAction }: OrderContextCardPr
             {formatPrice(order.price)}
           </span>
           <span className="text-muted/30">&middot;</span>
-          <span className={`text-[10px] font-semibold flex items-center gap-1 ${status.color}`}>
+          <span
+            className={`text-[10px] font-semibold flex items-center gap-1 ${status.color}`}
+          >
             {status.icon}
             {status.label}
           </span>
         </div>
       </div>
-      {order.status === "delivered" && onAction && (
+      {order.status === 'delivered' && onAction && (
         <div className="flex gap-1.5 shrink-0">
           <button
-            onClick={() => onAction("confirm")}
+            onClick={() => onAction('confirm')}
             className="px-2.5 py-1.5 text-[10px] font-bold bg-emerald-500/15 text-emerald-400 rounded-lg hover:bg-emerald-500/25 transition-colors"
           >
-            {t("confirm")}
+            {t('confirm')}
           </button>
           <button
-            onClick={() => onAction("dispute")}
+            onClick={() => onAction('dispute')}
             className="px-2.5 py-1.5 text-[10px] font-bold bg-red-500/15 text-red-400 rounded-lg hover:bg-red-500/25 transition-colors"
           >
             <AlertTriangle size={10} />
           </button>
           <button
-            onClick={() => onAction("review")}
+            onClick={() => onAction('review')}
             className="px-2.5 py-1.5 text-[10px] font-bold bg-amber-500/15 text-amber-400 rounded-lg hover:bg-amber-500/25 transition-colors"
           >
             <Star size={10} />

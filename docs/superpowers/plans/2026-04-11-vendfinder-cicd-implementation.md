@@ -15,6 +15,7 @@
 ### Task 1: Package Configuration & Conventional Commits
 
 **Files:**
+
 - Modify: `package.json`
 - Create: `.commitlintrc.json`
 - Create: `.github/CODEOWNERS`
@@ -60,6 +61,7 @@
 - [ ] **Step 2: Create commit lint configuration**
 
 File: `.commitlintrc.json`
+
 ```json
 {
   "extends": ["@commitlint/config-conventional"],
@@ -90,6 +92,7 @@ File: `.commitlintrc.json`
 - [ ] **Step 3: Create CODEOWNERS file**
 
 File: `.github/CODEOWNERS`
+
 ```
 # Global owners
 * @anthonyhudnall
@@ -114,6 +117,7 @@ package.json @anthonyhudnall
 - [ ] **Step 4: Create commit setup script**
 
 File: `scripts/setup-commits.sh`
+
 ```bash
 #!/bin/bash
 set -euo pipefail
@@ -170,6 +174,7 @@ Co-Authored-By: Claude Sonnet 4 <noreply@anthropic.com>"
 ### Task 2: Environment Configuration with Kustomize
 
 **Files:**
+
 - Create: `environments/base/kustomization.yaml`
 - Create: `environments/base/common-configs.yaml`
 - Create: `environments/base/namespace.yaml`
@@ -187,6 +192,7 @@ mkdir -p environments/{base,staging,production}
 - [ ] **Step 2: Create base namespace configuration**
 
 File: `environments/base/namespace.yaml`
+
 ```yaml
 apiVersion: v1
 kind: Namespace
@@ -200,6 +206,7 @@ metadata:
 - [ ] **Step 3: Create base common configurations**
 
 File: `environments/base/common-configs.yaml`
+
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -208,27 +215,28 @@ metadata:
   namespace: vendfinder
 data:
   # Common configuration for all environments
-  APP_NAME: "VendFinder"
-  LOG_LEVEL: "info"
-  NODE_ENV: "production"
-  CORS_ORIGIN: "*"
+  APP_NAME: 'VendFinder'
+  LOG_LEVEL: 'info'
+  NODE_ENV: 'production'
+  CORS_ORIGIN: '*'
   # Service URLs (internal cluster communication)
-  USER_SERVICE_URL: "http://user-service:3004"
-  CHAT_SERVICE_URL: "http://chat-service:3005"
-  WEBSOCKET_SERVICE_URL: "http://websocket-service:3006"
-  PRODUCT_SERVICE_URL: "http://product-service:3000"
-  ORDER_SERVICE_URL: "http://order-service:3000"
-  SUPPORT_BOT_URL: "http://support-bot:3009"
+  USER_SERVICE_URL: 'http://user-service:3004'
+  CHAT_SERVICE_URL: 'http://chat-service:3005'
+  WEBSOCKET_SERVICE_URL: 'http://websocket-service:3006'
+  PRODUCT_SERVICE_URL: 'http://product-service:3000'
+  ORDER_SERVICE_URL: 'http://order-service:3000'
+  SUPPORT_BOT_URL: 'http://support-bot:3009'
   # Redis and database connection patterns
-  REDIS_URL: "redis://redis:6379"
+  REDIS_URL: 'redis://redis:6379'
   # Monitoring
-  METRICS_ENABLED: "true"
-  HEALTH_CHECK_INTERVAL: "30s"
+  METRICS_ENABLED: 'true'
+  HEALTH_CHECK_INTERVAL: '30s'
 ```
 
 - [ ] **Step 4: Create base kustomization**
 
 File: `environments/base/kustomization.yaml`
+
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -270,6 +278,7 @@ images:
 - [ ] **Step 5: Create staging environment configuration**
 
 File: `environments/staging/staging-configs.yaml`
+
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -278,24 +287,25 @@ metadata:
   namespace: vendfinder
 data:
   # Staging-specific overrides
-  LOG_LEVEL: "debug"
-  ENVIRONMENT: "staging"
+  LOG_LEVEL: 'debug'
+  ENVIRONMENT: 'staging'
   # External URLs for staging
-  FRONTEND_URL: "https://staging.vendfinder.com"
-  API_URL: "https://api-staging.vendfinder.com"
+  FRONTEND_URL: 'https://staging.vendfinder.com'
+  API_URL: 'https://api-staging.vendfinder.com'
   # Database URLs (staging cluster)
-  USER_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@user-db:5432/user_db_staging"
-  CHAT_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@chat-db:5432/chat_db_staging"
-  PRODUCT_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@product-db:5432/product_db_staging"
-  ORDER_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@order-db:5432/order_db_staging"
+  USER_DATABASE_URL: 'postgresql://vendfinder:vendfinder_pass@user-db:5432/user_db_staging'
+  CHAT_DATABASE_URL: 'postgresql://vendfinder:vendfinder_pass@chat-db:5432/chat_db_staging'
+  PRODUCT_DATABASE_URL: 'postgresql://vendfinder:vendfinder_pass@product-db:5432/product_db_staging'
+  ORDER_DATABASE_URL: 'postgresql://vendfinder:vendfinder_pass@order-db:5432/order_db_staging'
   # Test keys and endpoints
-  STRIPE_PUBLISHABLE_KEY: "pk_test_staging_key"
-  STRIPE_MODE: "test"
+  STRIPE_PUBLISHABLE_KEY: 'pk_test_staging_key'
+  STRIPE_MODE: 'test'
 ```
 
 - [ ] **Step 6: Create staging kustomization**
 
 File: `environments/staging/kustomization.yaml`
+
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -343,6 +353,7 @@ images:
 - [ ] **Step 7: Create production environment configuration**
 
 File: `environments/production/production-configs.yaml`
+
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -351,27 +362,28 @@ metadata:
   namespace: vendfinder
 data:
   # Production-specific configuration
-  ENVIRONMENT: "production"
-  LOG_LEVEL: "warn"
+  ENVIRONMENT: 'production'
+  LOG_LEVEL: 'warn'
   # External URLs for production
-  FRONTEND_URL: "https://vendfinder.com"
-  API_URL: "https://api.vendfinder.com"
+  FRONTEND_URL: 'https://vendfinder.com'
+  API_URL: 'https://api.vendfinder.com'
   # Production database URLs
-  USER_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@user-db:5432/user_db"
-  CHAT_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@chat-db:5432/chat_db"
-  PRODUCT_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@product-db:5432/product_db"
-  ORDER_DATABASE_URL: "postgresql://vendfinder:vendfinder_pass@order-db:5432/order_db"
+  USER_DATABASE_URL: 'postgresql://vendfinder:vendfinder_pass@user-db:5432/user_db'
+  CHAT_DATABASE_URL: 'postgresql://vendfinder:vendfinder_pass@chat-db:5432/chat_db'
+  PRODUCT_DATABASE_URL: 'postgresql://vendfinder:vendfinder_pass@product-db:5432/product_db'
+  ORDER_DATABASE_URL: 'postgresql://vendfinder:vendfinder_pass@order-db:5432/order_db'
   # Security settings
-  SECURE_COOKIES: "true"
-  TRUST_PROXY: "true"
+  SECURE_COOKIES: 'true'
+  TRUST_PROXY: 'true'
   # Performance settings
-  CACHE_TTL: "300"
-  MAX_REQUEST_SIZE: "50mb"
+  CACHE_TTL: '300'
+  MAX_REQUEST_SIZE: '50mb'
 ```
 
 - [ ] **Step 8: Create production kustomization**
 
 File: `environments/production/kustomization.yaml`
+
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -439,7 +451,7 @@ images:
 kubectl kustomize environments/staging > staging-preview.yaml
 echo "Staging configuration preview saved to staging-preview.yaml"
 
-# Test production build  
+# Test production build
 kubectl kustomize environments/production > production-preview.yaml
 echo "Production configuration preview saved to production-preview.yaml"
 ```
@@ -465,19 +477,21 @@ Co-Authored-By: Claude Sonnet 4 <noreply@anthropic.com>"
 ### Task 3: Main CI Pipeline
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`
 
 - [ ] **Step 1: Create main CI workflow**
 
 File: `.github/workflows/ci.yml`
+
 ```yaml
 name: CI Pipeline
 
 on:
   push:
-    branches: [ main, develop, 'feature/**', 'release/**', 'hotfix/**' ]
+    branches: [main, develop, 'feature/**', 'release/**', 'hotfix/**']
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   NODE_VERSION: '22'
@@ -546,7 +560,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-      
+
       redis:
         image: redis:7-alpine
         options: >-
@@ -708,7 +722,7 @@ jobs:
           cd environments/staging
           kustomize edit set image \
             registry.digitalocean.com/vendfinder-registry/frontend:${{ needs.build.outputs.version }}
-          
+
           cd ../production
           kustomize edit set image \
             registry.digitalocean.com/vendfinder-registry/frontend:${{ needs.build.outputs.version }}
@@ -734,6 +748,7 @@ Expected: No immediate errors (workflow will run on push)
 - [ ] **Step 3: Add package.json test scripts for CI**
 
 Add to `package.json` scripts section:
+
 ```json
 {
   "scripts": {
@@ -748,46 +763,46 @@ Add to `package.json` scripts section:
 - [ ] **Step 4: Create basic Jest configuration**
 
 File: `jest.config.js`
+
 ```javascript
 module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src', '<rootDir>/tests'],
-  testMatch: [
-    '**/__tests__/**/*.+(ts|tsx|js)',
-    '**/*.(test|spec).(ts|tsx|js)'
-  ],
+  testMatch: ['**/__tests__/**/*.+(ts|tsx|js)', '**/*.(test|spec).(ts|tsx|js)'],
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest'
+    '^.+\\.(ts|tsx)$': 'ts-jest',
   },
   coverageDirectory: 'coverage',
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/*.test.{ts,tsx}',
-    '!src/types/**'
+    '!src/types/**',
   ],
   coverageThreshold: {
     global: {
       branches: 80,
       functions: 80,
       lines: 80,
-      statements: 80
-    }
+      statements: 80,
+    },
   },
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts']
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
 };
 ```
 
 - [ ] **Step 5: Create test setup file**
 
 File: `tests/setup.ts`
+
 ```typescript
 // Jest setup file for VendFinder tests
 import { jest } from '@jest/globals';
 
 // Mock environment variables for tests
 process.env.NODE_ENV = 'test';
-process.env.DATABASE_URL = 'postgresql://test_user:test_pass@localhost:5432/test_db';
+process.env.DATABASE_URL =
+  'postgresql://test_user:test_pass@localhost:5432/test_db';
 process.env.REDIS_URL = 'redis://localhost:6379';
 process.env.JWT_SECRET = 'test-jwt-secret';
 
@@ -809,6 +824,7 @@ jest.setTimeout(30000);
 - [ ] **Step 6: Create sample test**
 
 File: `tests/sample.test.ts`
+
 ```typescript
 describe('CI Pipeline Tests', () => {
   test('should pass basic test', () => {
@@ -856,22 +872,24 @@ Co-Authored-By: Claude Sonnet 4 <noreply@anthropic.com>"
 ### Task 4: Staging Deployment Workflow
 
 **Files:**
+
 - Create: `.github/workflows/staging-deploy.yml`
 
 - [ ] **Step 1: Create staging deployment workflow**
 
 File: `.github/workflows/staging-deploy.yml`
+
 ```yaml
 name: Deploy to Staging
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_run:
-    workflows: ["CI Pipeline"]
+    workflows: ['CI Pipeline']
     types:
       - completed
-    branches: [ main ]
+    branches: [main]
 
 env:
   KUBE_NAMESPACE: vendfinder
@@ -882,7 +900,7 @@ jobs:
     name: Deploy to Staging Environment
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
-    environment: 
+    environment:
       name: staging
       url: https://staging.vendfinder.com
 
@@ -917,7 +935,7 @@ jobs:
       - name: Update staging image tags
         run: |
           cd environments/staging
-          
+
           # Update all service image tags with new staging version
           kustomize edit set image \
             registry.digitalocean.com/vendfinder-registry/frontend:${{ steps.version.outputs.version }} \
@@ -932,19 +950,19 @@ jobs:
       - name: Deploy to staging cluster
         run: |
           echo "🚀 Deploying to staging cluster..."
-          
+
           # Generate final manifests
           kubectl kustomize environments/staging > /tmp/staging-deployment.yaml
-          
+
           # Apply the deployment
           kubectl apply -f /tmp/staging-deployment.yaml
-          
+
           echo "✅ Deployment applied successfully"
 
       - name: Wait for deployment rollout
         run: |
           echo "⏳ Waiting for deployments to complete..."
-          
+
           # Wait for all deployments to be ready
           kubectl rollout status deployment/staging-frontend -n ${{ env.KUBE_NAMESPACE }} --timeout=600s
           kubectl rollout status deployment/staging-user-service -n ${{ env.KUBE_NAMESPACE }} --timeout=600s
@@ -954,33 +972,33 @@ jobs:
           kubectl rollout status deployment/staging-websocket-service -n ${{ env.KUBE_NAMESPACE }} --timeout=600s
           kubectl rollout status deployment/staging-support-bot -n ${{ env.KUBE_NAMESPACE }} --timeout=600s
           kubectl rollout status deployment/staging-api-gateway -n ${{ env.KUBE_NAMESPACE }} --timeout=600s
-          
+
           echo "✅ All deployments completed successfully"
 
       - name: Run staging smoke tests
         run: |
           echo "🧪 Running staging smoke tests..."
-          
+
           # Wait for services to be ready
           sleep 30
-          
+
           # Get staging service URL
           STAGING_URL="https://staging.vendfinder.com"
-          
+
           # Basic health checks
           curl -f "${STAGING_URL}/api/health" || exit 1
           curl -f "${STAGING_URL}/" || exit 1
-          
+
           echo "✅ Staging smoke tests passed"
 
       - name: Run integration tests on staging
         run: |
           echo "🔧 Running integration tests against staging..."
-          
+
           # Run Playwright tests against staging
           npm ci
           npx playwright install chromium
-          
+
           # Set staging URL for tests
           export PLAYWRIGHT_BASE_URL="https://staging.vendfinder.com"
           npm run test:e2e || echo "⚠️ Some E2E tests failed - review manually"
@@ -1002,7 +1020,7 @@ jobs:
           echo "Version: ${{ steps.version.outputs.version }}"
           echo "Staging URL: https://staging.vendfinder.com"
           echo "Commit: ${{ github.sha }}"
-          
+
           # Optional: Send Slack notification if webhook is configured
           if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
             curl -X POST -H 'Content-type: application/json' \
@@ -1014,10 +1032,10 @@ jobs:
         if: failure()
         run: |
           echo "❌ Staging deployment failed!"
-          
+
           # Get recent pod logs for debugging
           kubectl logs -n ${{ env.KUBE_NAMESPACE }} --tail=50 -l app=vendfinder,environment=staging || true
-          
+
           # Optional: Send failure notification
           if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
             curl -X POST -H 'Content-type: application/json' \
@@ -1029,6 +1047,7 @@ jobs:
 - [ ] **Step 2: Add E2E test script to package.json**
 
 Add to `package.json` scripts:
+
 ```json
 {
   "scripts": {
@@ -1041,6 +1060,7 @@ Add to `package.json` scripts:
 - [ ] **Step 3: Create basic Playwright configuration**
 
 File: `playwright.config.ts`
+
 ```typescript
 import { defineConfig, devices } from '@playwright/test';
 
@@ -1064,17 +1084,20 @@ export default defineConfig({
     },
   ],
 
-  webServer: process.env.CI ? undefined : {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: process.env.CI
+    ? undefined
+    : {
+        command: 'npm run dev',
+        url: 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI,
+      },
 });
 ```
 
 - [ ] **Step 4: Create basic E2E test**
 
 File: `tests/e2e/staging-smoke.spec.ts`
+
 ```typescript
 import { test, expect } from '@playwright/test';
 
@@ -1082,7 +1105,7 @@ test.describe('Staging Smoke Tests', () => {
   test('homepage loads successfully', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/VendFinder/);
-    
+
     // Check for key UI elements
     await expect(page.getByRole('main')).toBeVisible();
   });
@@ -1090,7 +1113,7 @@ test.describe('Staging Smoke Tests', () => {
   test('API health endpoint responds', async ({ request }) => {
     const response = await request.get('/api/health');
     expect(response.ok()).toBeTruthy();
-    
+
     const data = await response.json();
     expect(data).toHaveProperty('status', 'ok');
   });
@@ -1135,11 +1158,13 @@ Co-Authored-By: Claude Sonnet 4 <noreply@anthropic.com>"
 ### Task 5: Production Deployment Workflow
 
 **Files:**
+
 - Create: `.github/workflows/production-deploy.yml`
 
 - [ ] **Step 1: Create production deployment workflow**
 
 File: `.github/workflows/production-deploy.yml`
+
 ```yaml
 name: Deploy to Production
 
@@ -1170,7 +1195,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       staging-verified: ${{ steps.staging.outputs.verified }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -1186,7 +1211,7 @@ jobs:
             # Extract version from release branch name (release/v1.2.3 -> v1.2.3)
             VERSION=$(echo "${{ github.ref }}" | sed 's/refs\/heads\/release\///')
           fi
-          
+
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "Production deployment version: ${VERSION}"
 
@@ -1204,7 +1229,7 @@ jobs:
         id: staging
         run: |
           echo "🔍 Checking staging deployment status..."
-          
+
           # This would typically check your monitoring/deployment system
           # For now, we'll assume staging is verified
           echo "verified=true" >> $GITHUB_OUTPUT
@@ -1213,10 +1238,10 @@ jobs:
       - name: Verify no breaking changes
         run: |
           echo "🔍 Analyzing changes for breaking changes..."
-          
+
           # Get the commit messages since last release
           git log --oneline $(git describe --tags --abbrev=0)..HEAD | grep -E "BREAKING CHANGE|feat!" || true
-          
+
           # If breaking changes found, require manual approval
           if git log $(git describe --tags --abbrev=0)..HEAD | grep -q "BREAKING CHANGE\|feat!"; then
             echo "⚠️ Breaking changes detected - manual review required"
@@ -1229,10 +1254,10 @@ jobs:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: pre-production-checks
-    environment: 
+    environment:
       name: production
       url: https://vendfinder.com
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -1256,26 +1281,26 @@ jobs:
       - name: Backup current production state
         run: |
           echo "💾 Creating backup of current production state..."
-          
+
           # Get current production image tags for rollback
           mkdir -p /tmp/backup
           kubectl get deployments -n ${{ env.KUBE_NAMESPACE }} -o yaml > /tmp/backup/deployments-backup.yaml
-          
+
           # Store current images for quick rollback reference
           kubectl get deployments -n ${{ env.KUBE_NAMESPACE }} \
             -o jsonpath='{range .items[*]}{.metadata.name}:{.spec.template.spec.containers[0].image}{"\n"}{end}' \
             > /tmp/backup/current-images.txt
-          
+
           echo "✅ Backup completed"
           cat /tmp/backup/current-images.txt
 
       - name: Update production image tags
         run: |
           cd environments/production
-          
+
           VERSION="${{ needs.pre-production-checks.outputs.version }}"
           echo "🔧 Updating production images to version: $VERSION"
-          
+
           # Update all service image tags with production version
           kustomize edit set image \
             registry.digitalocean.com/vendfinder-registry/frontend:$VERSION \
@@ -1290,22 +1315,22 @@ jobs:
       - name: Generate and validate production manifests
         run: |
           echo "📋 Generating production manifests..."
-          
+
           kubectl kustomize environments/production > /tmp/production-deployment.yaml
-          
+
           # Validate manifests
           kubectl --dry-run=client apply -f /tmp/production-deployment.yaml
-          
+
           echo "✅ Production manifests validated"
 
       - name: Deploy to production with rolling update
         run: |
           echo "🚀 Starting production deployment..."
           VERSION="${{ needs.pre-production-checks.outputs.version }}"
-          
+
           # Apply the deployment
           kubectl apply -f /tmp/production-deployment.yaml
-          
+
           # Annotate deployment with version info
           kubectl annotate deployment frontend -n ${{ env.KUBE_NAMESPACE }} \
             vendfinder.com/deployed-version="$VERSION" \
@@ -1313,13 +1338,13 @@ jobs:
             vendfinder.com/deployed-by="github-actions" \
             vendfinder.com/backup-available="true" \
             --overwrite
-          
+
           echo "✅ Deployment initiated"
 
       - name: Monitor deployment progress
         run: |
           echo "⏳ Monitoring deployment rollout..."
-          
+
           # Function to check deployment status
           check_deployment() {
             local deployment=$1
@@ -1333,79 +1358,79 @@ jobs:
             echo "✅ $deployment deployment successful"
             return 0
           }
-          
+
           # Check each deployment with individual timeouts
           deployments=("frontend" "user-service" "chat-service" "product-service" "order-service" "websocket-service" "support-bot" "api-gateway")
-          
+
           failed_deployments=()
           for deployment in "${deployments[@]}"; do
             if ! check_deployment "$deployment" "${{ env.KUBE_NAMESPACE }}"; then
               failed_deployments+=("$deployment")
             fi
           done
-          
+
           if [ ${#failed_deployments[@]} -gt 0 ]; then
             echo "❌ Failed deployments: ${failed_deployments[*]}"
             exit 1
           fi
-          
+
           echo "✅ All deployments completed successfully"
 
       - name: Run production health checks
         run: |
           echo "🏥 Running production health checks..."
-          
+
           # Wait for services to stabilize
           sleep 60
-          
+
           # Production URL
           PROD_URL="https://vendfinder.com"
-          
+
           # Critical health checks
           echo "Checking main site..."
           curl -f --max-time 30 "$PROD_URL/" || exit 1
-          
+
           echo "Checking API health..."
           curl -f --max-time 30 "$PROD_URL/api/health" || exit 1
-          
+
           echo "Checking user service..."
           curl -f --max-time 30 "$PROD_URL/api/users/health" || exit 1
-          
+
           echo "Checking product service..."
           curl -f --max-time 30 "$PROD_URL/api/products/health" || exit 1
-          
+
           echo "Checking order service..."
           curl -f --max-time 30 "$PROD_URL/api/orders/health" || exit 1
-          
+
           echo "✅ All health checks passed"
 
       - name: Run production smoke tests
         if: ${{ github.event.inputs.skip_tests != 'true' }}
         run: |
           echo "🧪 Running production smoke tests..."
-          
+
           npm ci
           npx playwright install chromium
-          
+
           # Set production URL for tests
           export PLAYWRIGHT_BASE_URL="https://vendfinder.com"
           export TEST_ENV="production"
-          
+
           # Run critical smoke tests only
           npm run test:e2e -- --grep="@smoke"
 
       - name: Performance baseline check
         run: |
           echo "⚡ Running performance baseline check..."
-          
+
           # Basic performance check with curl timing
           response_time=$(curl -o /dev/null -s -w "%{time_total}" "https://vendfinder.com/")
-          
+
           # Convert to milliseconds
           response_time_ms=$(echo "$response_time * 1000" | bc)
-          
+
           echo "Response time: ${response_time_ms}ms"
-          
+
           # Alert if response time > 3 seconds
           if (( $(echo "$response_time > 3" | bc -l) )); then
             echo "⚠️ High response time detected: ${response_time_ms}ms"
@@ -1417,7 +1442,7 @@ jobs:
       - name: Update production deployment record
         run: |
           VERSION="${{ needs.pre-production-checks.outputs.version }}"
-          
+
           # Create deployment record
           cat > /tmp/deployment-record.json << EOF
           {
@@ -1430,7 +1455,7 @@ jobs:
             "status": "successful"
           }
           EOF
-          
+
           echo "📝 Deployment record created:"
           cat /tmp/deployment-record.json
 
@@ -1438,12 +1463,12 @@ jobs:
         if: success()
         run: |
           VERSION="${{ needs.pre-production-checks.outputs.version }}"
-          
+
           echo "🎉 Production deployment successful!"
           echo "Version: $VERSION"
           echo "URL: https://vendfinder.com"
           echo "Deployed at: $(date -u)"
-          
+
           # Send success notification
           if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
             curl -X POST -H 'Content-type: application/json' \
@@ -1456,14 +1481,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [pre-production-checks, deploy-production]
     if: success()
-    
+
     steps:
       - name: Monitor for 10 minutes
         run: |
           echo "👀 Monitoring production for 10 minutes..."
-          
+
           end_time=$(($(date +%s) + 600)) # 10 minutes from now
-          
+
           while [ $(date +%s) -lt $end_time ]; do
             # Check if site is still responding
             if ! curl -f --max-time 10 "https://vendfinder.com/api/health" > /dev/null 2>&1; then
@@ -1474,16 +1499,16 @@ jobs:
             echo "✅ $(date): Health check passed"
             sleep 60 # Check every minute
           done
-          
+
           echo "✅ 10-minute monitoring period completed successfully"
 
       - name: Final deployment confirmation
         run: |
           VERSION="${{ needs.pre-production-checks.outputs.version }}"
-          
+
           echo "🎯 Production deployment of $VERSION confirmed stable"
           echo "Monitoring period completed successfully"
-          
+
           # Final success notification
           if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
             curl -X POST -H 'Content-type: application/json' \
@@ -1496,7 +1521,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [pre-production-checks, deploy-production]
     if: failure()
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -1513,25 +1538,25 @@ jobs:
       - name: Execute emergency rollback
         run: |
           echo "🚨 Production deployment failed - executing emergency rollback..."
-          
+
           # Rollback all deployments to previous revision
           deployments=("frontend" "user-service" "chat-service" "product-service" "order-service" "websocket-service" "support-bot" "api-gateway")
-          
+
           for deployment in "${deployments[@]}"; do
             echo "Rolling back $deployment..."
             kubectl rollout undo deployment/$deployment -n ${{ env.KUBE_NAMESPACE }} || true
             kubectl rollout status deployment/$deployment -n ${{ env.KUBE_NAMESPACE }} --timeout=300s || true
           done
-          
+
           echo "✅ Emergency rollback completed"
 
       - name: Verify rollback success
         run: |
           echo "🔍 Verifying rollback..."
-          
+
           # Check if services are responding after rollback
           sleep 30
-          
+
           if curl -f --max-time 30 "https://vendfinder.com/api/health"; then
             echo "✅ Rollback successful - services responding"
           else
@@ -1542,9 +1567,9 @@ jobs:
       - name: Notify rollback
         run: |
           VERSION="${{ needs.pre-production-checks.outputs.version }}"
-          
+
           echo "📢 Notifying about rollback..."
-          
+
           if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
             curl -X POST -H 'Content-type: application/json' \
               --data "{\"text\":\"🚨 VendFinder production deployment FAILED - Emergency rollback executed\n*Failed version:* $VERSION\n*Status:* Rolled back to previous version\n*Action required:* Investigate deployment failure\"}" \
@@ -1555,6 +1580,7 @@ jobs:
 - [ ] **Step 2: Add production smoke tests**
 
 File: `tests/e2e/production-smoke.spec.ts`
+
 ```typescript
 import { test, expect } from '@playwright/test';
 
@@ -1568,7 +1594,7 @@ test.describe('Production Smoke Tests @smoke', () => {
     const startTime = Date.now();
     await page.goto('/');
     const loadTime = Date.now() - startTime;
-    
+
     await expect(page).toHaveTitle(/VendFinder/);
     expect(loadTime).toBeLessThan(3000);
   });
@@ -1578,7 +1604,7 @@ test.describe('Production Smoke Tests @smoke', () => {
       '/api/health',
       '/api/users/health',
       '/api/products/health',
-      '/api/orders/health'
+      '/api/orders/health',
     ];
 
     for (const endpoint of endpoints) {
@@ -1590,10 +1616,12 @@ test.describe('Production Smoke Tests @smoke', () => {
   test('user authentication flow works', async ({ page }) => {
     await page.goto('/login');
     await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible();
-    
+
     // Check that login form is functional (without actually logging in)
     await expect(page.getByRole('textbox', { name: /email/i })).toBeVisible();
-    await expect(page.getByRole('textbox', { name: /password/i })).toBeVisible();
+    await expect(
+      page.getByRole('textbox', { name: /password/i })
+    ).toBeVisible();
   });
 
   test('product listing page loads', async ({ page }) => {
@@ -1642,12 +1670,14 @@ Co-Authored-By: Claude Sonnet 4 <noreply@anthropic.com>"
 ### Task 6: Enhanced Deployment Script
 
 **Files:**
+
 - Create: `scripts/deploy-enhanced.sh`
 - Create: `scripts/version-manager.sh`
 
 - [ ] **Step 1: Create enhanced deployment script**
 
 File: `scripts/deploy-enhanced.sh`
+
 ```bash
 #!/bin/bash
 set -euo pipefail
@@ -1714,33 +1744,33 @@ EOF
 
 check_prerequisites() {
     log "Checking prerequisites..."
-    
+
     # Check required tools
     command -v kubectl >/dev/null 2>&1 || error "kubectl is required but not installed"
     command -v kustomize >/dev/null 2>&1 || error "kustomize is required but not installed"
     command -v curl >/dev/null 2>&1 || error "curl is required but not installed"
-    
+
     # Check kubectl connectivity
     if ! kubectl cluster-info >/dev/null 2>&1; then
         error "Cannot connect to Kubernetes cluster. Check KUBECONFIG."
     fi
-    
+
     # Check namespace exists
     if ! kubectl get namespace "$NAMESPACE" >/dev/null 2>&1; then
         warn "Namespace '$NAMESPACE' does not exist. Creating..."
         kubectl create namespace "$NAMESPACE"
     fi
-    
+
     log "Prerequisites check completed"
 }
 
 validate_environment() {
     local env=$1
-    
+
     if [[ ! " ${ENVIRONMENTS[*]} " =~ " ${env} " ]]; then
         error "Invalid environment: $env. Valid options: ${ENVIRONMENTS[*]}"
     fi
-    
+
     if [ "$env" = "production" ] && [ -z "${VERSION:-}" ]; then
         error "Production deployments require explicit version (-v flag)"
     fi
@@ -1748,12 +1778,12 @@ validate_environment() {
 
 generate_version() {
     local env=$1
-    
+
     if [ -n "${VERSION:-}" ]; then
         echo "$VERSION"
         return
     fi
-    
+
     case $env in
         staging)
             echo "staging-$(git rev-parse --short HEAD)-$(date +%Y%m%d%H%M%S)"
@@ -1771,25 +1801,25 @@ generate_version() {
 backup_current_state() {
     local env=$1
     local backup_dir="/tmp/vendfinder-backup-$(date +%Y%m%d-%H%M%S)"
-    
+
     log "Creating backup of current $env state..."
-    
+
     mkdir -p "$backup_dir"
-    
+
     # Backup current deployments
     kubectl get deployments -n "$NAMESPACE" -o yaml > "$backup_dir/deployments.yaml"
-    
+
     # Backup current configmaps
     kubectl get configmaps -n "$NAMESPACE" -o yaml > "$backup_dir/configmaps.yaml"
-    
+
     # Backup current services
     kubectl get services -n "$NAMESPACE" -o yaml > "$backup_dir/services.yaml"
-    
+
     # Save current image tags for easy rollback
     kubectl get deployments -n "$NAMESPACE" \
         -o jsonpath='{range .items[*]}{.metadata.name}:{.spec.template.spec.containers[0].image}{"\n"}{end}' \
         > "$backup_dir/current-images.txt"
-    
+
     log "Backup saved to: $backup_dir"
     echo "$backup_dir" > /tmp/latest-backup-path
 }
@@ -1797,13 +1827,13 @@ backup_current_state() {
 build_and_push_images() {
     local version=$1
     local env=$2
-    
+
     if [ "$env" = "staging" ] || [ -z "${SKIP_BUILD:-}" ]; then
         log "Building and pushing images for version: $version"
-        
+
         # Services to build
         local services=("frontend" "user-service-oauth" "chat-service" "product-service" "order-service" "websocket-service" "support-bot" "api-gateway-build")
-        
+
         # Build frontend with proper build args
         log "Building frontend..."
         if [ "$env" = "production" ]; then
@@ -1817,16 +1847,16 @@ build_and_push_images() {
                 --build-arg NEXT_PUBLIC_PAYPAL_CLIENT_ID="$PAYPAL_TEST_CLIENT_ID" \
                 -t "$REGISTRY/frontend:$version" .
         fi
-        
+
         docker push "$REGISTRY/frontend:$version"
-        
+
         # Build other services
         for service in "${services[@]:1}"; do
             local service_dir=${service}
             if [ "$service" = "api-gateway-build" ]; then
                 service_dir="api-gateway-build"
             fi
-            
+
             if [ -d "$service_dir" ]; then
                 log "Building $service..."
                 docker build -t "$REGISTRY/$service:$version" "$service_dir"
@@ -1835,7 +1865,7 @@ build_and_push_images() {
                 warn "Service directory not found: $service_dir"
             fi
         done
-        
+
         log "All images built and pushed successfully"
     else
         log "Skipping image build (SKIP_BUILD is set)"
@@ -1845,11 +1875,11 @@ build_and_push_images() {
 update_kustomize_config() {
     local env=$1
     local version=$2
-    
+
     log "Updating kustomize configuration for $env with version $version..."
-    
+
     cd "environments/$env"
-    
+
     # Update image tags
     kustomize edit set image \
         "registry.digitalocean.com/vendfinder-registry/frontend:$version" \
@@ -1860,46 +1890,46 @@ update_kustomize_config() {
         "registry.digitalocean.com/vendfinder-registry/websocket-service:$version" \
         "registry.digitalocean.com/vendfinder-registry/support-bot:$version" \
         "registry.digitalocean.com/vendfinder-registry/api-gateway-build:$version"
-    
+
     cd - >/dev/null
-    
+
     log "Kustomize configuration updated"
 }
 
 deploy_to_kubernetes() {
     local env=$1
     local version=$2
-    
+
     log "Deploying to $env environment..."
-    
+
     # Generate manifests
     kubectl kustomize "environments/$env" > "/tmp/$env-deployment.yaml"
-    
+
     # Apply deployment
     kubectl apply -f "/tmp/$env-deployment.yaml"
-    
+
     # Wait for rollout
     local deployments=("frontend" "user-service" "chat-service" "product-service" "order-service" "websocket-service" "support-bot" "api-gateway")
-    
+
     for deployment in "${deployments[@]}"; do
         local deployment_name="$deployment"
         if [ "$env" = "staging" ]; then
             deployment_name="staging-$deployment"
         fi
-        
+
         log "Waiting for $deployment_name rollout..."
         if ! kubectl rollout status "deployment/$deployment_name" -n "$NAMESPACE" --timeout=600s; then
             error "Deployment $deployment_name failed to roll out"
         fi
     done
-    
+
     # Annotate deployments with version info
     for deployment in "${deployments[@]}"; do
         local deployment_name="$deployment"
         if [ "$env" = "staging" ]; then
             deployment_name="staging-$deployment"
         fi
-        
+
         kubectl annotate "deployment/$deployment_name" -n "$NAMESPACE" \
             "vendfinder.com/deployed-version=$version" \
             "vendfinder.com/deployed-at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
@@ -1907,20 +1937,20 @@ deploy_to_kubernetes() {
             "vendfinder.com/environment=$env" \
             --overwrite >/dev/null
     done
-    
+
     log "Deployment to $env completed successfully"
 }
 
 run_smoke_tests() {
     local env=$1
-    
+
     if [ "${SKIP_TESTS:-}" = "true" ]; then
         warn "Skipping smoke tests as requested"
         return 0
     fi
-    
+
     log "Running smoke tests for $env..."
-    
+
     # Determine URL based on environment
     local base_url
     case $env in
@@ -1931,33 +1961,33 @@ run_smoke_tests() {
             base_url="https://vendfinder.com"
             ;;
     esac
-    
+
     # Wait for services to stabilize
     sleep 30
-    
+
     # Basic health checks
     info "Testing main site..."
     if ! curl -f --max-time 30 "$base_url/" >/dev/null 2>&1; then
         error "Main site health check failed"
     fi
-    
+
     info "Testing API health endpoint..."
     if ! curl -f --max-time 30 "$base_url/api/health" >/dev/null 2>&1; then
         error "API health check failed"
     fi
-    
+
     # Run E2E tests if available
     if [ -f "package.json" ] && grep -q "test:e2e" package.json; then
         info "Running E2E smoke tests..."
         export PLAYWRIGHT_BASE_URL="$base_url"
         export TEST_ENV="$env"
-        
+
         # Run only smoke tests for speed
         if ! npm run test:e2e -- --grep="@smoke" --reporter=line; then
             warn "Some E2E tests failed - review manually"
         fi
     fi
-    
+
     log "Smoke tests completed for $env"
 }
 
@@ -1965,15 +1995,15 @@ send_notification() {
     local env=$1
     local version=$2
     local status=$3
-    
+
     if [ -z "${SLACK_WEBHOOK:-}" ]; then
         return 0
     fi
-    
+
     local emoji
     local color
     local message
-    
+
     case $status in
         success)
             emoji="✅"
@@ -1991,7 +2021,7 @@ send_notification() {
             message="VendFinder deployment to $env - $status"
             ;;
     esac
-    
+
     local payload
     payload=$(cat <<EOF
 {
@@ -2026,7 +2056,7 @@ send_notification() {
 }
 EOF
 )
-    
+
     curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK" >/dev/null 2>&1 || true
 }
 
@@ -2034,7 +2064,7 @@ main() {
     local environment=""
     local force=false
     local backup=false
-    
+
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -2067,22 +2097,22 @@ main() {
                 ;;
         esac
     done
-    
+
     # Validate arguments
     if [ -z "$environment" ]; then
         error "Environment is required. Use -h for help."
     fi
-    
+
     validate_environment "$environment"
-    
+
     # Generate version if not provided
     local deployment_version
     deployment_version=$(generate_version "$environment")
-    
+
     log "Starting VendFinder deployment to $environment"
     info "Version: $deployment_version"
     info "Timestamp: $(date)"
-    
+
     # Confirmation for production
     if [ "$environment" = "production" ] && [ "$force" = false ]; then
         echo
@@ -2096,23 +2126,23 @@ main() {
             exit 0
         fi
     fi
-    
+
     # Execute deployment steps
     check_prerequisites
-    
+
     if [ "$backup" = true ] || [ "$environment" = "production" ]; then
         backup_current_state "$environment"
     fi
-    
+
     build_and_push_images "$deployment_version" "$environment"
     update_kustomize_config "$environment" "$deployment_version"
     deploy_to_kubernetes "$environment" "$deployment_version"
     run_smoke_tests "$environment"
-    
+
     log "🎉 Deployment to $environment completed successfully!"
     info "Version deployed: $deployment_version"
     info "Environment URL: https://${environment}.vendfinder.com"
-    
+
     send_notification "$environment" "$deployment_version" "success"
 }
 
@@ -2126,6 +2156,7 @@ main "$@"
 - [ ] **Step 2: Create version manager helper script**
 
 File: `scripts/version-manager.sh`
+
 ```bash
 #!/bin/bash
 set -euo pipefail
@@ -2190,16 +2221,16 @@ get_next_version() {
     local bump_type=$1
     local current_version
     current_version=$(get_current_version)
-    
+
     # Remove 'v' prefix if present
     current_version=${current_version#v}
-    
+
     # Split version into parts
     IFS='.' read -ra VERSION_PARTS <<< "$current_version"
     local major=${VERSION_PARTS[0]:-0}
     local minor=${VERSION_PARTS[1]:-0}
     local patch=${VERSION_PARTS[2]:-0}
-    
+
     case $bump_type in
         major)
             major=$((major + 1))
@@ -2217,13 +2248,13 @@ get_next_version() {
             error "Invalid bump type: $bump_type. Use: major, minor, patch"
             ;;
     esac
-    
+
     echo "v$major.$minor.$patch"
 }
 
 validate_version() {
     local version=$1
-    
+
     if [[ ! $version =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         error "Invalid version format: $version. Expected: vX.Y.Z"
     fi
@@ -2233,7 +2264,7 @@ check_git_status() {
     if [ "${FORCE:-}" != "true" ] && [ "$(git status --porcelain)" ]; then
         error "Working directory is not clean. Commit changes or use --force"
     fi
-    
+
     if [ "${FORCE:-}" != "true" ] && [ "$(git branch --show-current)" != "main" ]; then
         warn "Not on main branch. Current branch: $(git branch --show-current)"
         read -p "Continue anyway? (y/N): " -r
@@ -2247,24 +2278,24 @@ create_version_tag() {
     local bump_type=$1
     local new_version
     new_version=$(get_next_version "$bump_type")
-    
+
     log "Creating new $bump_type version: $new_version"
-    
+
     if [ "${DRY_RUN:-}" = "true" ]; then
         log "DRY RUN: Would create tag $new_version"
         return 0
     fi
-    
+
     check_git_status
-    
+
     # Create annotated tag
     git tag -a "$new_version" -m "Release $new_version
 
 Created by version-manager.sh on $(date)
 Type: $bump_type release"
-    
+
     log "Created tag: $new_version"
-    
+
     # Ask about pushing
     if [ "${FORCE:-}" != "true" ]; then
         read -p "Push tag to origin? (Y/n): " -r
@@ -2284,7 +2315,7 @@ show_current() {
     local current
     current=$(get_current_version)
     log "Current version: $current"
-    
+
     # Show commit info if not on a tag
     if ! git describe --tags --exact-match HEAD >/dev/null 2>&1; then
         local latest_tag
@@ -2298,7 +2329,7 @@ show_current() {
 
 main() {
     local command=""
-    
+
     while [[ $# -gt 0 ]]; do
         case $1 in
             current|next|bump|list|validate)
@@ -2326,12 +2357,12 @@ main() {
                 ;;
         esac
     done
-    
+
     if [ -z "$command" ]; then
         usage
         exit 1
     fi
-    
+
     case $command in
         current)
             show_current
@@ -2391,6 +2422,7 @@ Expected: Help message with usage examples
 - [ ] **Step 6: Add deployment scripts to package.json**
 
 Update `package.json` scripts:
+
 ```json
 {
   "scripts": {
@@ -2423,12 +2455,14 @@ Co-Authored-By: Claude Sonnet 4 <noreply@anthropic.com>"
 ### Task 7: Automated Rollback System
 
 **Files:**
+
 - Create: `scripts/rollback.sh`
 - Create: `.github/workflows/rollback.yml`
 
 - [ ] **Step 1: Create comprehensive rollback script**
 
 File: `scripts/rollback.sh`
+
 ```bash
 #!/bin/bash
 set -euo pipefail
@@ -2498,40 +2532,40 @@ EOF
 
 check_prerequisites() {
     log "Checking prerequisites..."
-    
+
     command -v kubectl >/dev/null 2>&1 || error "kubectl is required"
     command -v curl >/dev/null 2>&1 || error "curl is required"
-    
+
     if ! kubectl cluster-info >/dev/null 2>&1; then
         error "Cannot connect to Kubernetes cluster"
     fi
-    
+
     if ! kubectl get namespace "$NAMESPACE" >/dev/null 2>&1; then
         error "Namespace '$NAMESPACE' does not exist"
     fi
-    
+
     log "Prerequisites check passed"
 }
 
 get_deployment_list() {
     local env=$1
     local prefix=""
-    
+
     if [ "$env" = "staging" ]; then
         prefix="staging-"
     fi
-    
+
     echo "${prefix}frontend" "${prefix}user-service" "${prefix}chat-service" "${prefix}product-service" "${prefix}order-service" "${prefix}websocket-service" "${prefix}support-bot" "${prefix}api-gateway"
 }
 
 get_current_versions() {
     local env=$1
-    
+
     log "Getting current deployment versions for $env..."
-    
+
     local deployments
     read -ra deployments <<< "$(get_deployment_list "$env")"
-    
+
     for deployment in "${deployments[@]}"; do
         if kubectl get deployment "$deployment" -n "$NAMESPACE" >/dev/null 2>&1; then
             local current_image
@@ -2540,7 +2574,7 @@ get_current_versions() {
             deployed_version=$(kubectl get deployment "$deployment" -n "$NAMESPACE" -o jsonpath='{.metadata.annotations.vendfinder\.com/deployed-version}' 2>/dev/null || echo "unknown")
             local deployed_at
             deployed_at=$(kubectl get deployment "$deployment" -n "$NAMESPACE" -o jsonpath='{.metadata.annotations.vendfinder\.com/deployed-at}' 2>/dev/null || echo "unknown")
-            
+
             printf "%-20s %-50s %-20s %s\n" "$deployment" "$current_image" "$deployed_version" "$deployed_at"
         else
             warn "Deployment $deployment not found"
@@ -2550,20 +2584,20 @@ get_current_versions() {
 
 list_rollback_versions() {
     local env=$1
-    
+
     log "Available rollback versions for $env:"
     echo
     printf "%-20s %-50s %-20s %s\n" "DEPLOYMENT" "IMAGE" "VERSION" "DEPLOYED AT"
     printf "%-20s %-50s %-20s %s\n" "----------" "-----" "-------" "-----------"
-    
+
     get_current_versions "$env"
-    
+
     echo
     log "Rollback history (from annotations):"
-    
+
     local deployments
     read -ra deployments <<< "$(get_deployment_list "$env")"
-    
+
     for deployment in "${deployments[@]}"; do
         if kubectl get deployment "$deployment" -n "$NAMESPACE" >/dev/null 2>&1; then
             echo
@@ -2580,36 +2614,36 @@ create_rollback_backup() {
     local env=$1
     local backup_subdir="rollback-$(date +%Y%m%d-%H%M%S)"
     local full_backup_dir="$BACKUP_DIR/$backup_subdir"
-    
+
     log "Creating rollback backup..."
-    
+
     mkdir -p "$full_backup_dir"
-    
+
     # Backup current state
     kubectl get deployments -n "$NAMESPACE" -o yaml > "$full_backup_dir/deployments-before-rollback.yaml"
     kubectl get configmaps -n "$NAMESPACE" -o yaml > "$full_backup_dir/configmaps-before-rollback.yaml"
-    
+
     # Save current versions
     get_current_versions "$env" > "$full_backup_dir/current-versions.txt"
-    
+
     log "Rollback backup saved to: $full_backup_dir"
     echo "$full_backup_dir" > /tmp/rollback-backup-path
 }
 
 rollback_to_previous() {
     local env=$1
-    
+
     log "Rolling back $env to previous deployment..."
-    
+
     local deployments
     read -ra deployments <<< "$(get_deployment_list "$env")"
-    
+
     local failed_deployments=()
-    
+
     for deployment in "${deployments[@]}"; do
         if kubectl get deployment "$deployment" -n "$NAMESPACE" >/dev/null 2>&1; then
             info "Rolling back $deployment to previous revision..."
-            
+
             if kubectl rollout undo deployment/"$deployment" -n "$NAMESPACE"; then
                 log "✅ $deployment rollback initiated"
             else
@@ -2620,11 +2654,11 @@ rollback_to_previous() {
             warn "Deployment $deployment not found, skipping"
         fi
     done
-    
+
     if [ ${#failed_deployments[@]} -gt 0 ]; then
         error "Some deployments failed to rollback: ${failed_deployments[*]}"
     fi
-    
+
     log "Rollback commands executed for all deployments"
 }
 
@@ -2632,12 +2666,12 @@ rollback_to_version() {
     local env=$1
     local target_version=$2
     local registry="registry.digitalocean.com/vendfinder-registry"
-    
+
     log "Rolling back $env to version $target_version..."
-    
+
     # Update kustomize configuration
     cd "environments/$env"
-    
+
     kustomize edit set image \
         "$registry/frontend:$target_version" \
         "$registry/user-service-oauth:$target_version" \
@@ -2647,36 +2681,36 @@ rollback_to_version() {
         "$registry/websocket-service:$target_version" \
         "$registry/support-bot:$target_version" \
         "$registry/api-gateway-build:$target_version"
-    
+
     cd - >/dev/null
-    
+
     # Apply the rollback
     kubectl kustomize "environments/$env" > "/tmp/$env-rollback.yaml"
     kubectl apply -f "/tmp/$env-rollback.yaml"
-    
+
     log "Rollback to $target_version applied"
 }
 
 wait_for_rollback() {
     local env=$1
     local timeout=${2:-600}
-    
+
     if [ "${QUICK_ROLLBACK:-}" = "true" ]; then
         log "Quick rollback mode - skipping rollout wait"
         return 0
     fi
-    
+
     log "Waiting for rollback to complete (timeout: ${timeout}s)..."
-    
+
     local deployments
     read -ra deployments <<< "$(get_deployment_list "$env")"
-    
+
     local failed_rollouts=()
-    
+
     for deployment in "${deployments[@]}"; do
         if kubectl get deployment "$deployment" -n "$NAMESPACE" >/dev/null 2>&1; then
             info "Waiting for $deployment rollout..."
-            
+
             if kubectl rollout status deployment/"$deployment" -n "$NAMESPACE" --timeout="${timeout}s"; then
                 log "✅ $deployment rollback completed"
             else
@@ -2685,24 +2719,24 @@ wait_for_rollback() {
             fi
         fi
     done
-    
+
     if [ ${#failed_rollouts[@]} -gt 0 ]; then
         error "Some deployments failed to complete rollback: ${failed_rollouts[*]}"
     fi
-    
+
     log "All deployments rolled back successfully"
 }
 
 verify_rollback() {
     local env=$1
-    
+
     if [ "${EMERGENCY_ROLLBACK:-}" = "true" ]; then
         log "Emergency rollback mode - skipping verification"
         return 0
     fi
-    
+
     log "Verifying rollback..."
-    
+
     # Determine URL
     local base_url
     case $env in
@@ -2713,10 +2747,10 @@ verify_rollback() {
             base_url="https://vendfinder.com"
             ;;
     esac
-    
+
     # Wait for services to stabilize
     sleep 30
-    
+
     # Basic health checks
     info "Testing main site..."
     if curl -f --max-time 30 "$base_url/" >/dev/null 2>&1; then
@@ -2724,14 +2758,14 @@ verify_rollback() {
     else
         warn "⚠️ Main site health check failed"
     fi
-    
+
     info "Testing API health..."
     if curl -f --max-time 30 "$base_url/api/health" >/dev/null 2>&1; then
         log "✅ API is responding"
     else
         warn "⚠️ API health check failed"
     fi
-    
+
     log "Rollback verification completed"
 }
 
@@ -2739,12 +2773,12 @@ update_rollback_annotations() {
     local env=$1
     local rollback_type=$2
     local target_version=${3:-"previous"}
-    
+
     log "Updating rollback annotations..."
-    
+
     local deployments
     read -ra deployments <<< "$(get_deployment_list "$env")"
-    
+
     for deployment in "${deployments[@]}"; do
         if kubectl get deployment "$deployment" -n "$NAMESPACE" >/dev/null 2>&1; then
             kubectl annotate deployment "$deployment" -n "$NAMESPACE" \
@@ -2755,7 +2789,7 @@ update_rollback_annotations() {
                 --overwrite >/dev/null
         fi
     done
-    
+
     log "Rollback annotations updated"
 }
 
@@ -2764,15 +2798,15 @@ send_rollback_notification() {
     local status=$2
     local rollback_type=$3
     local target_version=${4:-"previous"}
-    
+
     if [ -z "${SLACK_WEBHOOK:-}" ]; then
         return 0
     fi
-    
+
     local emoji
     local color
     local message
-    
+
     case $status in
         success)
             emoji="⚡"
@@ -2785,7 +2819,7 @@ send_rollback_notification() {
             message="VendFinder $env rollback FAILED"
             ;;
     esac
-    
+
     local payload
     payload=$(cat <<EOF
 {
@@ -2820,7 +2854,7 @@ send_rollback_notification() {
 }
 EOF
 )
-    
+
     curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK" >/dev/null 2>&1 || true
 }
 
@@ -2830,7 +2864,7 @@ main() {
     local target_version=""
     local list_mode=false
     local force=false
-    
+
     while [[ $# -gt 0 ]]; do
         case $1 in
             staging|production)
@@ -2872,17 +2906,17 @@ main() {
                 ;;
         esac
     done
-    
+
     if [ -z "$environment" ]; then
         error "Environment is required. Use -h for help."
     fi
-    
+
     if [ "$list_mode" = true ]; then
         check_prerequisites
         list_rollback_versions "$environment"
         exit 0
     fi
-    
+
     # Confirmation for production rollbacks
     if [ "$environment" = "production" ] && [ "$force" = false ] && [ "${EMERGENCY_ROLLBACK:-}" != "true" ]; then
         echo
@@ -2897,15 +2931,15 @@ main() {
             exit 0
         fi
     fi
-    
+
     log "Starting rollback for $environment"
     info "Rollback type: $rollback_type"
     info "Target: ${target_version:-previous deployment}"
     info "Timestamp: $(date)"
-    
+
     check_prerequisites
     create_rollback_backup "$environment"
-    
+
     case $rollback_type in
         previous)
             rollback_to_previous "$environment"
@@ -2920,16 +2954,16 @@ main() {
             error "Invalid rollback type: $rollback_type"
             ;;
     esac
-    
+
     wait_for_rollback "$environment"
     verify_rollback "$environment"
     update_rollback_annotations "$environment" "$rollback_type" "$target_version"
-    
+
     log "🎯 Rollback completed successfully!"
     info "Environment: $environment"
     info "Rollback type: $rollback_type"
     info "Target: ${target_version:-previous deployment}"
-    
+
     send_rollback_notification "$environment" "success" "$rollback_type" "$target_version"
 }
 
@@ -2942,6 +2976,7 @@ main "$@"
 - [ ] **Step 2: Create GitHub Actions rollback workflow**
 
 File: `.github/workflows/rollback.yml`
+
 ```yaml
 name: Emergency Rollback
 
@@ -2953,15 +2988,15 @@ on:
         required: true
         type: choice
         options:
-        - staging
-        - production
+          - staging
+          - production
       rollback_type:
         description: 'Rollback type'
         required: true
         type: choice
         options:
-        - previous
-        - version
+          - previous
+          - version
         default: previous
       target_version:
         description: 'Target version (only for version rollback, e.g., v1.2.3)'
@@ -2981,7 +3016,7 @@ jobs:
     name: Execute Rollback
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -3002,7 +3037,7 @@ jobs:
             echo "❌ Target version is required for version rollback"
             exit 1
           fi
-          
+
           if [ "${{ github.event.inputs.rollback_type }}" = "version" ]; then
             VERSION="${{ github.event.inputs.target_version }}"
             if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -3010,7 +3045,7 @@ jobs:
               exit 1
             fi
           fi
-          
+
           echo "✅ Rollback inputs validated"
 
       - name: List current deployments before rollback
@@ -3022,36 +3057,36 @@ jobs:
       - name: Execute rollback
         run: |
           chmod +x scripts/rollback.sh
-          
+
           # Build rollback command
           ROLLBACK_CMD="./scripts/rollback.sh ${{ github.event.inputs.environment }} --force"
-          
+
           if [ "${{ github.event.inputs.rollback_type }}" = "version" ]; then
             ROLLBACK_CMD="$ROLLBACK_CMD --version ${{ github.event.inputs.target_version }}"
           else
             ROLLBACK_CMD="$ROLLBACK_CMD --previous"
           fi
-          
+
           if [ "${{ github.event.inputs.skip_verification }}" = "true" ]; then
             ROLLBACK_CMD="$ROLLBACK_CMD --emergency"
           fi
-          
+
           echo "Executing rollback command: $ROLLBACK_CMD"
-          
+
           # Set Slack webhook for notifications
           export SLACK_WEBHOOK="${{ secrets.SLACK_WEBHOOK_URL }}"
-          
+
           # Execute rollback
           $ROLLBACK_CMD
 
       - name: Verify rollback completion
         run: |
           echo "✅ Rollback completed. Verifying final state..."
-          
+
           # Show final deployment state
           kubectl get deployments -n ${{ env.KUBE_NAMESPACE }} \
             -o custom-columns=NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image,READY:.status.readyReplicas,AVAILABLE:.status.availableReplicas
-          
+
           # Show rollback annotations
           echo "📝 Rollback annotations:"
           kubectl get deployments -n ${{ env.KUBE_NAMESPACE }} \
@@ -3066,11 +3101,11 @@ jobs:
             const rollbackType = '${{ github.event.inputs.rollback_type }}';
             const targetVersion = '${{ github.event.inputs.target_version }}' || 'previous';
             const status = '${{ job.status }}';
-            
+
             const title = `Rollback executed: ${environment} to ${targetVersion}`;
             const body = `
             ## Rollback Summary
-            
+
             - **Environment**: ${environment}
             - **Type**: ${rollbackType}
             - **Target**: ${targetVersion}
@@ -3078,23 +3113,23 @@ jobs:
             - **Executed by**: ${{ github.actor }}
             - **Timestamp**: ${new Date().toISOString()}
             - **Workflow**: [View Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            
+
             ## Next Steps
-            
+
             ${status === 'success' ? 
               '✅ Rollback completed successfully. Monitor the environment and investigate the root cause of the issue that triggered this rollback.' :
               '❌ Rollback failed. Manual intervention may be required. Check the workflow logs and cluster state immediately.'
             }
-            
+
             ## Environment URLs
-            
+
             - Staging: https://staging.vendfinder.com
             - Production: https://vendfinder.com
-            
+
             ---
             _This issue was automatically created by the rollback workflow._
             `;
-            
+
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -3108,22 +3143,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: rollback
     if: success() && github.event.inputs.skip_verification != 'true'
-    
+
     steps:
       - name: Monitor for 5 minutes
         run: |
           echo "👀 Monitoring ${{ github.event.inputs.environment }} for 5 minutes post-rollback..."
-          
+
           # Determine URL
           if [ "${{ github.event.inputs.environment }}" = "production" ]; then
             URL="https://vendfinder.com"
           else
             URL="https://staging.vendfinder.com"
           fi
-          
+
           end_time=$(($(date +%s) + 300)) # 5 minutes from now
           failed_checks=0
-          
+
           while [ $(date +%s) -lt $end_time ]; do
             if ! curl -f --max-time 10 "$URL/api/health" > /dev/null 2>&1; then
               failed_checks=$((failed_checks + 1))
@@ -3140,7 +3175,7 @@ jobs:
             
             sleep 30
           done
-          
+
           echo "✅ 5-minute monitoring completed successfully"
 ```
 
@@ -3170,6 +3205,7 @@ Expected: Script runs without errors, shows available versions or indicates no d
 - [ ] **Step 6: Add rollback commands to package.json**
 
 Update `package.json` scripts:
+
 ```json
 {
   "scripts": {
@@ -3204,6 +3240,7 @@ Co-Authored-By: Claude Sonnet 4 <noreply@anthropic.com>"
 I'll now perform the required self-review of the implementation plan:
 
 **1. Spec coverage check:**
+
 - ✅ Repository Setup & Migration Strategy (Tasks 1-2)
 - ✅ Semantic Versioning & Release Management (Task 1, Version Manager)
 - ✅ CI/CD Pipeline Architecture (Tasks 3-5)
@@ -3214,18 +3251,21 @@ I'll now perform the required self-review of the implementation plan:
 - ✅ Database Migration Handling (Referenced in deployment scripts)
 
 **2. Placeholder scan:**
+
 - All code blocks contain complete implementations
 - No TBD, TODO, or placeholder content
 - All commands have expected outputs specified
 - File paths are exact and complete
 
 **3. Type consistency:**
-- Image naming consistent across all tasks (registry.digitalocean.com/vendfinder-registry/*)
+
+- Image naming consistent across all tasks (registry.digitalocean.com/vendfinder-registry/\*)
 - Service names consistent (frontend, user-service, etc.)
 - Environment names consistent (staging, production)
 - Version format consistent (v1.2.3)
 
 **4. Task granularity:**
+
 - Each task produces working, testable changes
 - Steps are appropriately sized (2-5 minutes each)
 - Frequent commits after completing logical units

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { Search, VolumeX } from "lucide-react";
-import { Conversation } from "@/types";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { Search, VolumeX } from 'lucide-react';
+import { Conversation } from '@/types';
+import { cn } from '@/lib/utils';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -14,16 +14,21 @@ interface ConversationListProps {
   onlineUsers?: Set<string>;
 }
 
-function timeAgoRaw(dateStr: string): { type: "minutes" | "hours" | "days"; value: number } | { type: "now" } | { type: "date"; dateStr: string } {
+function timeAgoRaw(
+  dateStr: string
+):
+  | { type: 'minutes' | 'hours' | 'days'; value: number }
+  | { type: 'now' }
+  | { type: 'date'; dateStr: string } {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
   const diff = Math.floor((now - then) / 1000);
 
-  if (diff < 60) return { type: "now" };
-  if (diff < 3600) return { type: "minutes", value: Math.floor(diff / 60) };
-  if (diff < 86400) return { type: "hours", value: Math.floor(diff / 3600) };
-  if (diff < 604800) return { type: "days", value: Math.floor(diff / 86400) };
-  return { type: "date", dateStr };
+  if (diff < 60) return { type: 'now' };
+  if (diff < 3600) return { type: 'minutes', value: Math.floor(diff / 60) };
+  if (diff < 86400) return { type: 'hours', value: Math.floor(diff / 3600) };
+  if (diff < 604800) return { type: 'days', value: Math.floor(diff / 86400) };
+  return { type: 'date', dateStr };
 }
 
 export default function ConversationList({
@@ -33,17 +38,18 @@ export default function ConversationList({
   onSelect,
   onlineUsers,
 }: ConversationListProps) {
-  const t = useTranslations("chat");
-  const [search, setSearch] = useState("");
+  const t = useTranslations('chat');
+  const [search, setSearch] = useState('');
 
   const filtered = conversations.filter((c) => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
-    const otherName = c.participants?.find((p) => p.id !== currentUserId)?.name || "";
+    const otherName =
+      c.participants?.find((p) => p.id !== currentUserId)?.name || '';
     return (
       otherName.toLowerCase().includes(q) ||
-      (c.product?.name || "").toLowerCase().includes(q) ||
-      (c.lastMessage?.content || "").toLowerCase().includes(q)
+      (c.product?.name || '').toLowerCase().includes(q) ||
+      (c.lastMessage?.content || '').toLowerCase().includes(q)
     );
   });
 
@@ -58,7 +64,7 @@ export default function ConversationList({
           />
           <input
             type="text"
-            placeholder={t("searchMessages")}
+            placeholder={t('searchMessages')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 text-[13px] bg-surface border border-border/50 rounded-xl text-foreground placeholder:text-muted/40 focus:outline-none focus:border-primary/40 transition-colors"
@@ -70,7 +76,9 @@ export default function ConversationList({
       <div className="flex-1 overflow-y-auto">
         {filtered.length === 0 ? (
           <div className="px-4 py-8 text-center">
-            <p className="text-[12px] text-muted/50">{t("noConversationsFound")}</p>
+            <p className="text-[12px] text-muted/50">
+              {t('noConversationsFound')}
+            </p>
           </div>
         ) : (
           filtered.map((conv) => {
@@ -85,11 +93,11 @@ export default function ConversationList({
                 key={conv.id}
                 onClick={() => onSelect(conv.id)}
                 className={cn(
-                  "w-full flex items-start gap-3 px-4 py-3 text-left transition-all relative cursor-pointer",
+                  'w-full flex items-start gap-3 px-4 py-3 text-left transition-all relative cursor-pointer',
                   isActive
-                    ? "bg-primary/[0.08] border-l-2 border-primary"
-                    : "hover:bg-surface/80 border-l-2 border-transparent",
-                  conv.isMuted && "opacity-60"
+                    ? 'bg-primary/[0.08] border-l-2 border-primary'
+                    : 'hover:bg-surface/80 border-l-2 border-transparent',
+                  conv.isMuted && 'opacity-60'
                 )}
               >
                 {/* Avatar */}
@@ -102,7 +110,7 @@ export default function ConversationList({
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      other?.name?.charAt(0) || "?"
+                      other?.name?.charAt(0) || '?'
                     )}
                   </div>
                   {isOnline && (
@@ -116,13 +124,13 @@ export default function ConversationList({
                     <div className="flex items-center gap-1.5 min-w-0">
                       <p
                         className={cn(
-                          "text-[13px] font-semibold truncate",
+                          'text-[13px] font-semibold truncate',
                           conv.unreadCount > 0
-                            ? "text-foreground"
-                            : "text-foreground/80"
+                            ? 'text-foreground'
+                            : 'text-foreground/80'
                         )}
                       >
-                        {other?.name || "Unknown"}
+                        {other?.name || 'Unknown'}
                       </p>
                       {conv.isMuted && (
                         <VolumeX size={10} className="text-muted/40 shrink-0" />
@@ -132,14 +140,21 @@ export default function ConversationList({
                       {conv.lastMessage
                         ? (() => {
                             const ago = timeAgoRaw(conv.lastMessage.timestamp);
-                            if (ago.type === "now") return "now";
-                            if (ago.type === "minutes") return t("minutesAgo", { count: ago.value });
-                            if (ago.type === "hours") return t("hoursAgo", { count: ago.value });
-                            if (ago.type === "days") return t("daysAgo", { count: ago.value });
-                            if (ago.type === "date") return new Date(ago.dateStr).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-                            return "";
+                            if (ago.type === 'now') return 'now';
+                            if (ago.type === 'minutes')
+                              return t('minutesAgo', { count: ago.value });
+                            if (ago.type === 'hours')
+                              return t('hoursAgo', { count: ago.value });
+                            if (ago.type === 'days')
+                              return t('daysAgo', { count: ago.value });
+                            if (ago.type === 'date')
+                              return new Date(ago.dateStr).toLocaleDateString(
+                                undefined,
+                                { month: 'short', day: 'numeric' }
+                              );
+                            return '';
                           })()
-                        : ""}
+                        : ''}
                     </span>
                   </div>
                   {conv.product && (
@@ -150,13 +165,13 @@ export default function ConversationList({
                   <div className="flex items-center gap-2 mt-0.5">
                     <p
                       className={cn(
-                        "text-[12px] truncate flex-1",
+                        'text-[12px] truncate flex-1',
                         conv.unreadCount > 0
-                          ? "text-muted font-medium"
-                          : "text-muted/60"
+                          ? 'text-muted font-medium'
+                          : 'text-muted/60'
                       )}
                     >
-                      {conv.lastMessage?.content || "No messages yet"}
+                      {conv.lastMessage?.content || 'No messages yet'}
                     </p>
                     {conv.unreadCount > 0 && (
                       <span className="shrink-0 w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">

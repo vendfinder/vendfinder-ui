@@ -31,9 +31,9 @@ export async function loginUser(
   email: string,
   password: string
 ): Promise<AuthResponse> {
-  const res = await fetch("/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
   return res.json();
@@ -44,22 +44,27 @@ export async function registerUser(
   email: string,
   password: string
 ): Promise<AuthResponse> {
-  const res = await fetch("/api/auth/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username: name, email, password, tosAccepted: true }),
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: name,
+      email,
+      password,
+      tosAccepted: true,
+    }),
   });
   return res.json();
 }
 
 export async function oauthLogin(
-  provider: "google" | "apple",
+  provider: 'google' | 'apple',
   token: string,
   name?: string
 ): Promise<AuthResponse> {
-  const res = await fetch("/api/auth/oauth", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  const res = await fetch('/api/auth/oauth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ provider, token, name }),
   });
   return res.json();

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { BadgeCheck, Lock, ShieldCheck, Headphones } from "lucide-react";
-import { valuePropKeys } from "@/data/site";
-import { useTranslations } from "next-intl";
+import { BadgeCheck, Lock, ShieldCheck, Headphones } from 'lucide-react';
+import { valuePropKeys } from '@/data/site';
+import { useTranslations } from 'next-intl';
 import {
   StaggerContainer,
   StaggerItem,
-} from "@/components/motion/MotionWrapper";
+} from '@/components/motion/MotionWrapper';
 
 const iconMap: Record<string, React.ReactNode> = {
   BadgeCheck: <BadgeCheck size={22} />,
@@ -16,7 +16,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 export default function ValueProps() {
-  const t = useTranslations("valueProps");
+  const t = useTranslations('valueProps');
 
   return (
     <section className="border-y border-border bg-surface/50">

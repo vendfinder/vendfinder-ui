@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useState, useEffect } from "react";
-import { Product, CartItem } from "@/types";
+import { createContext, useContext, useState, useEffect } from 'react';
+import { Product, CartItem } from '@/types';
 
 interface CartContextType {
   items: CartItem[];
@@ -22,7 +22,10 @@ function getItemKey(productId: string, size?: string) {
 }
 
 function matchItem(item: CartItem, productId: string, size?: string) {
-  return item.product.id === productId && (item.size || undefined) === (size || undefined);
+  return (
+    item.product.id === productId &&
+    (item.size || undefined) === (size || undefined)
+  );
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -31,7 +34,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("vendfinder-cart");
+    const stored = localStorage.getItem('vendfinder-cart');
     if (stored) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setItems(JSON.parse(stored));
@@ -42,7 +45,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (loaded) {
-      localStorage.setItem("vendfinder-cart", JSON.stringify(items));
+      localStorage.setItem('vendfinder-cart', JSON.stringify(items));
     }
   }, [items, loaded]);
 
@@ -71,15 +74,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => prev.filter((i) => !matchItem(i, productId, size)));
   };
 
-  const updateQuantity = (productId: string, quantity: number, size?: string) => {
+  const updateQuantity = (
+    productId: string,
+    quantity: number,
+    size?: string
+  ) => {
     if (quantity <= 0) {
       removeItem(productId, size);
       return;
     }
     setItems((prev) =>
-      prev.map((i) =>
-        matchItem(i, productId, size) ? { ...i, quantity } : i
-      )
+      prev.map((i) => (matchItem(i, productId, size) ? { ...i, quantity } : i))
     );
   };
 
@@ -108,6 +113,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
 export function useCart() {
   const context = useContext(CartContext);
-  if (!context) throw new Error("useCart must be used within CartProvider");
+  if (!context) throw new Error('useCart must be used within CartProvider');
   return context;
 }

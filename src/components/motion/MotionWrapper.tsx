@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 
 interface FadeInProps {
   children: React.ReactNode;
@@ -13,7 +13,7 @@ export function FadeIn({ children, delay = 0, className }: FadeInProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
+      viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.5, delay }}
       className={className}
     >
@@ -35,7 +35,7 @@ export function StaggerContainer({
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-50px" }}
+      viewport={{ once: true, margin: '-50px' }}
       variants={{
         hidden: {},
         visible: { transition: { staggerChildren: 0.1 } },

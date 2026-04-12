@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
-import { ChevronRight, Layers } from "lucide-react";
-import type { Product, Category } from "@/types";
-import ProductGrid from "@/components/product/ProductGrid";
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { motion } from 'framer-motion';
+import { ChevronRight, Layers } from 'lucide-react';
+import type { Product, Category } from '@/types';
+import ProductGrid from '@/components/product/ProductGrid';
 
 export default function CategoryPageClient({
   category,
@@ -14,7 +14,7 @@ export default function CategoryPageClient({
   category: Category;
   products: Product[];
 }) {
-  const t = useTranslations("product");
+  const t = useTranslations('product');
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumbs */}
@@ -24,9 +24,16 @@ export default function CategoryPageClient({
         transition={{ duration: 0.4 }}
         className="flex items-center gap-1.5 text-[12px] text-muted mb-8"
       >
-        <Link href="/" className="hover:text-foreground transition-colors">{t("home")}</Link>
+        <Link href="/" className="hover:text-foreground transition-colors">
+          {t('home')}
+        </Link>
         <ChevronRight size={12} className="text-muted/40" />
-        <Link href="/products" className="hover:text-foreground transition-colors">{t("products")}</Link>
+        <Link
+          href="/products"
+          className="hover:text-foreground transition-colors"
+        >
+          {t('products')}
+        </Link>
         <ChevronRight size={12} className="text-muted/40" />
         <span className="text-foreground font-medium">{category.name}</span>
       </motion.nav>
@@ -40,9 +47,13 @@ export default function CategoryPageClient({
       >
         {/* Subtle gradient bg */}
         <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.04] via-transparent to-violet-500/[0.03] pointer-events-none" />
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: "repeating-linear-gradient(135deg, transparent, transparent 24px, white 24px, white 25px)",
-        }} />
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(135deg, transparent, transparent 24px, white 24px, white 25px)',
+          }}
+        />
         <div className="relative">
           <div className="flex items-center gap-2.5 mb-2">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -54,7 +65,7 @@ export default function CategoryPageClient({
           </div>
           <p className="text-sm text-muted max-w-md">{category.description}</p>
           <p className="text-[11px] text-muted mt-2">
-            {t("productsCount", { count: products.length })}
+            {t('productsCount', { count: products.length })}
           </p>
         </div>
       </motion.div>

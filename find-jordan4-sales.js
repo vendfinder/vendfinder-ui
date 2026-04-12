@@ -5,7 +5,9 @@ const { Pool } = require('pg');
 class Jordan4SalesFinder {
   constructor() {
     this.orderPool = new Pool({
-      connectionString: process.env.DATABASE_URL || 'postgresql://vendfinder:vendfinder_pass@localhost:5435/order_db'
+      connectionString:
+        process.env.DATABASE_URL ||
+        'postgresql://vendfinder:vendfinder_pass@localhost:5435/order_db',
     });
   }
 
@@ -51,7 +53,9 @@ class Jordan4SalesFinder {
 
         // Show what we'd expect to find
         console.log('\n💡 Expected Jordan 4 Products:');
-        console.log('- Air Jordan 4 Retro Bred (Product ID: 00000000-0000-0000-0000-000000000001)');
+        console.log(
+          '- Air Jordan 4 Retro Bred (Product ID: 00000000-0000-0000-0000-000000000001)'
+        );
         console.log('- Price: $215 - $250');
         console.log('- Available sizes: 7-13');
 
@@ -73,8 +77,12 @@ class Jordan4SalesFinder {
         console.log(`   Stripe ID: ${row.stripe_payment_intent_id || 'N/A'}`);
 
         // Track revenue
-        if (row.payment_status === 'succeeded' || row.payment_status === 'paid') {
-          totalJordan4Revenue += parseFloat(row.payment_amount) || parseFloat(row.price) || 0;
+        if (
+          row.payment_status === 'succeeded' ||
+          row.payment_status === 'paid'
+        ) {
+          totalJordan4Revenue +=
+            parseFloat(row.payment_amount) || parseFloat(row.price) || 0;
         }
 
         // Track by vendor
@@ -84,34 +92,45 @@ class Jordan4SalesFinder {
         vendorSales[row.vendor_id].push(row);
       });
 
-      console.log(`\n💰 Total Jordan 4 Revenue: $${totalJordan4Revenue.toFixed(2)}`);
+      console.log(
+        `\n💰 Total Jordan 4 Revenue: $${totalJordan4Revenue.toFixed(2)}`
+      );
 
       // Show breakdown by vendor
       console.log('\n📊 Sales by Vendor:');
       console.log('===================');
-      Object.keys(vendorSales).forEach(vendorId => {
+      Object.keys(vendorSales).forEach((vendorId) => {
         const sales = vendorSales[vendorId];
         const vendorRevenue = sales.reduce((sum, sale) => {
-          if (sale.payment_status === 'succeeded' || sale.payment_status === 'paid') {
-            return sum + (parseFloat(sale.payment_amount) || parseFloat(sale.price) || 0);
+          if (
+            sale.payment_status === 'succeeded' ||
+            sale.payment_status === 'paid'
+          ) {
+            return (
+              sum +
+              (parseFloat(sale.payment_amount) || parseFloat(sale.price) || 0)
+            );
           }
           return sum;
         }, 0);
 
-        console.log(`Vendor ${vendorId}: ${sales.length} sales, $${vendorRevenue.toFixed(2)} revenue`);
+        console.log(
+          `Vendor ${vendorId}: ${sales.length} sales, $${vendorRevenue.toFixed(2)} revenue`
+        );
       });
 
       return {
         found: true,
         orders: result.rows,
         totalRevenue: totalJordan4Revenue,
-        vendorBreakdown: vendorSales
+        vendorBreakdown: vendorSales,
       };
-
     } catch (error) {
       console.error('❌ Error searching for Jordan 4 sales:', error);
       if (error.code === 'ECONNREFUSED') {
-        console.log('\n💡 Database not available. The search data might be in static files.');
+        console.log(
+          '\n💡 Database not available. The search data might be in static files.'
+        );
         this.showStaticJordan4Data();
       }
       throw error;
@@ -169,12 +188,13 @@ async function main() {
     if (result.found) {
       console.log(`✅ Found ${result.orders.length} Jordan 4 sales`);
       console.log(`💰 Total Revenue: $${result.totalRevenue.toFixed(2)}`);
-      console.log(`👥 Unique Vendors: ${Object.keys(result.vendorBreakdown).length}`);
+      console.log(
+        `👥 Unique Vendors: ${Object.keys(result.vendorBreakdown).length}`
+      );
     } else {
       console.log('❌ No Jordan 4 sales found in database');
       console.log('💡 Check static data files for product listings');
     }
-
   } catch (error) {
     console.error('💥 Search failed:', error.message);
     process.exit(1);

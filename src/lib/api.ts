@@ -1,7 +1,6 @@
-import type { Product, Category } from "@/types";
+import type { Product, Category } from '@/types';
 
-const API_BASE_URL =
-  process.env.API_BASE_URL || "http://api-gateway:3000";
+const API_BASE_URL = process.env.API_BASE_URL || 'http://api-gateway:3000';
 
 // --- Backend response types ---
 
@@ -29,12 +28,15 @@ interface ApiProduct {
     activeBids: number;
     activeAsks: number;
   };
-  translations?: Record<string, {
-    name: string;
-    description: string;
-    long_description: string;
-    features: string[];
-  }> | null;
+  translations?: Record<
+    string,
+    {
+      name: string;
+      description: string;
+      long_description: string;
+      features: string[];
+    }
+  > | null;
   source_language?: string | null;
   is_global_listing?: boolean;
   is_sponsored?: boolean;
@@ -56,48 +58,49 @@ interface ApiProductsResponse {
 
 const FALLBACK_IMAGES: Record<string, string> = {
   sneakers:
-    "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=600&fit=crop",
+    'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=600&fit=crop',
   electronics:
-    "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&h=600&fit=crop",
+    'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&h=600&fit=crop',
   apparel:
-    "https://images.unsplash.com/photo-1523398002811-999ca8dec234?w=600&h=600&fit=crop",
-  "home-living":
-    "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=600&h=600&fit=crop",
+    'https://images.unsplash.com/photo-1523398002811-999ca8dec234?w=600&h=600&fit=crop',
+  'home-living':
+    'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=600&h=600&fit=crop',
   accessories:
-    "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=600&h=600&fit=crop",
+    'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=600&h=600&fit=crop',
   collectibles:
-    "https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=600&h=600&fit=crop",
+    'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=600&h=600&fit=crop',
 };
 
 const DEFAULT_FALLBACK =
-  "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop";
+  'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop';
 
 // --- Slug generation ---
 
 export function generateSlug(name: string): string {
   return name
     .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 // --- Image URL resolution ---
 
-const SPACES_CDN_URL = "https://vendfinder-uploads.sfo3.cdn.digitaloceanspaces.com";
+const SPACES_CDN_URL =
+  'https://vendfinder-uploads.sfo3.cdn.digitaloceanspaces.com';
 
 function resolveImageUrl(url: string, category?: string): string {
   // Already a full URL — use as-is
-  if (url.startsWith("http://") || url.startsWith("https://")) {
+  if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
   // Relative /uploads/ path from local dev — try to resolve via Spaces CDN
-  if (url.startsWith("/uploads/")) {
-    return `${SPACES_CDN_URL}${url.replace("/uploads/", "/")}`;
+  if (url.startsWith('/uploads/')) {
+    return `${SPACES_CDN_URL}${url.replace('/uploads/', '/')}`;
   }
   // Unrecognized path — use category fallback
-  const categoryKey = category?.toLowerCase().replace(/\s+/g, "-") || "";
+  const categoryKey = category?.toLowerCase().replace(/\s+/g, '-') || '';
   return FALLBACK_IMAGES[categoryKey] || DEFAULT_FALLBACK;
 }
 
@@ -112,7 +115,8 @@ export function transformProduct(api: ApiProduct): Product {
   // Price = lowest ask (what you'd actually pay), fallback to retail if no asks
   const price = lowestAsk && lowestAsk > 0 ? lowestAsk : retailPrice;
   // compareAtPrice = retail price, only shown when price is below retail (a deal)
-  const compareAtPrice = retailPrice > 0 && price < retailPrice ? retailPrice : undefined;
+  const compareAtPrice =
+    retailPrice > 0 && price < retailPrice ? retailPrice : undefined;
 
   // Build images array from media, image_url, or fallback
   let images: string[] = [];
@@ -122,7 +126,7 @@ export function transformProduct(api: ApiProduct): Product {
     images = [resolveImageUrl(api.image_url, api.category)];
   }
   if (images.length === 0) {
-    const categoryKey = api.category?.toLowerCase().replace(/\s+/g, "-") || "";
+    const categoryKey = api.category?.toLowerCase().replace(/\s+/g, '-') || '';
     images = [FALLBACK_IMAGES[categoryKey] || DEFAULT_FALLBACK];
   }
 
@@ -136,12 +140,13 @@ export function transformProduct(api: ApiProduct): Product {
     id: api.id,
     slug: generateSlug(api.name),
     name: api.name,
-    description: api.description || "",
-    longDescription: api.description || "",
+    description: api.description || '',
+    longDescription: api.description || '',
     price,
     compareAtPrice,
     images,
-    category: api.category?.toLowerCase().replace(/\s+/g, "-") || "uncategorized",
+    category:
+      api.category?.toLowerCase().replace(/\s+/g, '-') || 'uncategorized',
     tags,
     rating: api.rating ? parseFloat(api.rating) : 0,
     reviewCount: api.review_count || 0,
@@ -153,14 +158,19 @@ export function transformProduct(api: ApiProduct): Product {
     sizes: api.sizes || undefined,
     sellerId: api.vendor_id || undefined,
     createdAt: api.created_at || new Date().toISOString(),
-    translations: api.translations ? Object.fromEntries(
-      Object.entries(api.translations).map(([locale, t]) => [locale, {
-        name: t.name,
-        description: t.description,
-        longDescription: t.long_description,
-        features: t.features || [],
-      }])
-    ) : undefined,
+    translations: api.translations
+      ? Object.fromEntries(
+          Object.entries(api.translations).map(([locale, t]) => [
+            locale,
+            {
+              name: t.name,
+              description: t.description,
+              longDescription: t.long_description,
+              features: t.features || [],
+            },
+          ])
+        )
+      : undefined,
     sourceLanguage: api.source_language || undefined,
     isGlobalListing: api.is_global_listing || false,
     isSponsored: api.is_sponsored || false,
@@ -180,9 +190,7 @@ async function apiFetch<T>(path: string): Promise<T> {
 }
 
 export async function fetchProducts(): Promise<Product[]> {
-  const data = await apiFetch<ApiProductsResponse>(
-    "/api/products?limit=100"
-  );
+  const data = await apiFetch<ApiProductsResponse>('/api/products?limit=100');
   return data.products.map(transformProduct);
 }
 
@@ -200,7 +208,7 @@ export async function fetchProductsByCategory(
 ): Promise<Product[]> {
   // Backend uses capitalized category names (e.g. "Sneakers")
   const capitalizedCategory =
-    category.charAt(0).toUpperCase() + category.slice(1).replace(/-/g, " ");
+    category.charAt(0).toUpperCase() + category.slice(1).replace(/-/g, ' ');
   const data = await apiFetch<ApiProductsResponse>(
     `/api/products?category=${encodeURIComponent(capitalizedCategory)}&limit=100`
   );
@@ -213,7 +221,9 @@ export async function fetchProductBySlug(
   slug: string
 ): Promise<Product | null> {
   // UUID pattern — try direct ID lookup first
-  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug)) {
+  if (
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug)
+  ) {
     const byId = await fetchProductById(slug);
     if (byId) return byId;
   }
@@ -264,46 +274,46 @@ const CATEGORY_META: Record<
   { name: string; description: string; icon: string; image: string }
 > = {
   sneakers: {
-    name: "Sneakers",
-    description: "Premium kicks from top brands",
-    icon: "👟",
+    name: 'Sneakers',
+    description: 'Premium kicks from top brands',
+    icon: '👟',
     image:
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=400&fit=crop",
+      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=400&fit=crop',
   },
   electronics: {
-    name: "Electronics",
-    description: "Latest tech and gadgets",
-    icon: "📱",
+    name: 'Electronics',
+    description: 'Latest tech and gadgets',
+    icon: '📱',
     image:
-      "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=800&h=400&fit=crop",
+      'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=800&h=400&fit=crop',
   },
   apparel: {
-    name: "Apparel",
-    description: "Exclusive apparel collections",
-    icon: "👕",
+    name: 'Apparel',
+    description: 'Exclusive apparel collections',
+    icon: '👕',
     image:
-      "https://images.unsplash.com/photo-1523398002811-999ca8dec234?w=800&h=400&fit=crop",
+      'https://images.unsplash.com/photo-1523398002811-999ca8dec234?w=800&h=400&fit=crop',
   },
-  "home-living": {
-    name: "Home & Living",
-    description: "Curated home essentials",
-    icon: "🏠",
+  'home-living': {
+    name: 'Home & Living',
+    description: 'Curated home essentials',
+    icon: '🏠',
     image:
-      "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=800&h=400&fit=crop",
+      'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=800&h=400&fit=crop',
   },
   accessories: {
-    name: "Accessories",
-    description: "Premium watches and accessories",
-    icon: "⌚",
+    name: 'Accessories',
+    description: 'Premium watches and accessories',
+    icon: '⌚',
     image:
-      "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=800&h=400&fit=crop",
+      'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=800&h=400&fit=crop',
   },
   collectibles: {
-    name: "Collectibles",
-    description: "Rare finds and collectible items",
-    icon: "🎭",
+    name: 'Collectibles',
+    description: 'Rare finds and collectible items',
+    icon: '🎭',
     image:
-      "https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=800&h=400&fit=crop",
+      'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=800&h=400&fit=crop',
   },
 };
 
@@ -318,7 +328,7 @@ export async function fetchCategories(): Promise<Category[]> {
     const meta = CATEGORY_META[slug] || {
       name: slug.charAt(0).toUpperCase() + slug.slice(1),
       description: `Browse ${slug} products`,
-      icon: "📦",
+      icon: '📦',
       image: DEFAULT_FALLBACK,
     };
     return {

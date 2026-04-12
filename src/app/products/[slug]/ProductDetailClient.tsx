@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
-import { motion, AnimatePresence } from "framer-motion";
+import Link from 'next/link';
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronRight,
   Package,
@@ -20,23 +20,25 @@ import {
   MessageCircle,
   Loader2,
   Send,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import type { Product, Review } from "@/types";
-import { useCart } from "@/context/CartContext";
-import { useAuth } from "@/context/AuthContext";
-import { formatPrice } from "@/lib/utils";
-import Rating from "@/components/ui/Rating";
-import ProductCard from "@/components/product/ProductCard";
-import SizeChartModal from "@/components/product/SizeChartModal";
-import ConditionBadge, { type ConditionValue } from "@/components/product/ConditionBadge";
-import ConditionGuide from "@/components/product/ConditionGuide";
-import { createReview } from "@/lib/api-products";
-import PriceHistoryChart from "@/components/product/PriceHistoryChart";
-import SalesHistoryTable from "@/components/product/SalesHistoryTable";
-import { useTranslatedProduct } from "@/hooks/useTranslatedProduct";
-import ReportDialog from "@/components/ui/ReportDialog";
-import { Flag } from "lucide-react";
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import type { Product, Review } from '@/types';
+import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
+import { formatPrice } from '@/lib/utils';
+import Rating from '@/components/ui/Rating';
+import ProductCard from '@/components/product/ProductCard';
+import SizeChartModal from '@/components/product/SizeChartModal';
+import ConditionBadge, {
+  type ConditionValue,
+} from '@/components/product/ConditionBadge';
+import ConditionGuide from '@/components/product/ConditionGuide';
+import { createReview } from '@/lib/api-products';
+import PriceHistoryChart from '@/components/product/PriceHistoryChart';
+import SalesHistoryTable from '@/components/product/SalesHistoryTable';
+import { useTranslatedProduct } from '@/hooks/useTranslatedProduct';
+import ReportDialog from '@/components/ui/ReportDialog';
+import { Flag } from 'lucide-react';
 
 export default function ProductDetailClient({
   product: rawProduct,
@@ -52,19 +54,19 @@ export default function ProductDetailClient({
   askConditions?: string[];
 }) {
   const product = useTranslatedProduct(rawProduct);
-  const t = useTranslations("product");
+  const t = useTranslations('product');
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [sizeError, setSizeError] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "description" | "specs" | "market" | "reviews"
-  >("description");
+    'description' | 'specs' | 'market' | 'reviews'
+  >('description');
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewHoverRating, setReviewHoverRating] = useState(0);
-  const [reviewTitle, setReviewTitle] = useState("");
-  const [reviewBody, setReviewBody] = useState("");
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewBody, setReviewBody] = useState('');
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
-  const [reviewError, setReviewError] = useState("");
+  const [reviewError, setReviewError] = useState('');
   const [reviewSuccess, setReviewSuccess] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [allReviews, setAllReviews] = useState(reviews);
@@ -76,58 +78,100 @@ export default function ProductDetailClient({
   const router = useRouter();
 
   useEffect(() => {
-    fetch(`/api/products/${product.id}/view`, { method: "POST" }).catch(() => {});
+    fetch(`/api/products/${product.id}/view`, { method: 'POST' }).catch(
+      () => {}
+    );
   }, [product.id]);
 
   const handleSubmitReview = async () => {
     if (!token || !user) return;
-    if (reviewRating === 0) { setReviewError("Please select a rating"); return; }
-    if (!reviewTitle.trim()) { setReviewError("Please add a title"); return; }
-    if (!reviewBody.trim()) { setReviewError("Please add a review"); return; }
+    if (reviewRating === 0) {
+      setReviewError('Please select a rating');
+      return;
+    }
+    if (!reviewTitle.trim()) {
+      setReviewError('Please add a title');
+      return;
+    }
+    if (!reviewBody.trim()) {
+      setReviewError('Please add a review');
+      return;
+    }
 
     setReviewSubmitting(true);
-    setReviewError("");
+    setReviewError('');
     try {
-      await createReview({
-        vendor_id: product.sellerId || product.id,
-        user_id: user.id,
-        product_id: product.id,
-        rating: reviewRating,
-        title: reviewTitle.trim(),
-        content: reviewBody.trim(),
-        author_name: user.name || user.username || "Anonymous",
-      }, token);
+      await createReview(
+        {
+          vendor_id: product.sellerId || product.id,
+          user_id: user.id,
+          product_id: product.id,
+          rating: reviewRating,
+          title: reviewTitle.trim(),
+          content: reviewBody.trim(),
+          author_name: user.name || user.username || 'Anonymous',
+        },
+        token
+      );
       setReviewSuccess(true);
       setShowReviewForm(false);
-      setAllReviews(prev => [{
-        id: crypto.randomUUID(),
-        productId: product.id,
-        userName: user.name || user.username || "Anonymous",
-        rating: reviewRating,
-        title: reviewTitle.trim(),
-        body: reviewBody.trim(),
-        date: new Date().toLocaleDateString(),
-        verified: false,
-      }, ...prev]);
+      setAllReviews((prev) => [
+        {
+          id: crypto.randomUUID(),
+          productId: product.id,
+          userName: user.name || user.username || 'Anonymous',
+          rating: reviewRating,
+          title: reviewTitle.trim(),
+          body: reviewBody.trim(),
+          date: new Date().toLocaleDateString(),
+          verified: false,
+        },
+        ...prev,
+      ]);
       setReviewRating(0);
-      setReviewTitle("");
-      setReviewBody("");
+      setReviewTitle('');
+      setReviewBody('');
     } catch (err) {
-      setReviewError(err instanceof Error ? err.message : "Failed to submit review");
+      setReviewError(
+        err instanceof Error ? err.message : 'Failed to submit review'
+      );
     } finally {
       setReviewSubmitting(false);
     }
   };
 
   const sneakerSizes = [
-    "3.5", "4", "4.5", "5", "5.5", "6", "6.5", "7", "7.5", "8",
-    "8.5", "9", "9.5", "10", "10.5", "11", "11.5", "12", "12.5",
-    "13", "14", "15", "16",
+    '3.5',
+    '4',
+    '4.5',
+    '5',
+    '5.5',
+    '6',
+    '6.5',
+    '7',
+    '7.5',
+    '8',
+    '8.5',
+    '9',
+    '9.5',
+    '10',
+    '10.5',
+    '11',
+    '11.5',
+    '12',
+    '12.5',
+    '13',
+    '14',
+    '15',
+    '16',
   ];
-  const isSneaker = product.category === "sneakers";
-  const displaySizes = product.sizes && product.sizes.length > 0
-    ? product.sizes
-    : isSneaker ? sneakerSizes : null;
+  const isSneaker = product.category === 'sneakers';
+  const displaySizes =
+    product.sizes && product.sizes.length > 0
+      ? product.sizes
+      : isSneaker
+        ? sneakerSizes
+        : null;
   const hasSizes = displaySizes !== null;
 
   const handleAddToCart = () => {
@@ -140,10 +184,13 @@ export default function ProductDetailClient({
   };
 
   const tabs = [
-    { key: "description" as const, label: t("description") },
-    { key: "specs" as const, label: t("specifications") },
-    { key: "market" as const, label: t("marketData") },
-    { key: "reviews" as const, label: `${t("reviews")} (${allReviews.length})` },
+    { key: 'description' as const, label: t('description') },
+    { key: 'specs' as const, label: t('specifications') },
+    { key: 'market' as const, label: t('marketData') },
+    {
+      key: 'reviews' as const,
+      label: `${t('reviews')} (${allReviews.length})`,
+    },
   ];
 
   return (
@@ -155,15 +202,27 @@ export default function ProductDetailClient({
         transition={{ duration: 0.4 }}
         className="flex items-center gap-1.5 text-[12px] text-muted mb-8"
       >
-        <Link href="/" className="hover:text-foreground transition-colors">{t("home")}</Link>
-        <ChevronRight size={12} className="text-muted/40" />
-        <Link href="/products" className="hover:text-foreground transition-colors">{t("products")}</Link>
-        <ChevronRight size={12} className="text-muted/40" />
-        <Link href={`/categories/${product.category}`} className="hover:text-foreground transition-colors capitalize">
-          {product.category.replace("-", " & ")}
+        <Link href="/" className="hover:text-foreground transition-colors">
+          {t('home')}
         </Link>
         <ChevronRight size={12} className="text-muted/40" />
-        <span className="text-foreground font-medium truncate max-w-[200px]">{product.name}</span>
+        <Link
+          href="/products"
+          className="hover:text-foreground transition-colors"
+        >
+          {t('products')}
+        </Link>
+        <ChevronRight size={12} className="text-muted/40" />
+        <Link
+          href={`/categories/${product.category}`}
+          className="hover:text-foreground transition-colors capitalize"
+        >
+          {product.category.replace('-', ' & ')}
+        </Link>
+        <ChevronRight size={12} className="text-muted/40" />
+        <span className="text-foreground font-medium truncate max-w-[200px]">
+          {product.name}
+        </span>
       </motion.nav>
 
       {/* Product Section */}
@@ -200,7 +259,7 @@ export default function ProductDetailClient({
           <div className="flex items-start justify-between gap-3">
             <div>
               <span className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold">
-                {product.category.replace("-", " & ")}
+                {product.category.replace('-', ' & ')}
               </span>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground mt-1">
                 {product.name}
@@ -219,7 +278,12 @@ export default function ProductDetailClient({
 
           <div className="flex items-center gap-3 mt-3">
             <Rating
-              value={allReviews.length > 0 ? allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length : product.rating}
+              value={
+                allReviews.length > 0
+                  ? allReviews.reduce((sum, r) => sum + r.rating, 0) /
+                    allReviews.length
+                  : product.rating
+              }
               count={allReviews.length || product.reviewCount}
               size="md"
             />
@@ -236,8 +300,11 @@ export default function ProductDetailClient({
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg bg-accent/10 text-accent">
                   {Math.round(
-                    ((product.compareAtPrice - product.price) / product.compareAtPrice) * 100
-                  )}% {t("off")}
+                    ((product.compareAtPrice - product.price) /
+                      product.compareAtPrice) *
+                      100
+                  )}
+                  % {t('off')}
                 </span>
               </>
             )}
@@ -249,23 +316,31 @@ export default function ProductDetailClient({
 
           {/* Condition Badge(s) */}
           {(() => {
-            const validConditions: ConditionValue[] = ["new", "used_like_new", "used_good", "used_fair"];
-            const displayConditions = askConditions.length > 0
-              ? askConditions.filter((c): c is ConditionValue => validConditions.includes(c as ConditionValue))
-              : ["new" as ConditionValue];
+            const validConditions: ConditionValue[] = [
+              'new',
+              'used_like_new',
+              'used_good',
+              'used_fair',
+            ];
+            const displayConditions =
+              askConditions.length > 0
+                ? askConditions.filter((c): c is ConditionValue =>
+                    validConditions.includes(c as ConditionValue)
+                  )
+                : ['new' as ConditionValue];
 
             return displayConditions.length > 0 ? (
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-2.5">
                   <label className="text-[11px] text-muted font-semibold uppercase tracking-wider flex items-center gap-2">
                     <Shield size={13} className="text-muted/50" />
-                    {t("condition")}
+                    {t('condition')}
                   </label>
                   <button
                     onClick={() => setShowConditionGuide(true)}
                     className="text-[11px] text-primary hover:text-primary-dark font-semibold cursor-pointer transition-colors"
                   >
-                    {t("conditionGuide")}
+                    {t('conditionGuide')}
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -288,14 +363,14 @@ export default function ProductDetailClient({
               <div className="flex items-center justify-between mb-3">
                 <label className="text-[11px] text-muted font-semibold uppercase tracking-wider flex items-center gap-2">
                   <Ruler size={13} className="text-muted/50" />
-                  {isSneaker ? t("selectSizeUS") : t("selectSize")}
+                  {isSneaker ? t('selectSizeUS') : t('selectSize')}
                 </label>
                 {isSneaker && (
                   <button
                     onClick={() => setShowSizeChart(true)}
                     className="text-[11px] text-primary hover:text-primary-dark font-semibold cursor-pointer transition-colors"
                   >
-                    {t("sizeGuide")}
+                    {t('sizeGuide')}
                   </button>
                 )}
               </div>
@@ -304,8 +379,12 @@ export default function ProductDetailClient({
                 <div className="flex flex-wrap gap-2">
                   {displaySizes!.map((size) => {
                     const hasAsks = Object.keys(sizeAvailability).length > 0;
-                    const isAvailable = !hasAsks || size in sizeAvailability || "one-size" in sizeAvailability;
-                    const lowestAsk = sizeAvailability[size] || sizeAvailability["one-size"];
+                    const isAvailable =
+                      !hasAsks ||
+                      size in sizeAvailability ||
+                      'one-size' in sizeAvailability;
+                    const lowestAsk =
+                      sizeAvailability[size] || sizeAvailability['one-size'];
 
                     return (
                       <button
@@ -318,17 +397,20 @@ export default function ProductDetailClient({
                         disabled={!isAvailable}
                         className={`
                           min-w-[56px] px-3 py-2 rounded-xl border transition-all flex flex-col items-center gap-0.5
-                          ${!isAvailable
-                            ? "bg-surface/30 text-muted/30 border-border/30 cursor-not-allowed line-through decoration-muted/20"
-                            : selectedSize === size
-                              ? "bg-primary/[0.08] text-primary border-primary/40 shadow-[0_0_12px_rgba(232,136,58,0.15)] cursor-pointer"
-                              : "bg-surface text-foreground border-border hover:border-border-hover cursor-pointer"
+                          ${
+                            !isAvailable
+                              ? 'bg-surface/30 text-muted/30 border-border/30 cursor-not-allowed line-through decoration-muted/20'
+                              : selectedSize === size
+                                ? 'bg-primary/[0.08] text-primary border-primary/40 shadow-[0_0_12px_rgba(232,136,58,0.15)] cursor-pointer'
+                                : 'bg-surface text-foreground border-border hover:border-border-hover cursor-pointer'
                           }
                         `}
                       >
                         <span className="text-sm font-semibold">{size}</span>
                         {hasAsks && isAvailable && lowestAsk && (
-                          <span className="text-[10px] text-muted font-medium">${lowestAsk}</span>
+                          <span className="text-[10px] text-muted font-medium">
+                            ${lowestAsk}
+                          </span>
                         )}
                       </button>
                     );
@@ -338,7 +420,7 @@ export default function ProductDetailClient({
 
               {sizeError && (
                 <p className="mt-2 text-xs text-red-400 font-medium">
-                  {t("selectSizeError")}
+                  {t('selectSizeError')}
                 </p>
               )}
             </div>
@@ -348,7 +430,10 @@ export default function ProductDetailClient({
           {product.features.length > 0 && (
             <div className="mt-6 space-y-2">
               {product.features.map((feature) => (
-                <div key={feature} className="flex items-center gap-2.5 text-sm">
+                <div
+                  key={feature}
+                  className="flex items-center gap-2.5 text-sm"
+                >
                   <div className="w-5 h-5 rounded-md bg-emerald-400/10 flex items-center justify-center shrink-0">
                     <Check size={11} className="text-emerald-400" />
                   </div>
@@ -383,18 +468,22 @@ export default function ProductDetailClient({
               className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark shadow-[0_0_20px_rgba(232,136,58,0.15)] hover:shadow-[0_0_30px_rgba(232,136,58,0.25)] transition-all cursor-pointer"
             >
               <ShoppingCart size={16} />
-              {t("addToCart")}
+              {t('addToCart')}
             </button>
           </div>
 
           {/* Message Seller */}
           {isAuthenticated && (
             <button
-              onClick={() => router.push(`/dashboard/messages?product=${product.id}${product.sellerId ? `&seller=${product.sellerId}` : ""}`)}
+              onClick={() =>
+                router.push(
+                  `/dashboard/messages?product=${product.id}${product.sellerId ? `&seller=${product.sellerId}` : ''}`
+                )
+              }
               className="mt-3 w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-surface border border-border text-foreground font-semibold rounded-xl hover:border-primary/40 hover:text-primary transition-all cursor-pointer text-sm"
             >
               <MessageCircle size={15} />
-              {t("messageSeller")}
+              {t('messageSeller')}
             </button>
           )}
 
@@ -402,13 +491,15 @@ export default function ProductDetailClient({
           <p className="mt-4 text-sm">
             {product.inStock ? (
               <span className="text-emerald-400 font-medium">
-                {t("inStock")}
+                {t('inStock')}
                 {product.stockCount && product.stockCount <= 10
-                  ? ` — ${t("onlyLeft", { count: product.stockCount })}`
-                  : ""}
+                  ? ` — ${t('onlyLeft', { count: product.stockCount })}`
+                  : ''}
               </span>
             ) : (
-              <span className="text-red-400 font-medium">{t("outOfStock")}</span>
+              <span className="text-red-400 font-medium">
+                {t('outOfStock')}
+              </span>
             )}
           </p>
 
@@ -416,19 +507,21 @@ export default function ProductDetailClient({
           <div className="mt-6 flex items-center gap-5 text-[11px] text-muted">
             <span className="flex items-center gap-1.5">
               <BadgeCheck size={12} className="text-emerald-400" />
-              {t("trustVerified")}
+              {t('trustVerified')}
             </span>
             <span className="flex items-center gap-1.5">
               <Lock size={12} className="text-blue-400" />
-              {t("trustEscrow")}
+              {t('trustEscrow')}
             </span>
             <span className="flex items-center gap-1.5">
               <Shield size={12} className="text-amber-400" />
-              {t("trustBuyerProtection")}
+              {t('trustBuyerProtection')}
             </span>
           </div>
 
-          <p className="mt-3 text-[11px] text-muted/50">{t("sku")}: {product.sku}</p>
+          <p className="mt-3 text-[11px] text-muted/50">
+            {t('sku')}: {product.sku}
+          </p>
         </motion.div>
       </div>
 
@@ -456,8 +549,8 @@ export default function ProductDetailClient({
             onClick={() => setActiveTab(tab.key)}
             className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
               activeTab === tab.key
-                ? "bg-primary text-white shadow-[0_0_15px_rgba(232,136,58,0.15)]"
-                : "text-muted hover:text-foreground"
+                ? 'bg-primary text-white shadow-[0_0_15px_rgba(232,136,58,0.15)]'
+                : 'text-muted hover:text-foreground'
             }`}
           >
             {tab.label}
@@ -473,8 +566,14 @@ export default function ProductDetailClient({
         className="mb-16"
       >
         <AnimatePresence mode="wait">
-          {activeTab === "description" && (
-            <motion.div key="desc" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+          {activeTab === 'description' && (
+            <motion.div
+              key="desc"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
               <div className="bg-card rounded-2xl border border-border p-6 max-w-3xl">
                 <p className="text-sm text-muted leading-relaxed">
                   {product.longDescription}
@@ -482,37 +581,65 @@ export default function ProductDetailClient({
               </div>
             </motion.div>
           )}
-          {activeTab === "specs" && (
-            <motion.div key="specs" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+          {activeTab === 'specs' && (
+            <motion.div
+              key="specs"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
               <div className="bg-card rounded-2xl border border-border overflow-hidden max-w-lg">
                 {Object.entries(product.specifications).length > 0 ? (
-                  Object.entries(product.specifications).map(([key, value], i) => (
-                    <div
-                      key={key}
-                      className={`flex justify-between px-5 py-3.5 text-sm ${i > 0 ? "border-t border-white/[0.04]" : ""}`}
-                    >
-                      <span className="text-muted">{key}</span>
-                      <span className="font-medium text-foreground">{value}</span>
-                    </div>
-                  ))
+                  Object.entries(product.specifications).map(
+                    ([key, value], i) => (
+                      <div
+                        key={key}
+                        className={`flex justify-between px-5 py-3.5 text-sm ${i > 0 ? 'border-t border-white/[0.04]' : ''}`}
+                      >
+                        <span className="text-muted">{key}</span>
+                        <span className="font-medium text-foreground">
+                          {value}
+                        </span>
+                      </div>
+                    )
+                  )
                 ) : (
                   <div className="px-5 py-8 text-center text-sm text-muted">
-                    {t("noSpecifications")}
+                    {t('noSpecifications')}
                   </div>
                 )}
               </div>
             </motion.div>
           )}
-          {activeTab === "market" && (
-            <motion.div key="market" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+          {activeTab === 'market' && (
+            <motion.div
+              key="market"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
               <div className="space-y-8 max-w-4xl">
-                <PriceHistoryChart productId={product.id} selectedSize={selectedSize} />
-                <SalesHistoryTable productId={product.id} selectedSize={selectedSize} />
+                <PriceHistoryChart
+                  productId={product.id}
+                  selectedSize={selectedSize}
+                />
+                <SalesHistoryTable
+                  productId={product.id}
+                  selectedSize={selectedSize}
+                />
               </div>
             </motion.div>
           )}
-          {activeTab === "reviews" && (
-            <motion.div key="reviews" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+          {activeTab === 'reviews' && (
+            <motion.div
+              key="reviews"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
               <div className="space-y-4 max-w-2xl">
                 {/* Write Review Button / Form */}
                 {isAuthenticated && !reviewSuccess && (
@@ -523,7 +650,7 @@ export default function ProductDetailClient({
                         className="w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark shadow-[0_0_20px_rgba(232,136,58,0.15)] hover:shadow-[0_0_30px_rgba(232,136,58,0.25)] transition-all"
                       >
                         <Star size={15} />
-                        {t("writeReview")}
+                        {t('writeReview')}
                       </button>
                     ) : (
                       <motion.div
@@ -531,11 +658,15 @@ export default function ProductDetailClient({
                         animate={{ opacity: 1, y: 0 }}
                         className="bg-card rounded-2xl border border-border p-5 space-y-4"
                       >
-                        <h4 className="text-sm font-bold text-foreground">{t("writeYourReview")}</h4>
+                        <h4 className="text-sm font-bold text-foreground">
+                          {t('writeYourReview')}
+                        </h4>
 
                         {/* Star Rating Picker */}
                         <div>
-                          <p className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-2">{t("yourRating")}</p>
+                          <p className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-2">
+                            {t('yourRating')}
+                          </p>
                           <div className="flex gap-1">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <button
@@ -549,8 +680,8 @@ export default function ProductDetailClient({
                                   size={24}
                                   className={
                                     star <= (reviewHoverRating || reviewRating)
-                                      ? "fill-amber-400 text-amber-400"
-                                      : "text-white/[0.1]"
+                                      ? 'fill-amber-400 text-amber-400'
+                                      : 'text-white/[0.1]'
                                   }
                                 />
                               </button>
@@ -560,11 +691,13 @@ export default function ProductDetailClient({
 
                         {/* Title */}
                         <div>
-                          <p className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-2">{t("reviewTitle")}</p>
+                          <p className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-2">
+                            {t('reviewTitle')}
+                          </p>
                           <input
                             value={reviewTitle}
                             onChange={(e) => setReviewTitle(e.target.value)}
-                            placeholder={t("reviewTitlePlaceholder")}
+                            placeholder={t('reviewTitlePlaceholder')}
                             maxLength={200}
                             className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-foreground text-sm placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
                           />
@@ -572,18 +705,22 @@ export default function ProductDetailClient({
 
                         {/* Body */}
                         <div>
-                          <p className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-2">{t("review")}</p>
+                          <p className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-2">
+                            {t('review')}
+                          </p>
                           <textarea
                             value={reviewBody}
                             onChange={(e) => setReviewBody(e.target.value)}
-                            placeholder={t("reviewPlaceholder")}
+                            placeholder={t('reviewPlaceholder')}
                             rows={4}
                             className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-foreground text-sm placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
                           />
                         </div>
 
                         {reviewError && (
-                          <p className="text-xs text-error font-medium">{reviewError}</p>
+                          <p className="text-xs text-error font-medium">
+                            {reviewError}
+                          </p>
                         )}
 
                         {/* Actions */}
@@ -598,13 +735,16 @@ export default function ProductDetailClient({
                             ) : (
                               <Send size={14} />
                             )}
-                            {t("submitReview")}
+                            {t('submitReview')}
                           </button>
                           <button
-                            onClick={() => { setShowReviewForm(false); setReviewError(""); }}
+                            onClick={() => {
+                              setShowReviewForm(false);
+                              setReviewError('');
+                            }}
                             className="px-4 py-2.5 text-sm font-medium text-muted hover:text-foreground transition-colors"
                           >
-                            {t("cancel")}
+                            {t('cancel')}
                           </button>
                         </div>
                       </motion.div>
@@ -614,8 +754,13 @@ export default function ProductDetailClient({
 
                 {reviewSuccess && (
                   <div className="bg-emerald-400/10 border border-emerald-400/20 rounded-2xl p-4 text-center">
-                    <Check size={20} className="mx-auto text-emerald-400 mb-1" />
-                    <p className="text-sm font-medium text-emerald-400">{t("reviewSubmitted")}</p>
+                    <Check
+                      size={20}
+                      className="mx-auto text-emerald-400 mb-1"
+                    />
+                    <p className="text-sm font-medium text-emerald-400">
+                      {t('reviewSubmitted')}
+                    </p>
                   </div>
                 )}
 
@@ -623,8 +768,12 @@ export default function ProductDetailClient({
                 {allReviews.length === 0 ? (
                   <div className="bg-card rounded-2xl border border-border py-12 text-center">
                     <Star size={24} className="mx-auto text-muted/30 mb-3" />
-                    <p className="text-foreground font-medium">{t("noReviewsYet")}</p>
-                    <p className="text-sm text-muted mt-1">{t("beFirstToReview")}</p>
+                    <p className="text-foreground font-medium">
+                      {t('noReviewsYet')}
+                    </p>
+                    <p className="text-sm text-muted mt-1">
+                      {t('beFirstToReview')}
+                    </p>
                   </div>
                 ) : (
                   allReviews.map((review, i) => (
@@ -641,10 +790,12 @@ export default function ProductDetailClient({
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-foreground">{review.userName}</span>
+                            <span className="text-sm font-semibold text-foreground">
+                              {review.userName}
+                            </span>
                             {review.verified && (
                               <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-emerald-400/10 text-emerald-400">
-                                {t("verified")}
+                                {t('verified')}
                               </span>
                             )}
                           </div>
@@ -653,15 +804,25 @@ export default function ProductDetailClient({
                               <Star
                                 key={j}
                                 size={10}
-                                className={j < review.rating ? "fill-amber-400 text-amber-400" : "text-white/[0.06]"}
+                                className={
+                                  j < review.rating
+                                    ? 'fill-amber-400 text-amber-400'
+                                    : 'text-white/[0.06]'
+                                }
                               />
                             ))}
                           </div>
                         </div>
                       </div>
-                      <h4 className="text-sm font-semibold text-foreground mt-2">{review.title}</h4>
-                      <p className="text-sm text-muted mt-1 leading-relaxed">{review.body}</p>
-                      <p className="text-[11px] text-muted/50 mt-2">{review.date}</p>
+                      <h4 className="text-sm font-semibold text-foreground mt-2">
+                        {review.title}
+                      </h4>
+                      <p className="text-sm text-muted mt-1 leading-relaxed">
+                        {review.body}
+                      </p>
+                      <p className="text-[11px] text-muted/50 mt-2">
+                        {review.date}
+                      </p>
                     </motion.div>
                   ))
                 )}
@@ -671,8 +832,14 @@ export default function ProductDetailClient({
         </AnimatePresence>
       </motion.div>
 
-      <SizeChartModal open={showSizeChart} onClose={() => setShowSizeChart(false)} />
-      <ConditionGuide open={showConditionGuide} onClose={() => setShowConditionGuide(false)} />
+      <SizeChartModal
+        open={showSizeChart}
+        onClose={() => setShowSizeChart(false)}
+      />
+      <ConditionGuide
+        open={showConditionGuide}
+        onClose={() => setShowConditionGuide(false)}
+      />
       {showReportDialog && (
         <ReportDialog
           targetType="product"
@@ -690,7 +857,7 @@ export default function ProductDetailClient({
           transition={{ duration: 0.4, delay: 0.4 }}
         >
           <h2 className="text-xl font-bold text-foreground mb-6">
-            {t("youMayAlsoLike")}
+            {t('youMayAlsoLike')}
           </h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             {relatedProducts.map((p) => (

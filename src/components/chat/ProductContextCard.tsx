@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import Image from "next/image";
-import { Package } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import Link from 'next/link';
+import Image from 'next/image';
+import { Package } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
 
 interface ProductContextCardProps {
   product: { id: string; name: string; image: string; price: number };

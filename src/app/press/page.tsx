@@ -1,17 +1,21 @@
-import { Newspaper, Mail, Calendar, Globe, MapPin } from "lucide-react";
-import { FadeIn } from "@/components/motion/MotionWrapper";
+import { Newspaper, Mail, Calendar, Globe, MapPin } from 'lucide-react';
+import { FadeIn } from '@/components/motion/MotionWrapper';
 
 export const metadata = {
-  title: "Press & Media | VendFinder",
+  title: 'Press & Media | VendFinder',
   description:
-    "Press inquiries, media kits, and interview requests for VendFinder, a global marketplace launched in 2026.",
+    'Press inquiries, media kits, and interview requests for VendFinder, a global marketplace launched in 2026.',
 };
 
 export default function PressPage() {
   const facts = [
-    { icon: <Calendar size={18} />, label: "Founded", value: "2026" },
-    { icon: <Globe size={18} />, label: "Category", value: "Global Marketplace" },
-    { icon: <MapPin size={18} />, label: "Based in", value: "USA" },
+    { icon: <Calendar size={18} />, label: 'Founded', value: '2026' },
+    {
+      icon: <Globe size={18} />,
+      label: 'Category',
+      value: 'Global Marketplace',
+    },
+    { icon: <MapPin size={18} />, label: 'Based in', value: 'USA' },
   ];
 
   return (
@@ -76,8 +80,8 @@ export default function PressPage() {
                 Get in touch with our press team
               </h2>
               <p className="text-muted leading-relaxed mb-6 max-w-2xl">
-                For press inquiries, media kits, or interviews, reach out to
-                us. We aim to respond to journalists within one business day.
+                For press inquiries, media kits, or interviews, reach out to us.
+                We aim to respond to journalists within one business day.
               </p>
               <a
                 href="mailto:press@vendfinder.com"

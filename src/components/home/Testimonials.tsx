@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { Star, Quote } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { testimonials } from "@/data/site";
+import { Star, Quote } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { testimonials } from '@/data/site';
 import {
   FadeIn,
   StaggerContainer,
   StaggerItem,
-} from "@/components/motion/MotionWrapper";
+} from '@/components/motion/MotionWrapper';
 
 export default function Testimonials() {
-  const t = useTranslations("testimonials");
+  const t = useTranslations('testimonials');
 
   return (
     <section className="py-16 lg:py-24 bg-surface">
@@ -18,10 +18,10 @@ export default function Testimonials() {
         <FadeIn>
           <div className="text-center mb-14">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-2 block">
-              {t("whatPeopleSay")}
+              {t('whatPeopleSay')}
             </span>
             <h2 className="text-3xl sm:text-4xl font-display font-black text-foreground tracking-tight">
-              {t("trustedByThousands")}
+              {t('trustedByThousands')}
             </h2>
           </div>
         </FadeIn>

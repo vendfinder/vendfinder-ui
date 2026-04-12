@@ -1,14 +1,14 @@
-import { Star } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Star } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface RatingProps {
   value: number;
   count?: number;
-  size?: "sm" | "md";
+  size?: 'sm' | 'md';
 }
 
-export default function Rating({ value, count, size = "sm" }: RatingProps) {
-  const starSize = size === "sm" ? 14 : 18;
+export default function Rating({ value, count, size = 'sm' }: RatingProps) {
+  const starSize = size === 'sm' ? 14 : 18;
 
   return (
     <div className="flex items-center gap-1 mt-1.5">
@@ -19,8 +19,8 @@ export default function Rating({ value, count, size = "sm" }: RatingProps) {
             size={starSize}
             className={cn(
               star <= Math.round(value)
-                ? "fill-primary text-primary"
-                : "fill-border text-border"
+                ? 'fill-primary text-primary'
+                : 'fill-border text-border'
             )}
           />
         ))}

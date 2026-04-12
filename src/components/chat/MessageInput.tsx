@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import { useTranslations } from "next-intl";
-import { Send, DollarSign, X } from "lucide-react";
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import { Send, DollarSign, X } from 'lucide-react';
 
 interface MessageInputProps {
   onSend: (content: string) => void;
@@ -21,10 +21,10 @@ export default function MessageInput({
   onTypingStart,
   onTypingStop,
 }: MessageInputProps) {
-  const t = useTranslations("chat");
-  const [value, setValue] = useState("");
+  const t = useTranslations('chat');
+  const [value, setValue] = useState('');
   const [showOfferInput, setShowOfferInput] = useState(false);
-  const [offerPrice, setOfferPrice] = useState("");
+  const [offerPrice, setOfferPrice] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTypingRef = useRef(false);
@@ -53,7 +53,7 @@ export default function MessageInput({
     const trimmed = value.trim();
     if (!trimmed || disabled) return;
     onSend(trimmed);
-    setValue("");
+    setValue('');
     // Stop typing indicator
     if (isTypingRef.current) {
       isTypingRef.current = false;
@@ -62,7 +62,7 @@ export default function MessageInput({
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     // Reset textarea height
     if (inputRef.current) {
-      inputRef.current.style.height = "auto";
+      inputRef.current.style.height = 'auto';
     }
   }, [value, disabled, onSend, onTypingStop]);
 
@@ -70,13 +70,13 @@ export default function MessageInput({
     const price = parseFloat(offerPrice);
     if (price > 0 && onSendOffer) {
       onSendOffer(price);
-      setOfferPrice("");
+      setOfferPrice('');
       setShowOfferInput(false);
     }
   }, [offerPrice, onSendOffer]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (showOfferInput) {
         handleSendOffer();
@@ -89,8 +89,8 @@ export default function MessageInput({
   const handleInput = () => {
     const el = inputRef.current;
     if (!el) return;
-    el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 120) + "px";
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
     handleTyping();
   };
 
@@ -104,7 +104,7 @@ export default function MessageInput({
             value={offerPrice}
             onChange={(e) => setOfferPrice(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={t("enterOfferAmount")}
+            placeholder={t('enterOfferAmount')}
             autoFocus
             className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted/50 focus:outline-none"
           />
@@ -132,7 +132,7 @@ export default function MessageInput({
         <button
           onClick={() => setShowOfferInput(true)}
           className="shrink-0 w-10 h-10 rounded-xl bg-surface border border-border/60 text-muted flex items-center justify-center hover:text-primary hover:border-primary/30 transition-colors cursor-pointer"
-          title={t("makeOffer")}
+          title={t('makeOffer')}
         >
           <DollarSign size={16} />
         </button>
@@ -143,7 +143,7 @@ export default function MessageInput({
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         onInput={handleInput}
-        placeholder={t("typeMessage")}
+        placeholder={t('typeMessage')}
         rows={1}
         disabled={disabled}
         className="flex-1 resize-none bg-surface border border-border/60 rounded-xl px-4 py-2.5 text-[13px] text-foreground placeholder:text-muted/50 focus:outline-none focus:border-primary/40 transition-colors disabled:opacity-50"

@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main, develop, 'feature/**', 'release/**', 'hotfix/**' ]
+    branches: [main, develop, 'feature/**', 'release/**', 'hotfix/**']
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   NODE_VERSION: '22'

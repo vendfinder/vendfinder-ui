@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from 'next/link';
 import {
   Truck,
   Globe,
@@ -7,40 +7,40 @@ import {
   MapPin,
   DollarSign,
   AlertCircle,
-} from "lucide-react";
-import { FadeIn } from "@/components/motion/MotionWrapper";
+} from 'lucide-react';
+import { FadeIn } from '@/components/motion/MotionWrapper';
 
 export const metadata = {
-  title: "Shipping Information | VendFinder",
+  title: 'Shipping Information | VendFinder',
   description:
-    "How shipping works on VendFinder. Vendors ship directly to buyers worldwide. Review timeframes, tracking, customs, and costs.",
+    'How shipping works on VendFinder. Vendors ship directly to buyers worldwide. Review timeframes, tracking, customs, and costs.',
 };
 
 export default function ShippingPage() {
   const items = [
     {
       icon: <Clock size={22} />,
-      title: "Typical Timeframes",
+      title: 'Typical Timeframes',
       description:
-        "International shipping usually takes 7-21 days depending on the carrier and destination. Domestic shipments typically arrive in 3-7 days. Your vendor lists their estimated handling and delivery times on each product.",
+        'International shipping usually takes 7-21 days depending on the carrier and destination. Domestic shipments typically arrive in 3-7 days. Your vendor lists their estimated handling and delivery times on each product.',
     },
     {
       icon: <Globe size={22} />,
-      title: "International Customs & Duties",
+      title: 'International Customs & Duties',
       description:
         "Cross-border orders may be subject to customs duties, taxes, or import fees set by your country. These charges are the buyer's responsibility and are not included in the product price or shipping cost.",
     },
     {
       icon: <FileText size={22} />,
-      title: "Tracking",
+      title: 'Tracking',
       description:
-        "Vendors provide tracking numbers for every shipment. You can view tracking from your order page as soon as the vendor marks the order shipped.",
+        'Vendors provide tracking numbers for every shipment. You can view tracking from your order page as soon as the vendor marks the order shipped.',
     },
     {
       icon: <DollarSign size={22} />,
-      title: "Shipping Costs",
+      title: 'Shipping Costs',
       description:
-        "Shipping costs vary by vendor, carrier, weight, and destination. The exact shipping cost is shown at checkout before you pay.",
+        'Shipping costs vary by vendor, carrier, weight, and destination. The exact shipping cost is shown at checkout before you pay.',
     },
   ];
 
@@ -59,8 +59,8 @@ export default function ShippingPage() {
             </h1>
             <p className="text-lg text-muted leading-relaxed max-w-2xl">
               VendFinder is a marketplace &mdash; not a logistics company.
-              Shipping is handled directly by the individual vendor who sold
-              you the product.
+              Shipping is handled directly by the individual vendor who sold you
+              the product.
             </p>
           </FadeIn>
         </div>
@@ -80,13 +80,12 @@ export default function ShippingPage() {
                     Shipping is handled by individual vendors
                   </h2>
                   <p className="text-muted leading-relaxed">
-                    VendFinder does not warehouse, pack, or ship products.
-                    Each vendor sets their own shipping methods, carriers,
-                    rates, and handling times. When you place an order, you
-                    are contracting with the vendor for delivery. If you
-                    have questions about your shipment, contact your vendor
-                    first &mdash; or open a dispute if they&apos;re not
-                    responsive.
+                    VendFinder does not warehouse, pack, or ship products. Each
+                    vendor sets their own shipping methods, carriers, rates, and
+                    handling times. When you place an order, you are contracting
+                    with the vendor for delivery. If you have questions about
+                    your shipment, contact your vendor first &mdash; or open a
+                    dispute if they&apos;re not responsive.
                   </p>
                 </div>
               </div>

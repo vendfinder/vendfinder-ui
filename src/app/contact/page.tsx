@@ -5,13 +5,13 @@ import {
   Briefcase,
   Newspaper,
   Clock,
-} from "lucide-react";
-import { FadeIn } from "@/components/motion/MotionWrapper";
+} from 'lucide-react';
+import { FadeIn } from '@/components/motion/MotionWrapper';
 
 export const metadata = {
-  title: "Contact Us | VendFinder",
+  title: 'Contact Us | VendFinder',
   description:
-    "Get in touch with VendFinder support, business, or press teams. VendBot AI support is available 24/7.",
+    'Get in touch with VendFinder support, business, or press teams. VendBot AI support is available 24/7.',
 };
 
 type ContactCard = {
@@ -27,39 +27,39 @@ type ContactCard = {
 const contacts: ContactCard[] = [
   {
     icon: <Bot size={22} />,
-    title: "VendBot AI Support",
+    title: 'VendBot AI Support',
     description:
-      "Our AI assistant answers most questions instantly, from order status to how disputes work. Available in the chat widget at the bottom-right of every page.",
-    action: "Open chat widget",
-    responseTime: "Instant, 24/7",
+      'Our AI assistant answers most questions instantly, from order status to how disputes work. Available in the chat widget at the bottom-right of every page.',
+    action: 'Open chat widget',
+    responseTime: 'Instant, 24/7',
     highlight: true,
   },
   {
     icon: <MessageCircle size={22} />,
-    title: "General Support",
+    title: 'General Support',
     description:
       "For help with your account, orders, disputes, or anything else VendBot can't handle, email our support team.",
-    action: "support@vendfinder.com",
-    href: "mailto:support@vendfinder.com",
-    responseTime: "Within 1 business day",
+    action: 'support@vendfinder.com',
+    href: 'mailto:support@vendfinder.com',
+    responseTime: 'Within 1 business day',
   },
   {
     icon: <Briefcase size={22} />,
-    title: "Business Inquiries",
+    title: 'Business Inquiries',
     description:
       "Partnerships, integrations, or enterprise questions? We'd love to hear from you.",
-    action: "hello@vendfinder.com",
-    href: "mailto:hello@vendfinder.com",
-    responseTime: "Within 2 business days",
+    action: 'hello@vendfinder.com',
+    href: 'mailto:hello@vendfinder.com',
+    responseTime: 'Within 2 business days',
   },
   {
     icon: <Newspaper size={22} />,
-    title: "Press & Media",
+    title: 'Press & Media',
     description:
-      "For press inquiries, media kits, or interview requests, reach out to our press team.",
-    action: "press@vendfinder.com",
-    href: "mailto:press@vendfinder.com",
-    responseTime: "Within 1 business day",
+      'For press inquiries, media kits, or interview requests, reach out to our press team.',
+    action: 'press@vendfinder.com',
+    href: 'mailto:press@vendfinder.com',
+    responseTime: 'Within 1 business day',
   },
 ];
 
@@ -93,7 +93,7 @@ export default function ContactPage() {
               <FadeIn key={c.title} delay={i * 0.08}>
                 <div
                   className={`bg-card border rounded-2xl p-6 h-full flex flex-col ${
-                    c.highlight ? "border-primary/40" : "border-border"
+                    c.highlight ? 'border-primary/40' : 'border-border'
                   }`}
                 >
                   <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
@@ -139,14 +139,13 @@ export default function ContactPage() {
               </h2>
               <p className="text-muted leading-relaxed mb-4">
                 VendBot handles most routine questions instantly. For emails,
-                support typically replies within one business day, and
-                business or partnership inquiries may take up to two
-                business days.
+                support typically replies within one business day, and business
+                or partnership inquiries may take up to two business days.
               </p>
               <p className="text-muted leading-relaxed">
-                If you have an urgent order or dispute issue, VendBot can
-                often resolve it immediately or escalate it to a human on
-                our support team.
+                If you have an urgent order or dispute issue, VendBot can often
+                resolve it immediately or escalate it to a human on our support
+                team.
               </p>
             </div>
           </FadeIn>

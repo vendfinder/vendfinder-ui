@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-const USER_SERVICE_URL = process.env.USER_SERVICE_URL || "http://user-service:3004";
+const USER_SERVICE_URL =
+  process.env.USER_SERVICE_URL || 'http://user-service:3004';
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization");
+    const token = request.headers.get('authorization');
 
     // For testuser12345, return verified status directly as a temporary fix
     const kycResponse = {
@@ -14,12 +15,15 @@ export async function GET(request: NextRequest) {
       kycVerified: true,
       documents: [],
       extractedData: null,
-      spacesConfigured: true
+      spacesConfigured: true,
     };
 
     return NextResponse.json(kycResponse);
   } catch (error) {
     console.error('KYC status error:', error);
-    return NextResponse.json({ error: "Failed to get KYC status" }, { status: 502 });
+    return NextResponse.json(
+      { error: 'Failed to get KYC status' },
+      { status: 502 }
+    );
   }
 }

@@ -14,7 +14,13 @@ console.log('');
 const hash = '$2a$10$N9qo8uLOickgx2ZMRZoMye/Zj4B.XdXMxQOsUMF4.c2NOhksWOxne';
 
 console.log('SQL Command to run:');
-console.log("UPDATE users SET password = '" + hash + "' WHERE username = 'testuser12345';");
+console.log(
+  "UPDATE users SET password = '" + hash + "' WHERE username = 'testuser12345';"
+);
 console.log('');
 console.log('Kubectl command:');
-console.log("kubectl exec -n vendfinder -it analytics-db-0 -- psql -U vendfinder -d user_db -c \"UPDATE users SET password = '" + hash + "' WHERE username = 'testuser12345';\"");
+console.log(
+  'kubectl exec -n vendfinder -it analytics-db-0 -- psql -U vendfinder -d user_db -c "UPDATE users SET password = \'' +
+    hash +
+    "' WHERE username = 'testuser12345';\""
+);

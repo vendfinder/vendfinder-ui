@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from 'next/link';
 import {
   Scale,
   ShieldCheck,
@@ -6,38 +6,38 @@ import {
   Clock,
   RefreshCw,
   MessageCircle,
-} from "lucide-react";
-import { FadeIn } from "@/components/motion/MotionWrapper";
+} from 'lucide-react';
+import { FadeIn } from '@/components/motion/MotionWrapper';
 
 export const metadata = {
-  title: "Returns & Dispute Resolution | VendFinder",
+  title: 'Returns & Dispute Resolution | VendFinder',
   description:
-    "How Buyer Protection and dispute resolution work on VendFinder. Payments stay in escrow until you confirm delivery.",
+    'How Buyer Protection and dispute resolution work on VendFinder. Payments stay in escrow until you confirm delivery.',
 };
 
 export default function ReturnsPage() {
   const steps = [
     {
-      num: "01",
-      title: "You place an order",
+      num: '01',
+      title: 'You place an order',
       description:
-        "Your payment is charged by Stripe and held in escrow by VendFinder &mdash; it is not released to the vendor yet.",
+        'Your payment is charged by Stripe and held in escrow by VendFinder &mdash; it is not released to the vendor yet.',
     },
     {
-      num: "02",
-      title: "Vendor ships your item",
+      num: '02',
+      title: 'Vendor ships your item',
       description:
-        "The vendor packs and ships your order, then uploads tracking so you can follow the delivery.",
+        'The vendor packs and ships your order, then uploads tracking so you can follow the delivery.',
     },
     {
-      num: "03",
-      title: "You confirm delivery",
+      num: '03',
+      title: 'You confirm delivery',
       description:
-        "Once the item arrives and matches the description, you confirm delivery and the funds are released to the vendor.",
+        'Once the item arrives and matches the description, you confirm delivery and the funds are released to the vendor.',
     },
     {
-      num: "04",
-      title: "Problem? File a dispute",
+      num: '04',
+      title: 'Problem? File a dispute',
       description:
         "If the item never arrives or doesn't match the listing, open a dispute before confirming and we'll review the case.",
     },
@@ -79,10 +79,10 @@ export default function ReturnsPage() {
                 </h2>
                 <p className="text-muted leading-relaxed">
                   Every order is protected by escrow. Your payment is held
-                  safely by VendFinder and is only released to the vendor
-                  after you confirm delivery. If something goes wrong, we
-                  refund you from the escrowed funds &mdash; the vendor never
-                  gets paid for a bad order.
+                  safely by VendFinder and is only released to the vendor after
+                  you confirm delivery. If something goes wrong, we refund you
+                  from the escrowed funds &mdash; the vendor never gets paid for
+                  a bad order.
                 </p>
               </div>
             </div>
@@ -121,10 +121,10 @@ export default function ReturnsPage() {
                   Filing a Dispute
                 </h2>
                 <p className="text-muted leading-relaxed">
-                  You can open a dispute from your order page if the item
-                  never arrived or doesn&apos;t match the listing
-                  description. Attach photos, messages, or any other
-                  evidence, and describe what went wrong.
+                  You can open a dispute from your order page if the item never
+                  arrived or doesn&apos;t match the listing description. Attach
+                  photos, messages, or any other evidence, and describe what
+                  went wrong.
                 </p>
               </div>
             </div>
@@ -136,9 +136,8 @@ export default function ReturnsPage() {
                   Resolution Timeline
                 </h3>
                 <p className="text-sm text-muted leading-relaxed">
-                  Most disputes are decided within 5-7 business days. We
-                  review both sides and any evidence before making a
-                  decision.
+                  Most disputes are decided within 5-7 business days. We review
+                  both sides and any evidence before making a decision.
                 </p>
               </div>
               <div className="bg-card border border-border rounded-2xl p-6">
@@ -147,9 +146,9 @@ export default function ReturnsPage() {
                   Refund Process
                 </h3>
                 <p className="text-sm text-muted leading-relaxed">
-                  If the dispute is decided in your favor, the escrowed
-                  payment is refunded to your original payment method. Most
-                  refunds settle in 3-5 business days.
+                  If the dispute is decided in your favor, the escrowed payment
+                  is refunded to your original payment method. Most refunds
+                  settle in 3-5 business days.
                 </p>
               </div>
             </div>
@@ -167,9 +166,8 @@ export default function ReturnsPage() {
                 Need help with a dispute?
               </h2>
               <p className="text-muted mb-8 max-w-xl mx-auto">
-                VendBot is available 24/7 in the chat widget to walk you
-                through the dispute process. Or email our support team
-                directly.
+                VendBot is available 24/7 in the chat widget to walk you through
+                the dispute process. Or email our support team directly.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link

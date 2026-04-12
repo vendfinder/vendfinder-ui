@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import Link from "next/link";
-import Image from "next/image";
-import { Star, Package, ShoppingCart, Award } from "lucide-react";
-import type { Product } from "@/types";
-import { formatPrice } from "@/lib/utils";
-import { useCart } from "@/context/CartContext";
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Star, Package, ShoppingCart, Award } from 'lucide-react';
+import type { Product } from '@/types';
+import { formatPrice } from '@/lib/utils';
+import { useCart } from '@/context/CartContext';
 import {
   FadeIn,
   StaggerContainer,
   StaggerItem,
-} from "@/components/motion/MotionWrapper";
+} from '@/components/motion/MotionWrapper';
 
 export default function TopRated({ products }: { products: Product[] }) {
-  const t = useTranslations("topRated");
+  const t = useTranslations('topRated');
   const { addItem } = useCart();
   const topProducts = products;
 
@@ -31,11 +31,11 @@ export default function TopRated({ products }: { products: Product[] }) {
           <div className="flex items-center gap-3 mb-2">
             <Award size={20} className="text-primary" />
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-              {t("badge")}
+              {t('badge')}
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-display font-black text-foreground tracking-tight mb-10">
-            {t("title")}
+            {t('title')}
           </h2>
         </FadeIn>
 
@@ -63,12 +63,12 @@ export default function TopRated({ products }: { products: Product[] }) {
                 )}
                 <span className="absolute top-4 left-4 px-3 py-1 text-xs font-black uppercase tracking-wider bg-primary text-white rounded-full flex items-center gap-1">
                   <Star size={12} className="fill-white" />
-                  {t("topRated")}
+                  {t('topRated')}
                 </span>
               </div>
               <div className="p-6">
                 <p className="text-xs text-muted uppercase tracking-wider mb-2">
-                  {hero.category.replace("-", " & ")}
+                  {hero.category.replace('-', ' & ')}
                 </p>
                 <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors mb-2">
                   {hero.name}
@@ -81,10 +81,7 @@ export default function TopRated({ products }: { products: Product[] }) {
                     {formatPrice(hero.price)}
                   </span>
                   <div className="flex items-center gap-1 bg-primary/10 px-2.5 py-1 rounded-full">
-                    <Star
-                      size={14}
-                      className="fill-primary text-primary"
-                    />
+                    <Star size={14} className="fill-primary text-primary" />
                     <span className="text-sm font-bold text-primary">
                       {hero.rating}
                     </span>
@@ -133,7 +130,7 @@ export default function TopRated({ products }: { products: Product[] }) {
 
                   <div className="p-3 flex-1 flex flex-col">
                     <p className="text-[10px] text-muted uppercase tracking-wider mb-0.5">
-                      {product.category.replace("-", " & ")}
+                      {product.category.replace('-', ' & ')}
                     </p>
                     <Link href={`/products/${product.slug}`}>
                       <h3 className="text-sm font-semibold text-foreground line-clamp-1 hover:text-primary transition-colors">

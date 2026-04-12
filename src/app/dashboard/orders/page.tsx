@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package,
   Clock,
@@ -13,47 +13,127 @@ import {
   Eye,
   ExternalLink,
   Search,
-} from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useDashboardData } from "@/hooks/useDashboardData";
-import Badge from "@/components/ui/Badge";
-import { formatPrice } from "@/lib/utils";
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useDashboardData } from '@/hooks/useDashboardData';
+import Badge from '@/components/ui/Badge';
+import { formatPrice } from '@/lib/utils';
 
-type Tab = "all" | "processing" | "shipped" | "delivered";
+type Tab = 'all' | 'processing' | 'shipped' | 'delivered';
 
-const statusConfig: Record<string, { variant: "info" | "warning" | "success" | "error"; icon: React.ReactNode; color: string; bgColor: string }> = {
-  processing: { variant: "info", icon: <Clock size={10} />, color: "text-blue-400", bgColor: "bg-blue-400" },
-  shipped: { variant: "warning", icon: <Truck size={10} />, color: "text-amber-400", bgColor: "bg-amber-400" },
-  delivered: { variant: "success", icon: <CheckCircle2 size={10} />, color: "text-emerald-400", bgColor: "bg-emerald-400" },
-  cancelled: { variant: "error", icon: <XCircle size={10} />, color: "text-red-400", bgColor: "bg-red-400" },
+const statusConfig: Record<
+  string,
+  {
+    variant: 'info' | 'warning' | 'success' | 'error';
+    icon: React.ReactNode;
+    color: string;
+    bgColor: string;
+  }
+> = {
+  processing: {
+    variant: 'info',
+    icon: <Clock size={10} />,
+    color: 'text-blue-400',
+    bgColor: 'bg-blue-400',
+  },
+  shipped: {
+    variant: 'warning',
+    icon: <Truck size={10} />,
+    color: 'text-amber-400',
+    bgColor: 'bg-amber-400',
+  },
+  delivered: {
+    variant: 'success',
+    icon: <CheckCircle2 size={10} />,
+    color: 'text-emerald-400',
+    bgColor: 'bg-emerald-400',
+  },
+  cancelled: {
+    variant: 'error',
+    icon: <XCircle size={10} />,
+    color: 'text-red-400',
+    bgColor: 'bg-red-400',
+  },
 };
 
 export default function OrdersPage() {
-  const t = useTranslations("dashboardOrders");
-  const [activeTab, setActiveTab] = useState<Tab>("all");
+  const t = useTranslations('dashboardOrders');
+  const [activeTab, setActiveTab] = useState<Tab>('all');
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const { orders, loading } = useDashboardData();
 
-  const filteredOrders = activeTab === "all"
-    ? orders
-    : orders.filter((o) => o.status === activeTab);
+  const filteredOrders =
+    activeTab === 'all' ? orders : orders.filter((o) => o.status === activeTab);
 
-  const processingCt = orders.filter((o) => o.status === "processing").length;
-  const shippedCt = orders.filter((o) => o.status === "shipped").length;
-  const deliveredCt = orders.filter((o) => o.status === "delivered").length;
+  const processingCt = orders.filter((o) => o.status === 'processing').length;
+  const shippedCt = orders.filter((o) => o.status === 'shipped').length;
+  const deliveredCt = orders.filter((o) => o.status === 'delivered').length;
 
-  const tabs: { key: Tab; label: string; count: number; icon: React.ReactNode }[] = [
-    { key: "all", label: t("allOrders"), count: orders.length, icon: <ShoppingBag size={13} /> },
-    { key: "processing", label: t("processing"), count: processingCt, icon: <Clock size={13} /> },
-    { key: "shipped", label: t("shipped"), count: shippedCt, icon: <Truck size={13} /> },
-    { key: "delivered", label: t("delivered"), count: deliveredCt, icon: <CheckCircle2 size={13} /> },
+  const tabs: {
+    key: Tab;
+    label: string;
+    count: number;
+    icon: React.ReactNode;
+  }[] = [
+    {
+      key: 'all',
+      label: t('allOrders'),
+      count: orders.length,
+      icon: <ShoppingBag size={13} />,
+    },
+    {
+      key: 'processing',
+      label: t('processing'),
+      count: processingCt,
+      icon: <Clock size={13} />,
+    },
+    {
+      key: 'shipped',
+      label: t('shipped'),
+      count: shippedCt,
+      icon: <Truck size={13} />,
+    },
+    {
+      key: 'delivered',
+      label: t('delivered'),
+      count: deliveredCt,
+      icon: <CheckCircle2 size={13} />,
+    },
   ];
 
   const stats = [
-    { label: t("allOrders"), value: orders.length.toString(), icon: ShoppingBag, color: "text-primary", bgColor: "bg-primary/10", borderColor: "border-primary/15" },
-    { label: t("processing"), value: processingCt.toString(), icon: Clock, color: "text-blue-400", bgColor: "bg-blue-400/10", borderColor: "border-blue-400/15" },
-    { label: t("shipped"), value: shippedCt.toString(), icon: Truck, color: "text-amber-400", bgColor: "bg-amber-400/10", borderColor: "border-amber-400/15" },
-    { label: t("delivered"), value: deliveredCt.toString(), icon: CheckCircle2, color: "text-emerald-400", bgColor: "bg-emerald-400/10", borderColor: "border-emerald-400/15" },
+    {
+      label: t('allOrders'),
+      value: orders.length.toString(),
+      icon: ShoppingBag,
+      color: 'text-primary',
+      bgColor: 'bg-primary/10',
+      borderColor: 'border-primary/15',
+    },
+    {
+      label: t('processing'),
+      value: processingCt.toString(),
+      icon: Clock,
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-400/10',
+      borderColor: 'border-blue-400/15',
+    },
+    {
+      label: t('shipped'),
+      value: shippedCt.toString(),
+      icon: Truck,
+      color: 'text-amber-400',
+      bgColor: 'bg-amber-400/10',
+      borderColor: 'border-amber-400/15',
+    },
+    {
+      label: t('delivered'),
+      value: deliveredCt.toString(),
+      icon: CheckCircle2,
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-400/10',
+      borderColor: 'border-emerald-400/15',
+    },
   ];
 
   return (
@@ -70,13 +150,13 @@ export default function OrdersPage() {
             <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
               <ShoppingBag size={15} className="text-primary" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
           </div>
-          <p className="text-sm text-muted">{t("subtitle")}</p>
+          <p className="text-sm text-muted">{t('subtitle')}</p>
         </div>
         <button className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-border/60 text-sm font-medium text-foreground hover:border-primary/40 hover:text-primary transition-all bg-surface/40 backdrop-blur-sm w-fit">
           <Search size={14} />
-          {t("searchOrders")}
+          {t('searchOrders')}
         </button>
       </motion.div>
 
@@ -93,12 +173,18 @@ export default function OrdersPage() {
               className={`bg-card rounded-2xl border ${stat.borderColor} p-5`}
             >
               <div className="flex items-center gap-2.5 mb-3">
-                <div className={`w-9 h-9 rounded-xl ${stat.bgColor} ${stat.color} flex items-center justify-center`}>
+                <div
+                  className={`w-9 h-9 rounded-xl ${stat.bgColor} ${stat.color} flex items-center justify-center`}
+                >
                   <Icon size={16} />
                 </div>
-                <p className="text-[11px] text-muted uppercase tracking-wider font-semibold">{stat.label}</p>
+                <p className="text-[11px] text-muted uppercase tracking-wider font-semibold">
+                  {stat.label}
+                </p>
               </div>
-              <p className="text-2xl font-bold text-foreground tracking-tight">{stat.value}</p>
+              <p className="text-2xl font-bold text-foreground tracking-tight">
+                {stat.value}
+              </p>
             </motion.div>
           );
         })}
@@ -114,18 +200,25 @@ export default function OrdersPage() {
         {tabs.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => { setActiveTab(tab.key); setOpenMenu(null); }}
+            onClick={() => {
+              setActiveTab(tab.key);
+              setOpenMenu(null);
+            }}
             className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
               activeTab === tab.key
-                ? "bg-primary text-white shadow-[0_0_15px_rgba(232,136,58,0.15)]"
-                : "text-muted hover:text-foreground"
+                ? 'bg-primary text-white shadow-[0_0_15px_rgba(232,136,58,0.15)]'
+                : 'text-muted hover:text-foreground'
             }`}
           >
             {tab.icon}
             {tab.label}
-            <span className={`ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
-              activeTab === tab.key ? "bg-white/20 text-white" : "bg-surface text-muted/70"
-            }`}>
+            <span
+              className={`ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                activeTab === tab.key
+                  ? 'bg-white/20 text-white'
+                  : 'bg-surface text-muted/70'
+              }`}
+            >
               {tab.count}
             </span>
           </button>
@@ -152,12 +245,17 @@ export default function OrdersPage() {
                 <div className="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center mx-auto mb-4">
                   <Package size={24} className="text-muted/30" />
                 </div>
-                <p className="text-foreground font-medium">{t("noOrdersFound")}</p>
-                <p className="text-sm text-muted mt-1">{t("ordersWillAppear")}</p>
+                <p className="text-foreground font-medium">
+                  {t('noOrdersFound')}
+                </p>
+                <p className="text-sm text-muted mt-1">
+                  {t('ordersWillAppear')}
+                </p>
               </motion.div>
             ) : (
               filteredOrders.map((order, i) => {
-                const config = statusConfig[order.status] || statusConfig.processing;
+                const config =
+                  statusConfig[order.status] || statusConfig.processing;
                 return (
                   <motion.div
                     key={order.id}
@@ -169,7 +267,9 @@ export default function OrdersPage() {
                   >
                     <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center text-muted/30 shrink-0 group-hover:border-border-hover transition-colors relative">
                       <Package size={18} />
-                      <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-card ${config.bgColor}`} />
+                      <div
+                        className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-card ${config.bgColor}`}
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2.5 mb-1">
@@ -186,7 +286,7 @@ export default function OrdersPage() {
                       <div className="text-[11px] text-muted">
                         {order.items.map((item, j) => (
                           <span key={j}>
-                            {j > 0 && " · "}
+                            {j > 0 && ' · '}
                             {item.productName} x{item.quantity}
                           </span>
                         ))}
@@ -204,10 +304,14 @@ export default function OrdersPage() {
                       </div>
                     </div>
                     <div className="text-right shrink-0 flex flex-col items-end gap-2">
-                      <p className="text-sm font-bold text-foreground">{formatPrice(order.total)}</p>
+                      <p className="text-sm font-bold text-foreground">
+                        {formatPrice(order.total)}
+                      </p>
                       <div className="relative">
                         <button
-                          onClick={() => setOpenMenu(openMenu === order.id ? null : order.id)}
+                          onClick={() =>
+                            setOpenMenu(openMenu === order.id ? null : order.id)
+                          }
                           className="p-1.5 rounded-lg hover:bg-surface text-muted/50 hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
                         >
                           <MoreHorizontal size={16} />
@@ -223,11 +327,14 @@ export default function OrdersPage() {
                             >
                               <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors">
                                 <Eye size={12} className="text-muted" />
-                                {t("viewDetails")}
+                                {t('viewDetails')}
                               </button>
                               <button className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors">
-                                <ExternalLink size={12} className="text-muted" />
-                                {t("trackPackage")}
+                                <ExternalLink
+                                  size={12}
+                                  className="text-muted"
+                                />
+                                {t('trackPackage')}
                               </button>
                             </motion.div>
                           )}
@@ -245,12 +352,14 @@ export default function OrdersPage() {
         {filteredOrders.length > 0 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.04] bg-white/[0.01]">
             <p className="text-[11px] text-muted">
-              {t("ordersCount", { count: filteredOrders.length })}
+              {t('ordersCount', { count: filteredOrders.length })}
             </p>
             <span className="text-[11px] text-muted">
-              {t("totalValue")}{" "}
+              {t('totalValue')}{' '}
               <span className="font-semibold text-foreground">
-                {formatPrice(filteredOrders.reduce((sum, o) => sum + o.total, 0))}
+                {formatPrice(
+                  filteredOrders.reduce((sum, o) => sum + o.total, 0)
+                )}
               </span>
             </span>
           </div>

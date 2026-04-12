@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL =
-  process.env.API_BASE_URL || "http://api-gateway:3000";
+const API_BASE_URL = process.env.API_BASE_URL || 'http://api-gateway:3000';
 
 async function handleMarkRead(
   request: NextRequest,
@@ -9,11 +8,11 @@ async function handleMarkRead(
 ) {
   try {
     const { id } = await params;
-    const token = request.headers.get("authorization");
+    const token = request.headers.get('authorization');
     const res = await fetch(
       `${API_BASE_URL}/api/chat/conversations/${id}/read`,
       {
-        method: "POST",
+        method: 'POST',
         headers: {
           ...(token ? { Authorization: token } : {}),
         },
@@ -23,7 +22,7 @@ async function handleMarkRead(
     return NextResponse.json(data, { status: res.status });
   } catch {
     return NextResponse.json(
-      { error: "Failed to connect to chat service" },
+      { error: 'Failed to connect to chat service' },
       { status: 502 }
     );
   }

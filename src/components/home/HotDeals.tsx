@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import Link from "next/link";
-import Image from "next/image";
-import { Flame, ShoppingCart, Package } from "lucide-react";
-import type { Product } from "@/types";
-import { formatPrice } from "@/lib/utils";
-import { useCart } from "@/context/CartContext";
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Flame, ShoppingCart, Package } from 'lucide-react';
+import type { Product } from '@/types';
+import { formatPrice } from '@/lib/utils';
+import { useCart } from '@/context/CartContext';
 import {
   FadeIn,
   StaggerContainer,
   StaggerItem,
-} from "@/components/motion/MotionWrapper";
+} from '@/components/motion/MotionWrapper';
 
 export default function HotDeals({ products }: { products: Product[] }) {
-  const t = useTranslations("hotDeals");
+  const t = useTranslations('hotDeals');
   const { addItem } = useCart();
   const deals = products;
 
@@ -28,11 +28,11 @@ export default function HotDeals({ products }: { products: Product[] }) {
           <div className="flex items-center gap-3 mb-2">
             <Flame size={20} className="text-accent" />
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-accent">
-              {t("badge")}
+              {t('badge')}
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-display font-black text-foreground tracking-tight mb-10">
-            {t("title")}
+            {t('title')}
           </h2>
         </FadeIn>
 
@@ -70,13 +70,13 @@ export default function HotDeals({ products }: { products: Product[] }) {
                       )}
                     </div>
                     <span className="absolute top-3 left-3 px-2.5 py-1 text-xs font-black uppercase tracking-wider bg-accent text-white rounded-full">
-                      {t("percentOff", { discount })}
+                      {t('percentOff', { discount })}
                     </span>
                   </Link>
 
                   <div className="p-4">
                     <p className="text-xs text-muted uppercase tracking-wider mb-1">
-                      {product.category.replace("-", " & ")}
+                      {product.category.replace('-', ' & ')}
                     </p>
                     <Link href={`/products/${product.slug}`}>
                       <h3 className="text-sm font-semibold text-foreground line-clamp-1 hover:text-accent transition-colors">
@@ -104,7 +104,11 @@ export default function HotDeals({ products }: { products: Product[] }) {
 
                     {/* Savings badge */}
                     <div className="mt-2 px-2 py-1 bg-accent/10 text-accent text-xs font-bold rounded text-center">
-                      {t("youSave", { amount: formatPrice(product.compareAtPrice! - product.price) })}
+                      {t('youSave', {
+                        amount: formatPrice(
+                          product.compareAtPrice! - product.price
+                        ),
+                      })}
                     </div>
                   </div>
                 </div>

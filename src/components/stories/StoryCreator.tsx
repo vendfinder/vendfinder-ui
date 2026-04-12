@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { useTranslations } from "next-intl";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   ImagePlus,
@@ -13,27 +13,41 @@ import {
   AlignVerticalJustifyStart,
   AlignVerticalJustifyCenter,
   AlignVerticalJustifyEnd,
-} from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { useStoryStore } from "@/stores/stories";
-import { uploadStoryMedia } from "@/lib/api-stories";
+} from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useStoryStore } from '@/stores/stories';
+import { uploadStoryMedia } from '@/lib/api-stories';
 
 const textPositionDefs = [
-  { value: "top" as const, icon: AlignVerticalJustifyStart, key: "positionTop" },
-  { value: "center" as const, icon: AlignVerticalJustifyCenter, key: "positionCenter" },
-  { value: "bottom" as const, icon: AlignVerticalJustifyEnd, key: "positionBottom" },
+  {
+    value: 'top' as const,
+    icon: AlignVerticalJustifyStart,
+    key: 'positionTop',
+  },
+  {
+    value: 'center' as const,
+    icon: AlignVerticalJustifyCenter,
+    key: 'positionCenter',
+  },
+  {
+    value: 'bottom' as const,
+    icon: AlignVerticalJustifyEnd,
+    key: 'positionBottom',
+  },
 ];
 
 export default function StoryCreator() {
-  const t = useTranslations("stories");
+  const t = useTranslations('stories');
   const { token } = useAuth();
   const { creatorOpen, closeCreator, createStory } = useStoryStore();
 
   const [mounted, setMounted] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [textOverlay, setTextOverlay] = useState("");
-  const [textPosition, setTextPosition] = useState<"top" | "center" | "bottom">("center");
+  const [textOverlay, setTextOverlay] = useState('');
+  const [textPosition, setTextPosition] = useState<'top' | 'center' | 'bottom'>(
+    'center'
+  );
   const [showTextInput, setShowTextInput] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,9 +58,9 @@ export default function StoryCreator() {
   // Lock body scroll
   useEffect(() => {
     if (!creatorOpen) return;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = '';
     };
   }, [creatorOpen]);
 
@@ -55,7 +69,7 @@ export default function StoryCreator() {
     if (!creatorOpen) {
       setPreview(null);
       setFile(null);
-      setTextOverlay("");
+      setTextOverlay('');
       setShowTextInput(false);
       setError(null);
     }
@@ -64,12 +78,12 @@ export default function StoryCreator() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
-    if (!selected.type.startsWith("image/")) {
-      setError(t("onlyImageFiles"));
+    if (!selected.type.startsWith('image/')) {
+      setError(t('onlyImageFiles'));
       return;
     }
     if (selected.size > 10 * 1024 * 1024) {
-      setError(t("fileTooLarge"));
+      setError(t('fileTooLarge'));
       return;
     }
     setFile(selected);
@@ -86,7 +100,7 @@ export default function StoryCreator() {
       // Upload media
       const { url, error: uploadError } = await uploadStoryMedia(file, token);
       if (uploadError || !url) {
-        setError(uploadError || "Upload failed");
+        setError(uploadError || 'Upload failed');
         setUploading(false);
         return;
       }
@@ -104,10 +118,10 @@ export default function StoryCreator() {
       if (ok) {
         closeCreator();
       } else {
-        setError(t("failedToCreate"));
+        setError(t('failedToCreate'));
       }
     } catch {
-      setError(t("somethingWentWrong"));
+      setError(t('somethingWentWrong'));
     } finally {
       setUploading(false);
     }
@@ -133,7 +147,9 @@ export default function StoryCreator() {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
-          <h2 className="text-base font-bold text-foreground">{t("newStory")}</h2>
+          <h2 className="text-base font-bold text-foreground">
+            {t('newStory')}
+          </h2>
           <button
             onClick={closeCreator}
             className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors"
@@ -163,9 +179,9 @@ export default function StoryCreator() {
                 <ImagePlus size={28} />
               </div>
               <div className="text-center">
-                <p className="text-sm font-semibold">{t("choosePhoto")}</p>
+                <p className="text-sm font-semibold">{t('choosePhoto')}</p>
                 <p className="text-[11px] text-muted mt-1">
-                  {t("photoFormats")}
+                  {t('photoFormats')}
                 </p>
               </div>
             </button>
@@ -185,11 +201,11 @@ export default function StoryCreator() {
                 {textOverlay && (
                   <div
                     className={`absolute left-0 right-0 px-4 text-center ${
-                      textPosition === "top"
-                        ? "top-8"
-                        : textPosition === "bottom"
-                          ? "bottom-8"
-                          : "top-1/2 -translate-y-1/2"
+                      textPosition === 'top'
+                        ? 'top-8'
+                        : textPosition === 'bottom'
+                          ? 'bottom-8'
+                          : 'top-1/2 -translate-y-1/2'
                     }`}
                   >
                     <span className="inline-block bg-black/50 backdrop-blur-md text-white text-sm font-bold px-4 py-2.5 rounded-xl border border-white/10">
@@ -215,32 +231,32 @@ export default function StoryCreator() {
                   onClick={() => setShowTextInput(!showTextInput)}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all w-full ${
                     showTextInput
-                      ? "border-primary/40 bg-primary/[0.06] text-primary"
-                      : "border-border bg-surface text-foreground hover:border-border-hover"
+                      ? 'border-primary/40 bg-primary/[0.06] text-primary'
+                      : 'border-border bg-surface text-foreground hover:border-border-hover'
                   }`}
                 >
                   <Type size={15} />
-                  {showTextInput ? t("hideTextOverlay") : t("addTextOverlay")}
+                  {showTextInput ? t('hideTextOverlay') : t('addTextOverlay')}
                 </button>
 
                 <AnimatePresence>
                   {showTextInput && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
+                      animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden space-y-3"
                     >
                       <input
                         value={textOverlay}
                         onChange={(e) => setTextOverlay(e.target.value)}
-                        placeholder={t("captionPlaceholder")}
+                        placeholder={t('captionPlaceholder')}
                         maxLength={120}
                         className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-foreground text-sm placeholder:text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
                       />
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] text-muted uppercase tracking-wider font-semibold">
-                          {t("position")}
+                          {t('position')}
                         </span>
                         <div className="flex gap-1 ml-1">
                           {textPositionDefs.map((pos) => {
@@ -252,8 +268,8 @@ export default function StoryCreator() {
                                 onClick={() => setTextPosition(pos.value)}
                                 className={`p-2 rounded-lg transition-all ${
                                   textPosition === pos.value
-                                    ? "bg-primary/15 text-primary"
-                                    : "text-muted hover:text-foreground hover:bg-surface"
+                                    ? 'bg-primary/15 text-primary'
+                                    : 'text-muted hover:text-foreground hover:bg-surface'
                                 }`}
                                 title={t(pos.key)}
                               >
@@ -286,7 +302,7 @@ export default function StoryCreator() {
               onClick={closeCreator}
               className="px-4 py-2.5 rounded-xl text-sm font-medium text-muted hover:text-foreground hover:bg-surface transition-all"
             >
-              {t("cancel")}
+              {t('cancel')}
             </button>
             <button
               type="button"
@@ -297,12 +313,12 @@ export default function StoryCreator() {
               {uploading ? (
                 <>
                   <Loader2 size={15} className="animate-spin" />
-                  {t("posting")}
+                  {t('posting')}
                 </>
               ) : (
                 <>
                   <Send size={15} />
-                  {t("shareStory")}
+                  {t('shareStory')}
                 </>
               )}
             </button>

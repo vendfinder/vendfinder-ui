@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 networks:
   vendfinder-net:
@@ -8,7 +8,7 @@ services:
   chat-db:
     image: postgres:16-alpine
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       POSTGRES_DB: chat_db
       POSTGRES_USER: vendfinder
@@ -18,7 +18,7 @@ services:
     networks:
       - vendfinder-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U vendfinder -d chat_db"]
+      test: ['CMD-SHELL', 'pg_isready -U vendfinder -d chat_db']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -26,7 +26,7 @@ services:
   user-db:
     image: postgres:16-alpine
     ports:
-      - "5433:5432"
+      - '5433:5432'
     environment:
       POSTGRES_DB: user_db
       POSTGRES_USER: vendfinder
@@ -36,7 +36,7 @@ services:
     networks:
       - vendfinder-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U vendfinder -d user_db"]
+      test: ['CMD-SHELL', 'pg_isready -U vendfinder -d user_db']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -44,7 +44,7 @@ services:
   product-db:
     image: postgres:16-alpine
     ports:
-      - "5434:5432"
+      - '5434:5432'
     environment:
       POSTGRES_DB: product_db
       POSTGRES_USER: vendfinder
@@ -54,7 +54,7 @@ services:
     networks:
       - vendfinder-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U vendfinder -d product_db"]
+      test: ['CMD-SHELL', 'pg_isready -U vendfinder -d product_db']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -62,7 +62,7 @@ services:
   order-db:
     image: postgres:16-alpine
     ports:
-      - "5435:5432"
+      - '5435:5432'
     environment:
       POSTGRES_DB: order_db
       POSTGRES_USER: vendfinder
@@ -72,7 +72,7 @@ services:
     networks:
       - vendfinder-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U vendfinder -d order_db"]
+      test: ['CMD-SHELL', 'pg_isready -U vendfinder -d order_db']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -80,11 +80,11 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     networks:
       - vendfinder-net
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -92,12 +92,12 @@ services:
   user-service:
     build: ./user-service-oauth
     ports:
-      - "3004:3004"
+      - '3004:3004'
     environment:
-      PORT: "3004"
+      PORT: '3004'
       DATABASE_URL: postgresql://vendfinder:vendfinder_pass@user-db:5432/user_db
       JWT_SECRET: vendfinder-jwt-secret-change-in-production
-      CORS_ORIGIN: "*"
+      CORS_ORIGIN: '*'
       # DigitalOcean Spaces Configuration for KYC documents
       DO_SPACES_ENDPOINT: ${DO_SPACES_ENDPOINT}
       DO_SPACES_REGION: ${DO_SPACES_REGION}
@@ -117,15 +117,15 @@ services:
   chat-service:
     build: ./chat-service
     ports:
-      - "3005:3005"
+      - '3005:3005'
     environment:
-      PORT: "3005"
+      PORT: '3005'
       DATABASE_URL: postgresql://vendfinder:vendfinder_pass@chat-db:5432/chat_db
       REDIS_URL: redis://redis:6379
       USER_SERVICE_URL: http://user-service:3004
-      BOT_USER_ID: "00000000-0000-0000-0000-000000000001"
+      BOT_USER_ID: '00000000-0000-0000-0000-000000000001'
       INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY:-vendfinder-internal-key-change-in-production}
-      CORS_ORIGIN: "*"
+      CORS_ORIGIN: '*'
     depends_on:
       chat-db:
         condition: service_healthy
@@ -139,13 +139,13 @@ services:
   product-service:
     build: ./product-service
     ports:
-      - "3007:3000"
+      - '3007:3000'
     environment:
-      PORT: "3000"
+      PORT: '3000'
       DATABASE_URL: postgresql://vendfinder:vendfinder_pass@product-db:5432/product_db
       REDIS_URL: redis://redis:6379
       USER_SERVICE_URL: http://user-service:3004
-      CORS_ORIGIN: "*"
+      CORS_ORIGIN: '*'
     depends_on:
       product-db:
         condition: service_healthy
@@ -159,16 +159,16 @@ services:
   order-service:
     build: ./order-service
     ports:
-      - "3008:3000"
+      - '3008:3000'
     environment:
-      PORT: "3000"
+      PORT: '3000'
       DATABASE_URL: postgresql://vendfinder:vendfinder_pass@order-db:5432/order_db
       REDIS_URL: redis://redis:6379
       USER_SERVICE_URL: http://user-service:3004
       PRODUCT_SERVICE_URL: http://product-service:3000
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_placeholder}
-      CORS_ORIGIN: "*"
+      CORS_ORIGIN: '*'
     depends_on:
       order-db:
         condition: service_healthy
@@ -184,13 +184,13 @@ services:
   websocket-service:
     build: ./websocket-service
     ports:
-      - "3006:3006"
+      - '3006:3006'
     environment:
-      PORT: "3006"
+      PORT: '3006'
       REDIS_URL: redis://redis:6379
       USER_SERVICE_URL: http://user-service:3004
       CHAT_SERVICE_URL: http://chat-service:3005
-      CORS_ORIGIN: "*"
+      CORS_ORIGIN: '*'
     depends_on:
       redis:
         condition: service_healthy
@@ -202,10 +202,10 @@ services:
   support-bot:
     build: ./support-bot
     ports:
-      - "3009:3009"
+      - '3009:3009'
     environment:
-      PORT: "3009"
-      BOT_USER_ID: "00000000-0000-0000-0000-000000000001"
+      PORT: '3009'
+      BOT_USER_ID: '00000000-0000-0000-0000-000000000001'
       CHAT_SERVICE_URL: http://chat-service:3005
       ORDER_SERVICE_URL: http://order-service:3000
       PRODUCT_SERVICE_URL: http://product-service:3000
@@ -215,8 +215,8 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-6-20250514}
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
-      MAX_HISTORY_MESSAGES: "20"
-      RESPONSE_DELAY_MS: "1000"
+      MAX_HISTORY_MESSAGES: '20'
+      RESPONSE_DELAY_MS: '1000'
     depends_on:
       redis:
         condition: service_healthy
@@ -228,15 +228,15 @@ services:
   api-gateway:
     build: ./api-gateway-build
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
-      PORT: "3000"
+      PORT: '3000'
       USER_SERVICE_URL: http://user-service:3004
       CHAT_SERVICE_URL: http://chat-service:3005
       WEBSOCKET_SERVICE_URL: http://websocket-service:3006
       PRODUCT_SERVICE_URL: http://product-service:3000
       ORDER_SERVICE_URL: http://order-service:3000
-      CORS_ORIGIN: "*"
+      CORS_ORIGIN: '*'
       DO_SPACES_KEY: ${DO_SPACES_KEY}
       DO_SPACES_SECRET: ${DO_SPACES_SECRET}
       DO_SPACES_BUCKET: ${DO_SPACES_BUCKET:-vendfinder-uploads}

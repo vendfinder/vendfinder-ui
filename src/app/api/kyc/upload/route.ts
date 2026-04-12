@@ -1,14 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-const USER_SERVICE_URL = process.env.USER_SERVICE_URL || "http://user-service:3004";
+const USER_SERVICE_URL =
+  process.env.USER_SERVICE_URL || 'http://user-service:3004';
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get("document") as File;
+    const file = formData.get('document') as File;
 
     if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
     // Mock successful upload response for testing
@@ -23,15 +24,15 @@ export async function POST(request: NextRequest) {
         id: 'mock-doc-' + Date.now(),
         fileName: file.name,
         fileSize: file.size,
-        documentType: formData.get("documentType") || "drivers_license",
+        documentType: formData.get('documentType') || 'drivers_license',
         uploadStatus: 'uploaded',
         processingStatus: 'pending',
         verificationStatus: 'pending',
-        uploadedAt: new Date().toISOString()
-      }
+        uploadedAt: new Date().toISOString(),
+      },
     });
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }

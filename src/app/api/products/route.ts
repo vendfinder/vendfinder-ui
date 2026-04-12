@@ -1,17 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.API_BASE_URL || "http://api-gateway:3000";
+const API_BASE_URL = process.env.API_BASE_URL || 'http://api-gateway:3000';
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams.toString();
-    const url = `${API_BASE_URL}/api/products${searchParams ? `?${searchParams}` : ""}`;
+    const url = `${API_BASE_URL}/api/products${searchParams ? `?${searchParams}` : ''}`;
     const res = await fetch(url, { next: { revalidate: 60 } });
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
   } catch {
     return NextResponse.json(
-      { error: "Failed to connect to product service" },
+      { error: 'Failed to connect to product service' },
       { status: 502 }
     );
   }
@@ -20,11 +20,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const token = request.headers.get("authorization");
+    const token = request.headers.get('authorization');
     const res = await fetch(`${API_BASE_URL}/api/products`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...(token ? { Authorization: token } : {}),
       },
       body: JSON.stringify(body),
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data, { status: res.status });
   } catch {
     return NextResponse.json(
-      { error: "Failed to connect to product service" },
+      { error: 'Failed to connect to product service' },
       { status: 502 }
     );
   }

@@ -1,39 +1,46 @@
-import Link from "next/link";
-import { BadgeCheck, Lock, Languages, Globe, Users, ArrowRight } from "lucide-react";
-import { FadeIn } from "@/components/motion/MotionWrapper";
+import Link from 'next/link';
+import {
+  BadgeCheck,
+  Lock,
+  Languages,
+  Globe,
+  Users,
+  ArrowRight,
+} from 'lucide-react';
+import { FadeIn } from '@/components/motion/MotionWrapper';
 
 export const metadata = {
-  title: "About Us | VendFinder",
+  title: 'About Us | VendFinder',
   description:
-    "VendFinder connects global vendors with buyers worldwide through verified listings, escrow protection, and automatic translation in 9 languages.",
+    'VendFinder connects global vendors with buyers worldwide through verified listings, escrow protection, and automatic translation in 9 languages.',
 };
 
 export default function AboutPage() {
   const features = [
     {
       icon: <BadgeCheck size={22} />,
-      title: "Verified Sellers",
+      title: 'Verified Sellers',
       description:
         "Every vendor is authenticated and pays a monthly subscription to list, so you know you're buying from a committed business.",
     },
     {
       icon: <Lock size={22} />,
-      title: "Escrow Protected",
+      title: 'Escrow Protected',
       description:
-        "Payments are held securely until you confirm delivery. If something goes wrong, our dispute system has your back.",
+        'Payments are held securely until you confirm delivery. If something goes wrong, our dispute system has your back.',
     },
     {
       icon: <Languages size={22} />,
-      title: "9 Languages",
+      title: '9 Languages',
       description:
-        "Listings are automatically translated into 9 languages so buyers and vendors can do business without friction.",
+        'Listings are automatically translated into 9 languages so buyers and vendors can do business without friction.',
     },
   ];
 
   const stats = [
-    { value: "Global", label: "Vendor Network" },
-    { value: "Worldwide", label: "Buyers Served" },
-    { value: "9", label: "Languages Supported" },
+    { value: 'Global', label: 'Vendor Network' },
+    { value: 'Worldwide', label: 'Buyers Served' },
+    { value: '9', label: 'Languages Supported' },
   ];
 
   return (
@@ -69,20 +76,20 @@ export default function AboutPage() {
             <div className="space-y-4 text-muted leading-relaxed text-base">
               <p>
                 We connect verified vendors &mdash; primarily from mainland
-                China &mdash; with buyers around the world. Our platform
-                handles automatic translation into 9 languages, authenticates
-                sellers, and protects every transaction with escrow.
+                China &mdash; with buyers around the world. Our platform handles
+                automatic translation into 9 languages, authenticates sellers,
+                and protects every transaction with escrow.
               </p>
               <p>
-                When you buy on VendFinder, your payment is held in escrow
-                until you confirm delivery. If an item never arrives or
-                doesn&apos;t match its description, our dispute resolution
-                system gets you a full refund through Buyer Protection.
+                When you buy on VendFinder, your payment is held in escrow until
+                you confirm delivery. If an item never arrives or doesn&apos;t
+                match its description, our dispute resolution system gets you a
+                full refund through Buyer Protection.
               </p>
               <p>
-                Vendors pay a flat $100 monthly subscription to list
-                products. That keeps the marketplace serious, and it keeps us
-                aligned with the success of every seller on the platform.
+                Vendors pay a flat $100 monthly subscription to list products.
+                That keeps the marketplace serious, and it keeps us aligned with
+                the success of every seller on the platform.
               </p>
             </div>
           </FadeIn>

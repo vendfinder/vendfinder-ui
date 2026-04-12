@@ -21,7 +21,7 @@ class ManualDashboardCapture {
     // Launch browser
     this.browser = await chromium.launch({
       headless: false, // Keep visible for manual interaction
-      slowMo: 500
+      slowMo: 500,
     });
 
     this.page = await this.browser.newPage();
@@ -35,7 +35,7 @@ class ManualDashboardCapture {
       console.log(`🔍 Manual capture mode for ${vendorName}...`);
       console.log('📋 Instructions:');
       console.log('1. Browser will open to VendFinder');
-      console.log('2. Manually log in to Sally\'s account');
+      console.log("2. Manually log in to Sally's account");
       console.log('3. Navigate to her dashboard/selling page');
       console.log('4. Press Enter in this terminal when ready to capture');
 
@@ -45,7 +45,7 @@ class ManualDashboardCapture {
 
       // Wait for user to manually navigate and login
       console.log('\n⏳ Browser opened. Please:');
-      console.log('   - Log in to Sally\'s account');
+      console.log("   - Log in to Sally's account");
       console.log('   - Navigate to Dashboard > Selling');
       console.log('   - Press Enter when ready to capture...');
 
@@ -59,7 +59,7 @@ class ManualDashboardCapture {
 
       await this.page.screenshot({
         path: filepath,
-        fullPage: true
+        fullPage: true,
       });
 
       console.log(`📸 Screenshot saved: ${filepath}`);
@@ -68,7 +68,10 @@ class ManualDashboardCapture {
       const metrics = await this.extractDashboardMetrics();
 
       // Save metrics as JSON
-      const metricsFile = path.join(this.outputDir, `${vendorName}-metrics-manual-${timestamp}.json`);
+      const metricsFile = path.join(
+        this.outputDir,
+        `${vendorName}-metrics-manual-${timestamp}.json`
+      );
       fs.writeFileSync(metricsFile, JSON.stringify(metrics, null, 2));
 
       console.log(`📊 Metrics saved: ${metricsFile}`);
@@ -76,7 +79,6 @@ class ManualDashboardCapture {
       console.log(JSON.stringify(metrics, null, 2));
 
       return { screenshot: filepath, metrics: metricsFile, data: metrics };
-
     } catch (error) {
       console.error('❌ Error during capture:', error);
       throw error;
@@ -88,7 +90,7 @@ class ManualDashboardCapture {
       const readline = require('readline');
       const rl = readline.createInterface({
         input: process.stdin,
-        output: process.stdout
+        output: process.stdout,
       });
 
       rl.question('Press Enter to capture...', (answer) => {
@@ -104,7 +106,9 @@ class ManualDashboardCapture {
         const data = {};
 
         // Look for revenue/sales numbers
-        const revenueElements = document.querySelectorAll('[class*="revenue"], [class*="sales"], [class*="total"], [class*="amount"]');
+        const revenueElements = document.querySelectorAll(
+          '[class*="revenue"], [class*="sales"], [class*="total"], [class*="amount"]'
+        );
         revenueElements.forEach((el, i) => {
           const text = el.textContent.trim();
           if (text.includes('$') || text.match(/\d+/)) {
@@ -113,9 +117,11 @@ class ManualDashboardCapture {
         });
 
         // Look for order/product information
-        const orderElements = document.querySelectorAll('[class*="order"], [class*="sale"], [class*="product"], [class*="item"]');
+        const orderElements = document.querySelectorAll(
+          '[class*="order"], [class*="sale"], [class*="product"], [class*="item"]'
+        );
         const orders = [];
-        orderElements.forEach(el => {
+        orderElements.forEach((el) => {
           const orderText = el.textContent.trim();
           if (orderText && orderText.length > 10 && orderText.length < 200) {
             orders.push(orderText);
@@ -123,7 +129,9 @@ class ManualDashboardCapture {
         });
 
         // Look for status indicators
-        const statusElements = document.querySelectorAll('[class*="status"], [class*="pending"], [class*="processing"], [class*="success"]');
+        const statusElements = document.querySelectorAll(
+          '[class*="status"], [class*="pending"], [class*="processing"], [class*="success"]'
+        );
         statusElements.forEach((el, i) => {
           const text = el.textContent.trim();
           if (text && text.length < 50) {
@@ -166,7 +174,6 @@ async function main() {
     console.log('\n🎉 Manual capture completed successfully!');
     console.log(`📸 Screenshot: ${result.screenshot}`);
     console.log(`📊 Metrics: ${result.metrics}`);
-
   } catch (error) {
     console.error('💥 Capture failed:', error);
     process.exit(1);

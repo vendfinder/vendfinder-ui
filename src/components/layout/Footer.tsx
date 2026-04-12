@@ -1,8 +1,8 @@
-import Link from "next/link";
-import Image from "next/image";
-import { footerLinkHrefs } from "@/data/site";
-import { getTranslations } from "next-intl/server";
-import LocaleSwitcher from "@/components/ui/LocaleSwitcher";
+import Link from 'next/link';
+import Image from 'next/image';
+import { footerLinkHrefs } from '@/data/site';
+import { getTranslations } from 'next-intl/server';
+import LocaleSwitcher from '@/components/ui/LocaleSwitcher';
 
 export default async function Footer() {
   const t = await getTranslations();
@@ -16,24 +16,24 @@ export default async function Footer() {
             <div className="flex items-center gap-2.5 mb-4">
               <Image
                 src="/logo.png"
-                alt={t("common.appName")}
+                alt={t('common.appName')}
                 width={36}
                 height={36}
                 className="rounded-md"
               />
               <span className="text-lg font-bold text-foreground tracking-tight">
-                {t("common.appName")}
+                {t('common.appName')}
               </span>
             </div>
             <p className="text-muted text-sm leading-relaxed">
-              {t("metadata.description")}
+              {t('metadata.description')}
             </p>
           </div>
 
           {/* Shop Links */}
           <div>
             <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">
-              {t("footer.shop")}
+              {t('footer.shop')}
             </h3>
             <ul className="space-y-2.5">
               {footerLinkHrefs.shop.map((link) => (
@@ -52,7 +52,7 @@ export default async function Footer() {
           {/* Company Links */}
           <div>
             <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">
-              {t("footer.company")}
+              {t('footer.company')}
             </h3>
             <ul className="space-y-2.5">
               {footerLinkHrefs.company.map((link) => (
@@ -71,7 +71,7 @@ export default async function Footer() {
           {/* Support Links */}
           <div>
             <h3 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">
-              {t("footer.support")}
+              {t('footer.support')}
             </h3>
             <ul className="space-y-2.5">
               {footerLinkHrefs.support.map((link) => (
@@ -91,10 +91,10 @@ export default async function Footer() {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted">
-            {t("common.copyright", {
+            {t('common.copyright', {
               year: new Date().getFullYear(),
-              appName: t("common.appName"),
-              rights: t("common.allRightsReserved"),
+              appName: t('common.appName'),
+              rights: t('common.allRightsReserved'),
             })}
           </p>
           <div className="flex items-center gap-6">
@@ -103,13 +103,13 @@ export default async function Footer() {
               href="/privacy"
               className="text-sm text-muted hover:text-primary transition-colors"
             >
-              {t("common.privacyPolicy")}
+              {t('common.privacyPolicy')}
             </Link>
             <Link
               href="/terms"
               className="text-sm text-muted hover:text-primary transition-colors"
             >
-              {t("common.termsOfService")}
+              {t('common.termsOfService')}
             </Link>
           </div>
         </div>

@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { useStoryStore } from "@/stores/stories";
-import StoryViewer from "./StoryViewer";
-import StoryCreator from "./StoryCreator";
+import { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
+import { motion } from 'framer-motion';
+import { Plus } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useStoryStore } from '@/stores/stories';
+import StoryViewer from './StoryViewer';
+import StoryCreator from './StoryCreator';
 
 /* Animated ring keyframes — injected once */
 const RING_STYLES = `
@@ -22,7 +22,7 @@ const RING_STYLES = `
 `;
 
 export default function StoriesBar() {
-  const t = useTranslations("stories");
+  const t = useTranslations('stories');
   const { user, token, isAuthenticated } = useAuth();
   const { feed, feedLoaded, fetchFeed, openViewer, openCreator } =
     useStoryStore();
@@ -41,7 +41,9 @@ export default function StoriesBar() {
 
   return (
     <>
-      <style jsx global>{RING_STYLES}</style>
+      <style jsx global>
+        {RING_STYLES}
+      </style>
 
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -52,7 +54,7 @@ export default function StoriesBar() {
         <div className="flex items-center gap-2.5 mb-4">
           <div className="w-1 h-5 rounded-full bg-primary" />
           <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
-            {t("title")}
+            {t('title')}
           </span>
           <div className="flex-1 h-px bg-gradient-to-r from-primary/30 to-transparent" />
         </div>
@@ -64,14 +66,18 @@ export default function StoriesBar() {
         >
           {/* "Your Story" — always first */}
           {!hasOwnStory ? (
-            <AddStoryButton avatar={user?.avatar} onClick={openCreator} yourStoryLabel={t("yourStory")} />
+            <AddStoryButton
+              avatar={user?.avatar}
+              onClick={openCreator}
+              yourStoryLabel={t('yourStory')}
+            />
           ) : (
             <StoryCircle
               group={feed[ownGroupIndex]}
               onClick={() => openViewer(ownGroupIndex)}
               isOwn
               onAddClick={openCreator}
-              yourStoryLabel={t("yourStory")}
+              yourStoryLabel={t('yourStory')}
             />
           )}
 
@@ -116,7 +122,7 @@ function AddStoryButton({
           className="w-16 h-16 rounded-full p-[2.5px] group-hover:brightness-125 transition-all duration-300"
           style={{
             background:
-              "linear-gradient(135deg, rgba(232,136,58,0.5), rgba(245,158,11,0.2), rgba(232,136,58,0.5))",
+              'linear-gradient(135deg, rgba(232,136,58,0.5), rgba(245,158,11,0.2), rgba(232,136,58,0.5))',
           }}
         >
           <div className="w-full h-full rounded-full bg-card flex items-center justify-center overflow-hidden">
@@ -182,11 +188,11 @@ function StoryCircle({
             className="w-16 h-16 rounded-full p-[2.5px]"
             style={{
               background: unviewed
-                ? "conic-gradient(from var(--story-angle), #e8883a 0%, #f59e0b 25%, #ef4444 50%, #f59e0b 75%, #e8883a 100%)"
-                : "rgba(255,255,255,0.18)",
+                ? 'conic-gradient(from var(--story-angle), #e8883a 0%, #f59e0b 25%, #ef4444 50%, #f59e0b 75%, #e8883a 100%)'
+                : 'rgba(255,255,255,0.18)',
               animation: unviewed
-                ? "story-ring-spin 4s linear infinite"
-                : "none",
+                ? 'story-ring-spin 4s linear infinite'
+                : 'none',
             }}
           >
             <div className="w-full h-full rounded-full bg-card flex items-center justify-center overflow-hidden">
@@ -198,7 +204,7 @@ function StoryCircle({
                 />
               ) : (
                 <span className="text-foreground text-lg font-bold">
-                  {group.displayName?.charAt(0) || "?"}
+                  {group.displayName?.charAt(0) || '?'}
                 </span>
               )}
             </div>

@@ -14,7 +14,7 @@ async function resetPassword() {
       process.env.DATABASE_URL,
       'postgresql://vendfinder:vendfinder_pass@user-db:5432/user_db',
       'postgresql://postgres:postgres@user-db:5432/users',
-      'postgresql://vendfinder:vendfinder_pass@vendor-db:5432/vendor_db'
+      'postgresql://vendfinder:vendfinder_pass@vendor-db:5432/vendor_db',
     ];
 
     let connected = false;
@@ -66,11 +66,12 @@ async function resetPassword() {
       console.log('❌ User not found');
 
       // Try to see what users exist
-      const users = await pool.query('SELECT username, email FROM users LIMIT 5');
+      const users = await pool.query(
+        'SELECT username, email FROM users LIMIT 5'
+      );
       console.log('Available users:');
-      users.rows.forEach(u => console.log(`- ${u.username} (${u.email})`));
+      users.rows.forEach((u) => console.log(`- ${u.username} (${u.email})`));
     }
-
   } catch (error) {
     console.error('❌ Error:', error.message);
   } finally {

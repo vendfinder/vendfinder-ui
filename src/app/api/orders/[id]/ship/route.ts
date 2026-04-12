@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.API_BASE_URL || "http://api-gateway:3000";
+const API_BASE_URL = process.env.API_BASE_URL || 'http://api-gateway:3000';
 
 export async function PATCH(
   request: NextRequest,
@@ -9,11 +9,11 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const token = request.headers.get("authorization");
+    const token = request.headers.get('authorization');
     const res = await fetch(`${API_BASE_URL}/api/orders/${id}/ship`, {
-      method: "PATCH",
+      method: 'PATCH',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...(token ? { Authorization: token } : {}),
       },
       body: JSON.stringify(body),
@@ -22,7 +22,7 @@ export async function PATCH(
     return NextResponse.json(data, { status: res.status });
   } catch {
     return NextResponse.json(
-      { error: "Failed to connect to order service" },
+      { error: 'Failed to connect to order service' },
       { status: 502 }
     );
   }

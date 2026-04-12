@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Check, CheckCheck } from "lucide-react";
+import { Check, CheckCheck } from 'lucide-react';
 
 interface ReadReceiptProps {
   sent: boolean;

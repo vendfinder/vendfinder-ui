@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useCallback } from "react";
-import { useTranslations } from "next-intl";
-import { ChatMessage } from "@/types";
-import ChatBubble from "./ChatBubble";
+import { useEffect, useRef, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
+import { ChatMessage } from '@/types';
+import ChatBubble from './ChatBubble';
 
 interface MessageThreadProps {
   messages: ChatMessage[];
@@ -25,12 +25,12 @@ function formatDateLabel(dateStr: string): string {
   const yesterday = new Date(today.getTime() - 86400000);
   const msgDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
-  if (msgDate.getTime() === today.getTime()) return "__today__";
-  if (msgDate.getTime() === yesterday.getTime()) return "__yesterday__";
+  if (msgDate.getTime() === today.getTime()) return '__today__';
+  if (msgDate.getTime() === yesterday.getTime()) return '__yesterday__';
   return d.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+    month: 'short',
+    day: 'numeric',
+    year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
   });
 }
 
@@ -46,12 +46,12 @@ export default function MessageThread({
   onCounterOffer,
   onPayNow,
 }: MessageThreadProps) {
-  const t = useTranslations("chat");
+  const t = useTranslations('chat');
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleScroll = useCallback(() => {
@@ -63,7 +63,7 @@ export default function MessageThread({
 
   // Group messages by day
   const grouped: { label: string; messages: ChatMessage[] }[] = [];
-  let currentLabel = "";
+  let currentLabel = '';
 
   for (const msg of messages) {
     const label = formatDateLabel(msg.createdAt);
@@ -87,7 +87,7 @@ export default function MessageThread({
             onClick={onLoadMore}
             className="text-[11px] text-primary font-semibold hover:text-primary-dark transition-colors cursor-pointer"
           >
-            {t("loadEarlierMessages")}
+            {t('loadEarlierMessages')}
           </button>
         </div>
       )}
@@ -98,7 +98,11 @@ export default function MessageThread({
           <div className="flex items-center gap-3 my-4">
             <div className="flex-1 h-px bg-border/30" />
             <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/40">
-              {group.label === "__today__" ? t("today") : group.label === "__yesterday__" ? t("yesterday") : group.label}
+              {group.label === '__today__'
+                ? t('today')
+                : group.label === '__yesterday__'
+                  ? t('yesterday')
+                  : group.label}
             </span>
             <div className="flex-1 h-px bg-border/30" />
           </div>

@@ -1,10 +1,8 @@
-import type { Story, UserStoryGroup } from "@/types";
+import type { Story, UserStoryGroup } from '@/types';
 
-export async function fetchStoryFeed(
-  token: string
-): Promise<UserStoryGroup[]> {
+export async function fetchStoryFeed(token: string): Promise<UserStoryGroup[]> {
   try {
-    const res = await fetch("/api/stories", {
+    const res = await fetch('/api/stories', {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return [];
@@ -21,7 +19,7 @@ export async function fetchUserStories(
 ): Promise<Story[]> {
   try {
     const headers: Record<string, string> = {};
-    if (token) headers["Authorization"] = `Bearer ${token}`;
+    if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const res = await fetch(`/api/stories/user/${userId}`, { headers });
     if (!res.ok) return [];
@@ -35,18 +33,18 @@ export async function fetchUserStories(
 export async function createStory(
   payload: {
     mediaUrl: string;
-    mediaType?: "image";
+    mediaType?: 'image';
     textOverlay?: string;
-    textPosition?: "top" | "center" | "bottom";
+    textPosition?: 'top' | 'center' | 'bottom';
   },
   token: string
 ): Promise<Story | null> {
   try {
-    const res = await fetch("/api/stories", {
-      method: "POST",
+    const res = await fetch('/api/stories', {
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
     });
@@ -63,7 +61,7 @@ export async function deleteStory(
 ): Promise<boolean> {
   try {
     const res = await fetch(`/api/stories/${storyId}`, {
-      method: "DELETE",
+      method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
     return res.ok;
@@ -78,7 +76,7 @@ export async function markStoryViewed(
 ): Promise<void> {
   try {
     await fetch(`/api/stories/${storyId}/view`, {
-      method: "POST",
+      method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
   } catch {
@@ -92,17 +90,17 @@ export async function uploadStoryMedia(
 ): Promise<{ url?: string; error?: string }> {
   try {
     const formData = new FormData();
-    formData.append("media", file);
+    formData.append('media', file);
 
-    const res = await fetch("/api/uploads/story-media", {
-      method: "POST",
+    const res = await fetch('/api/uploads/story-media', {
+      method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
     const data = await res.json();
-    if (!res.ok) return { error: data.error || "Upload failed" };
+    if (!res.ok) return { error: data.error || 'Upload failed' };
     return { url: data.mediaUrl };
   } catch {
-    return { error: "Failed to upload story media" };
+    return { error: 'Failed to upload story media' };
   }
 }

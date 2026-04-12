@@ -5,13 +5,15 @@ const { Pool } = require('pg');
 class BuyerOrderChecker {
   constructor() {
     this.orderPool = new Pool({
-      connectionString: process.env.DATABASE_URL || 'postgresql://vendfinder:vendfinder_pass@localhost:5435/order_db'
+      connectionString:
+        process.env.DATABASE_URL ||
+        'postgresql://vendfinder:vendfinder_pass@localhost:5435/order_db',
     });
   }
 
   async checkKathieLeeOrder() {
     try {
-      console.log('🔍 Checking Kathie Lee\'s order status...\n');
+      console.log("🔍 Checking Kathie Lee's order status...\n");
 
       const buyerEmail = 'jgroover87@yahoo.com';
       const orderNumber = 'VF-2026-00017';
@@ -44,7 +46,11 @@ class BuyerOrderChecker {
         ORDER BY o.created_at DESC;
       `;
 
-      const result = await this.orderPool.query(orderQuery, [buyerEmail, orderNumber, sallyVendorId]);
+      const result = await this.orderPool.query(orderQuery, [
+        buyerEmail,
+        orderNumber,
+        sallyVendorId,
+      ]);
 
       if (result.rows.length === 0) {
         console.log('❌ No order found for Kathie Lee from Sally');
@@ -71,23 +77,36 @@ class BuyerOrderChecker {
       console.log('=======================');
       console.log(`Payment Amount: $${order.payment_amount}`);
       console.log(`Payment Status: ${order.payment_status}`);
-      console.log(`Stripe Payment ID: ${order.stripe_payment_intent_id || 'N/A'}`);
+      console.log(
+        `Stripe Payment ID: ${order.stripe_payment_intent_id || 'N/A'}`
+      );
       console.log(`Payment Date: ${order.payment_date}`);
 
       console.log('\n🚚 Shipping Information:');
       console.log('========================');
-      console.log(`Shipping Address: ${order.shipping_address || 'Not provided'}`);
-      console.log(`Tracking Number: ${order.tracking_number || 'Not assigned yet'}`);
+      console.log(
+        `Shipping Address: ${order.shipping_address || 'Not provided'}`
+      );
+      console.log(
+        `Tracking Number: ${order.tracking_number || 'Not assigned yet'}`
+      );
 
       // Analyze order status
       console.log('\n📊 Order Analysis:');
       console.log('==================');
 
-      const daysSinceOrder = Math.floor((new Date() - new Date(order.created_at)) / (1000 * 60 * 60 * 24));
+      const daysSinceOrder = Math.floor(
+        (new Date() - new Date(order.created_at)) / (1000 * 60 * 60 * 24)
+      );
       console.log(`Days since order: ${daysSinceOrder}`);
 
-      if (order.payment_status === 'succeeded' && order.order_status === 'processing') {
-        console.log('⏳ Status: Payment successful, awaiting shipment from Sally');
+      if (
+        order.payment_status === 'succeeded' &&
+        order.order_status === 'processing'
+      ) {
+        console.log(
+          '⏳ Status: Payment successful, awaiting shipment from Sally'
+        );
         if (daysSinceOrder > 2) {
           console.log('⚠️  Order has been processing for more than 2 days');
           console.log('💡 Recommendation: Sally should ship the item soon');
@@ -97,7 +116,9 @@ class BuyerOrderChecker {
       } else if (order.order_status === 'delivered') {
         console.log('✅ Status: Item delivered successfully');
       } else {
-        console.log(`❓ Status: ${order.order_status} (payment: ${order.payment_status})`);
+        console.log(
+          `❓ Status: ${order.order_status} (payment: ${order.payment_status})`
+        );
       }
 
       // Check if there might be issues
@@ -115,7 +136,7 @@ class BuyerOrderChecker {
       if (issues.length > 0) {
         console.log('\n⚠️  Potential Issues:');
         console.log('=====================');
-        issues.forEach(issue => console.log(`   - ${issue}`));
+        issues.forEach((issue) => console.log(`   - ${issue}`));
       } else {
         console.log('\n✅ No issues detected with this order');
       }
@@ -125,9 +146,10 @@ class BuyerOrderChecker {
         order: order,
         daysSinceOrder: daysSinceOrder,
         issues: issues,
-        needsAction: issues.length > 0 || (daysSinceOrder > 2 && order.order_status === 'processing')
+        needsAction:
+          issues.length > 0 ||
+          (daysSinceOrder > 2 && order.order_status === 'processing'),
       };
-
     } catch (error) {
       console.error('❌ Error checking buyer order:', error);
       throw error;
@@ -146,7 +168,7 @@ async function main() {
   try {
     console.log('👤 Kathie Lee Order Status Check');
     console.log('================================\n');
-    console.log('Checking order for Sally\'s Gucci bag...\n');
+    console.log("Checking order for Sally's Gucci bag...\n");
 
     const result = await checker.checkKathieLeeOrder();
 
@@ -160,10 +182,11 @@ async function main() {
     } else {
       console.log('✅ Order appears to be progressing normally');
     }
-
   } catch (error) {
     if (error.code === 'ECONNREFUSED') {
-      console.log('💡 Database not available. Start with: docker compose up -d order-db');
+      console.log(
+        '💡 Database not available. Start with: docker compose up -d order-db'
+      );
     }
     console.error('💥 Check failed:', error.message);
     process.exit(1);

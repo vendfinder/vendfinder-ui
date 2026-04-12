@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useTranslations } from "next-intl";
-import { Bell, BellRing, X, Loader2, Check, Trash2 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { formatPrice } from "@/lib/utils";
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
+import { Bell, BellRing, X, Loader2, Check, Trash2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { formatPrice } from '@/lib/utils';
 
 interface PriceAlert {
   id: string;
@@ -28,7 +28,7 @@ export default function PriceAlertButton({
   sizes,
   selectedSize,
 }: PriceAlertButtonProps) {
-  const t = useTranslations("product");
+  const t = useTranslations('product');
   const { isAuthenticated, token } = useAuth();
   const [open, setOpen] = useState(false);
   const [alerts, setAlerts] = useState<PriceAlert[]>([]);
@@ -36,18 +36,18 @@ export default function PriceAlertButton({
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
-  const [targetPrice, setTargetPrice] = useState("");
-  const [alertSize, setAlertSize] = useState<string>("");
+  const [error, setError] = useState('');
+  const [targetPrice, setTargetPrice] = useState('');
+  const [alertSize, setAlertSize] = useState<string>('');
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  const hasActiveAlert = alerts.some((a) => a.status === "active");
+  const hasActiveAlert = alerts.some((a) => a.status === 'active');
 
   const fetchAlerts = useCallback(async () => {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/products/price-alerts?status=active", {
+      const res = await fetch('/api/products/price-alerts?status=active', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -78,14 +78,14 @@ export default function PriceAlertButton({
         !popoverRef.current.contains(e.target as Node)
       ) {
         setOpen(false);
-        setError("");
+        setError('');
         setSuccess(false);
       }
     }
     if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open]);
 
   // Pre-fill target price at 10% below current price
@@ -106,7 +106,7 @@ export default function PriceAlertButton({
   const handleOpen = () => {
     if (!isAuthenticated) return;
     setOpen(!open);
-    setError("");
+    setError('');
     setSuccess(false);
   };
 
@@ -115,17 +115,17 @@ export default function PriceAlertButton({
 
     const price = parseFloat(targetPrice);
     if (isNaN(price) || price <= 0) {
-      setError("Please enter a valid price");
+      setError('Please enter a valid price');
       return;
     }
 
     setSubmitting(true);
-    setError("");
+    setError('');
     try {
       const res = await fetch(`/api/products/${productId}/price-alerts`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -136,7 +136,7 @@ export default function PriceAlertButton({
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "Failed to create alert");
+        setError(data.error || 'Failed to create alert');
         return;
       }
 
@@ -145,10 +145,10 @@ export default function PriceAlertButton({
       setTimeout(() => {
         setOpen(false);
         setSuccess(false);
-        setTargetPrice("");
+        setTargetPrice('');
       }, 1500);
     } catch {
-      setError("Failed to create alert");
+      setError('Failed to create alert');
     } finally {
       setSubmitting(false);
     }
@@ -158,10 +158,10 @@ export default function PriceAlertButton({
     if (!token) return;
     setDeleting(alertId);
     try {
-      const res = await fetch("/api/products/price-alerts", {
-        method: "DELETE",
+      const res = await fetch('/api/products/price-alerts', {
+        method: 'DELETE',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ alertId }),
@@ -190,21 +190,21 @@ export default function PriceAlertButton({
           inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all cursor-pointer
           ${
             hasActiveAlert
-              ? "bg-primary/[0.08] text-primary border-primary/40 shadow-[0_0_12px_rgba(232,136,58,0.15)]"
-              : "bg-surface border-border text-foreground hover:border-border-hover hover:text-primary"
+              ? 'bg-primary/[0.08] text-primary border-primary/40 shadow-[0_0_12px_rgba(232,136,58,0.15)]'
+              : 'bg-surface border-border text-foreground hover:border-border-hover hover:text-primary'
           }
         `}
-        title={hasActiveAlert ? t("alertActive") : t("setPriceAlert")}
+        title={hasActiveAlert ? t('alertActive') : t('setPriceAlert')}
       >
         {hasActiveAlert ? (
           <>
             <BellRing size={15} className="shrink-0" />
-            <span>{t("alertSet")}</span>
+            <span>{t('alertSet')}</span>
           </>
         ) : (
           <>
             <Bell size={15} className="shrink-0" />
-            <span>{t("priceAlert")}</span>
+            <span>{t('priceAlert')}</span>
           </>
         )}
       </button>
@@ -216,12 +216,12 @@ export default function PriceAlertButton({
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               <Bell size={14} className="text-primary" />
-              {t("priceDropAlert")}
+              {t('priceDropAlert')}
             </h3>
             <button
               onClick={() => {
                 setOpen(false);
-                setError("");
+                setError('');
                 setSuccess(false);
               }}
               className="p-1 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors cursor-pointer"
@@ -235,7 +235,7 @@ export default function PriceAlertButton({
             {alerts.length > 0 && (
               <div className="space-y-2">
                 <p className="text-[11px] text-muted font-semibold uppercase tracking-wider">
-                  {t("activeAlerts")}
+                  {t('activeAlerts')}
                 </p>
                 {alerts.map((alert) => (
                   <div
@@ -248,7 +248,7 @@ export default function PriceAlertButton({
                       </p>
                       {alert.size && (
                         <p className="text-[11px] text-muted">
-                          {t("size")}: {alert.size}
+                          {t('size')}: {alert.size}
                         </p>
                       )}
                     </div>
@@ -256,7 +256,7 @@ export default function PriceAlertButton({
                       onClick={() => handleDelete(alert.id)}
                       disabled={deleting === alert.id}
                       className="p-1.5 rounded-lg text-muted hover:text-red-400 hover:bg-red-400/10 transition-colors cursor-pointer disabled:opacity-50"
-                      title={t("removeAlert")}
+                      title={t('removeAlert')}
                     >
                       {deleting === alert.id ? (
                         <Loader2 size={13} className="animate-spin" />
@@ -273,14 +273,14 @@ export default function PriceAlertButton({
             {success ? (
               <div className="flex items-center justify-center gap-2 py-3 text-emerald-400">
                 <Check size={16} />
-                <span className="text-sm font-semibold">{t("alertSaved")}</span>
+                <span className="text-sm font-semibold">{t('alertSaved')}</span>
               </div>
             ) : (
               <>
                 {/* Target price input */}
                 <div>
                   <label className="text-[11px] text-muted font-semibold uppercase tracking-wider block mb-1.5">
-                    {t("notifyWhenDrops")}
+                    {t('notifyWhenDrops')}
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm font-medium">
@@ -297,7 +297,7 @@ export default function PriceAlertButton({
                     />
                   </div>
                   <p className="text-[11px] text-muted/60 mt-1">
-                    {t("currentPrice")}: {formatPrice(currentPrice)}
+                    {t('currentPrice')}: {formatPrice(currentPrice)}
                   </p>
                 </div>
 
@@ -305,14 +305,14 @@ export default function PriceAlertButton({
                 {sizes && sizes.length > 0 && (
                   <div>
                     <label className="text-[11px] text-muted font-semibold uppercase tracking-wider block mb-1.5">
-                      {t("sizeOptional")}
+                      {t('sizeOptional')}
                     </label>
                     <select
                       value={alertSize}
                       onChange={(e) => setAlertSize(e.target.value)}
                       className="w-full px-3 py-2.5 bg-surface border border-border rounded-xl text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all appearance-none cursor-pointer"
                     >
-                      <option value="">{t("anySize")}</option>
+                      <option value="">{t('anySize')}</option>
                       {sizes.map((s) => (
                         <option key={s} value={s}>
                           {s}
@@ -338,7 +338,9 @@ export default function PriceAlertButton({
                   ) : (
                     <BellRing size={14} />
                   )}
-                  {alerts.length > 0 ? t("addAnotherAlert") : t("setPriceAlert")}
+                  {alerts.length > 0
+                    ? t('addAnotherAlert')
+                    : t('setPriceAlert')}
                 </button>
               </>
             )}

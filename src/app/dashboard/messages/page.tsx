@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { Mail, ArrowLeft, MessageCircle } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { useLocale } from "next-intl";
-import { useChatStore } from "@/stores/chat";
-import { useSocket } from "@/hooks/useSocket";
-import ConversationList from "@/components/chat/ConversationList";
-import MessageThread from "@/components/chat/MessageThread";
-import MessageInput from "@/components/chat/MessageInput";
-import ProductContextCard from "@/components/chat/ProductContextCard";
-import TypingIndicatorComponent from "@/components/chat/TypingIndicator";
-import ReportModal from "@/components/chat/ReportModal";
-import ChatCheckout from "@/components/chat/ChatCheckout";
-import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, ArrowLeft, MessageCircle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useLocale } from 'next-intl';
+import { useChatStore } from '@/stores/chat';
+import { useSocket } from '@/hooks/useSocket';
+import ConversationList from '@/components/chat/ConversationList';
+import MessageThread from '@/components/chat/MessageThread';
+import MessageInput from '@/components/chat/MessageInput';
+import ProductContextCard from '@/components/chat/ProductContextCard';
+import TypingIndicatorComponent from '@/components/chat/TypingIndicator';
+import ReportModal from '@/components/chat/ReportModal';
+import ChatCheckout from '@/components/chat/ChatCheckout';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 export default function MessagesPage() {
-  const t = useTranslations("dashboardMessages");
+  const t = useTranslations('dashboardMessages');
   const { user } = useAuth();
   const {
     conversations,
@@ -41,29 +41,39 @@ export default function MessagesPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [mobileShowThread, setMobileShowThread] = useState(false);
-  const [reportingMessageId, setReportingMessageId] = useState<string | null>(null);
-  const [checkoutOffer, setCheckoutOffer] = useState<{ offerId: string; price: number } | null>(null);
+  const [reportingMessageId, setReportingMessageId] = useState<string | null>(
+    null
+  );
+  const [checkoutOffer, setCheckoutOffer] = useState<{
+    offerId: string;
+    price: number;
+  } | null>(null);
   const handledParamsRef = useRef<string | null>(null);
   const creatingRef = useRef(false);
 
   const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("vendfinder-token")
+    typeof window !== 'undefined'
+      ? localStorage.getItem('vendfinder-token')
       : null;
 
-  const { joinConversation, leaveConversation, emitTypingStart, emitTypingStop, emitMessageRead } =
-    useSocket(token);
+  const {
+    joinConversation,
+    leaveConversation,
+    emitTypingStart,
+    emitTypingStop,
+    emitMessageRead,
+  } = useSocket(token);
 
   // Handle ?conversation=, ?product=, or ?seller= query params
   useEffect(() => {
     if (!token || !conversationsLoaded) return;
 
-    const conversationId = searchParams.get("conversation");
-    const productId = searchParams.get("product");
-    const sellerId = searchParams.get("seller");
+    const conversationId = searchParams.get('conversation');
+    const productId = searchParams.get('product');
+    const sellerId = searchParams.get('seller');
 
     // Build a key from the URL params so we only process each set once
-    const paramsKey = `${conversationId || ""}|${productId || ""}|${sellerId || ""}`;
+    const paramsKey = `${conversationId || ''}|${productId || ''}|${sellerId || ''}`;
     if (!conversationId && !productId && !sellerId) return;
     if (handledParamsRef.current === paramsKey) return;
 
@@ -81,7 +91,7 @@ export default function MessagesPage() {
       if (existing) {
         handledParamsRef.current = paramsKey;
         activate(existing.id);
-        router.replace("/dashboard/messages", { scroll: false });
+        router.replace('/dashboard/messages', { scroll: false });
       }
       return;
     }
@@ -92,19 +102,22 @@ export default function MessagesPage() {
       if (existing) {
         handledParamsRef.current = paramsKey;
         activate(existing.id);
-        router.replace("/dashboard/messages", { scroll: false });
+        router.replace('/dashboard/messages', { scroll: false });
         return;
       }
       if (sellerId && !creatingRef.current) {
         creatingRef.current = true;
         handledParamsRef.current = paramsKey;
-        useChatStore.getState().startConversation(productId, sellerId, token).then((convId) => {
-          creatingRef.current = false;
-          if (convId) {
-            activate(convId);
-            router.replace("/dashboard/messages", { scroll: false });
-          }
-        });
+        useChatStore
+          .getState()
+          .startConversation(productId, sellerId, token)
+          .then((convId) => {
+            creatingRef.current = false;
+            if (convId) {
+              activate(convId);
+              router.replace('/dashboard/messages', { scroll: false });
+            }
+          });
       }
       return;
     }
@@ -112,24 +125,28 @@ export default function MessagesPage() {
     // Direct message to a user (from profile page or order)
     if (sellerId) {
       const existing = conversations.find(
-        (c) => c.type === "direct" && c.participants?.some((p) => p.id === sellerId)
+        (c) =>
+          c.type === 'direct' && c.participants?.some((p) => p.id === sellerId)
       );
       if (existing) {
         handledParamsRef.current = paramsKey;
         activate(existing.id);
-        router.replace("/dashboard/messages", { scroll: false });
+        router.replace('/dashboard/messages', { scroll: false });
         return;
       }
       if (!creatingRef.current) {
         creatingRef.current = true;
         handledParamsRef.current = paramsKey;
-        useChatStore.getState().startConversation("", sellerId, token).then((convId) => {
-          creatingRef.current = false;
-          if (convId) {
-            activate(convId);
-            router.replace("/dashboard/messages", { scroll: false });
-          }
-        });
+        useChatStore
+          .getState()
+          .startConversation('', sellerId, token)
+          .then((convId) => {
+            creatingRef.current = false;
+            if (convId) {
+              activate(convId);
+              router.replace('/dashboard/messages', { scroll: false });
+            }
+          });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -180,7 +197,7 @@ export default function MessagesPage() {
   const handleAcceptOffer = useCallback(
     (offerId: string) => {
       if (!token) return;
-      respondToOffer(offerId, "accept", token);
+      respondToOffer(offerId, 'accept', token);
     },
     [respondToOffer, token]
   );
@@ -188,7 +205,7 @@ export default function MessagesPage() {
   const handleDeclineOffer = useCallback(
     (offerId: string) => {
       if (!token) return;
-      respondToOffer(offerId, "decline", token);
+      respondToOffer(offerId, 'decline', token);
     },
     [respondToOffer, token]
   );
@@ -196,7 +213,7 @@ export default function MessagesPage() {
   const handleCounterOffer = useCallback(
     (offerId: string, price: number) => {
       if (!token) return;
-      respondToOffer(offerId, "counter", token, price);
+      respondToOffer(offerId, 'counter', token, price);
     },
     [respondToOffer, token]
   );
@@ -218,12 +235,9 @@ export default function MessagesPage() {
     [reportingMessageId, reportMessage, token]
   );
 
-  const handlePayNow = useCallback(
-    (offerId: string, price: number) => {
-      setCheckoutOffer({ offerId, price });
-    },
-    []
-  );
+  const handlePayNow = useCallback((offerId: string, price: number) => {
+    setCheckoutOffer({ offerId, price });
+  }, []);
 
   const handleBack = useCallback(() => {
     setMobileShowThread(false);
@@ -232,12 +246,18 @@ export default function MessagesPage() {
 
   const activeConv = conversations.find((c) => c.id === activeConversation);
   // Buyer is participant1 (the one who initiated the conversation about a product)
-  const isBuyer = !!(activeConv?.product && activeConv.participants?.[0]?.id === user?.id);
-  const sellerParticipant = activeConv?.participants?.find((p) => p.id !== user?.id);
+  const isBuyer = !!(
+    activeConv?.product && activeConv.participants?.[0]?.id === user?.id
+  );
+  const sellerParticipant = activeConv?.participants?.find(
+    (p) => p.id !== user?.id
+  );
   const activeMessages = activeConversation
     ? messages[activeConversation] || []
     : [];
-  const hasMore = activeConversation ? messagesHasMore[activeConversation] || false : false;
+  const hasMore = activeConversation
+    ? messagesHasMore[activeConversation] || false
+    : false;
   const otherParticipant = activeConv?.participants?.find(
     (p) => p.id !== user?.id
   );
@@ -246,12 +266,19 @@ export default function MessagesPage() {
     : false;
 
   const activeTyping = activeConversation
-    ? (typingUsers[activeConversation] || []).filter((t) => t.userId !== user?.id)
+    ? (typingUsers[activeConversation] || []).filter(
+        (t) => t.userId !== user?.id
+      )
     : [];
 
-  const userId = user?.id || "";
+  const userId = user?.id || '';
 
-  if (conversationsLoaded && conversations.length === 0 && !searchParams.get("seller") && !searchParams.get("product")) {
+  if (
+    conversationsLoaded &&
+    conversations.length === 0 &&
+    !searchParams.get('seller') &&
+    !searchParams.get('product')
+  ) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -262,17 +289,17 @@ export default function MessagesPage() {
           <Mail size={28} className="text-primary/60" />
         </div>
         <h2 className="text-lg font-bold text-foreground mb-1">
-          {t("noMessagesYet")}
+          {t('noMessagesYet')}
         </h2>
         <p className="text-[13px] text-muted max-w-sm mb-6">
-          {t("noMessagesDesc")}
+          {t('noMessagesDesc')}
         </p>
         <Link
           href="/products"
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-dark transition-colors"
         >
           <MessageCircle size={15} />
-          {t("browseProducts")}
+          {t('browseProducts')}
         </Link>
       </motion.div>
     );
@@ -296,8 +323,10 @@ export default function MessagesPage() {
     onSend: handleSend,
     hasProduct: !!activeConv?.product,
     onSendOffer: activeConv?.product ? handleSendOffer : undefined,
-    onTypingStart: () => activeConversation && emitTypingStart(activeConversation),
-    onTypingStop: () => activeConversation && emitTypingStop(activeConversation),
+    onTypingStart: () =>
+      activeConversation && emitTypingStart(activeConversation),
+    onTypingStop: () =>
+      activeConversation && emitTypingStop(activeConversation),
   };
 
   return (
@@ -308,14 +337,17 @@ export default function MessagesPage() {
     >
       {/* Header */}
       <div className="mb-5">
-        <h1 className="text-xl font-bold text-foreground">{t("title")}</h1>
+        <h1 className="text-xl font-bold text-foreground">{t('title')}</h1>
         <p className="text-[13px] text-muted mt-0.5">
-          {t("conversationCount", { count: conversations.length })}
+          {t('conversationCount', { count: conversations.length })}
         </p>
       </div>
 
       {/* Split panel container */}
-      <div className="bg-card rounded-2xl border border-border overflow-hidden" style={{ height: "calc(100vh - 260px)", minHeight: 480 }}>
+      <div
+        className="bg-card rounded-2xl border border-border overflow-hidden"
+        style={{ height: 'calc(100vh - 260px)', minHeight: 480 }}
+      >
         {/* Desktop: side-by-side */}
         <div className="hidden md:flex h-full">
           {/* Left: Conversation list */}
@@ -344,7 +376,7 @@ export default function MessagesPage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        otherParticipant?.name?.charAt(0) || "?"
+                        otherParticipant?.name?.charAt(0) || '?'
                       )}
                     </div>
                     {isOtherOnline && (
@@ -353,13 +385,13 @@ export default function MessagesPage() {
                   </div>
                   <div>
                     <p className="text-[13px] font-semibold text-foreground">
-                      {otherParticipant?.name || "Unknown"}
+                      {otherParticipant?.name || 'Unknown'}
                     </p>
                     <p className="text-[10px] text-muted">
                       {isOtherOnline ? (
-                        <span className="text-emerald-400">{t("online")}</span>
+                        <span className="text-emerald-400">{t('online')}</span>
                       ) : (
-                        `@${otherParticipant?.username || "user"}`
+                        `@${otherParticipant?.username || 'user'}`
                       )}
                     </p>
                   </div>
@@ -391,7 +423,7 @@ export default function MessagesPage() {
                         productId={activeConv.product.id}
                         productName={activeConv.product.name}
                         productImage={activeConv.product.image}
-                        sellerId={sellerParticipant?.id || ""}
+                        sellerId={sellerParticipant?.id || ''}
                         onComplete={() => setCheckoutOffer(null)}
                         onCancel={() => setCheckoutOffer(null)}
                       />
@@ -407,10 +439,10 @@ export default function MessagesPage() {
                   <MessageCircle size={20} className="text-muted/30" />
                 </div>
                 <p className="text-sm font-medium text-muted/60">
-                  {t("selectConversation")}
+                  {t('selectConversation')}
                 </p>
                 <p className="text-[12px] text-muted/40 mt-1">
-                  {t("selectConversationDesc")}
+                  {t('selectConversationDesc')}
                 </p>
               </div>
             )}
@@ -465,7 +497,7 @@ export default function MessagesPage() {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            otherParticipant?.name?.charAt(0) || "?"
+                            otherParticipant?.name?.charAt(0) || '?'
                           )}
                         </div>
                         {isOtherOnline && (
@@ -474,13 +506,15 @@ export default function MessagesPage() {
                       </div>
                       <div>
                         <p className="text-[13px] font-semibold text-foreground">
-                          {otherParticipant?.name || "Unknown"}
+                          {otherParticipant?.name || 'Unknown'}
                         </p>
                         <p className="text-[10px] text-muted">
                           {isOtherOnline ? (
-                            <span className="text-emerald-400">{t("online")}</span>
+                            <span className="text-emerald-400">
+                              {t('online')}
+                            </span>
                           ) : (
-                            `@${otherParticipant?.username || "user"}`
+                            `@${otherParticipant?.username || 'user'}`
                           )}
                         </p>
                       </div>
@@ -512,7 +546,7 @@ export default function MessagesPage() {
                             productId={activeConv.product.id}
                             productName={activeConv.product.name}
                             productImage={activeConv.product.image}
-                            sellerId={sellerParticipant?.id || ""}
+                            sellerId={sellerParticipant?.id || ''}
                             onComplete={() => setCheckoutOffer(null)}
                             onCancel={() => setCheckoutOffer(null)}
                           />

@@ -1,25 +1,27 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
-import type { TypingIndicator } from "@/types";
+import { useTranslations } from 'next-intl';
+import { motion } from 'framer-motion';
+import type { TypingIndicator } from '@/types';
 
 interface TypingIndicatorProps {
   users: TypingIndicator[];
 }
 
-export default function TypingIndicatorComponent({ users }: TypingIndicatorProps) {
-  const t = useTranslations("chat");
+export default function TypingIndicatorComponent({
+  users,
+}: TypingIndicatorProps) {
+  const t = useTranslations('chat');
 
   if (users.length === 0) return null;
 
   const names = users.map((u) => u.username);
   const text =
     names.length === 1
-      ? t("isTyping", { name: names[0] })
+      ? t('isTyping', { name: names[0] })
       : names.length === 2
-        ? t("areTyping", { name1: names[0], name2: names[1] })
-        : t("andOthers", { name: names[0], count: names.length - 1 });
+        ? t('areTyping', { name1: names[0], name2: names[1] })
+        : t('andOthers', { name: names[0], count: names.length - 1 });
 
   return (
     <motion.div

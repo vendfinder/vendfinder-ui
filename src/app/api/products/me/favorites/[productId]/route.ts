@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.API_BASE_URL || "http://api-gateway:3000";
+const API_BASE_URL = process.env.API_BASE_URL || 'http://api-gateway:3000';
 
 export async function POST(
   request: NextRequest,
@@ -8,11 +8,11 @@ export async function POST(
 ) {
   try {
     const { productId } = await params;
-    const token = request.headers.get("authorization");
+    const token = request.headers.get('authorization');
     const res = await fetch(
       `${API_BASE_URL}/api/products/me/favorites/${productId}`,
       {
-        method: "POST",
+        method: 'POST',
         headers: {
           ...(token ? { Authorization: token } : {}),
         },
@@ -22,7 +22,7 @@ export async function POST(
     return NextResponse.json(data, { status: res.status });
   } catch {
     return NextResponse.json(
-      { error: "Failed to connect to product service" },
+      { error: 'Failed to connect to product service' },
       { status: 502 }
     );
   }
@@ -34,11 +34,11 @@ export async function DELETE(
 ) {
   try {
     const { productId } = await params;
-    const token = request.headers.get("authorization");
+    const token = request.headers.get('authorization');
     const res = await fetch(
       `${API_BASE_URL}/api/products/me/favorites/${productId}`,
       {
-        method: "DELETE",
+        method: 'DELETE',
         headers: {
           ...(token ? { Authorization: token } : {}),
         },
@@ -48,7 +48,7 @@ export async function DELETE(
     return NextResponse.json(data, { status: res.status });
   } catch {
     return NextResponse.json(
-      { error: "Failed to connect to product service" },
+      { error: 'Failed to connect to product service' },
       { status: 502 }
     );
   }

@@ -1,10 +1,10 @@
-import { Listing, Bid, FavoriteItem } from "@/types";
+import { Listing, Bid, FavoriteItem } from '@/types';
 
-const BASE = "/api/products";
+const BASE = '/api/products';
 
 function authHeaders(token: string) {
   return {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
   };
 }
@@ -15,22 +15,27 @@ export async function fetchMyListings(token: string): Promise<Listing[]> {
   const res = await fetch(`${BASE}/me/asks`, {
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to fetch listings");
+  if (!res.ok) throw new Error('Failed to fetch listings');
   const data = await res.json();
   return data.listings || [];
 }
 
 export async function createAsk(
   productId: string,
-  data: { size?: string; condition?: string; ask_price: number; expires_at?: string },
+  data: {
+    size?: string;
+    condition?: string;
+    ask_price: number;
+    expires_at?: string;
+  },
   token: string
 ) {
   const res = await fetch(`${BASE}/${productId}/asks`, {
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Failed to create listing");
+  if (!res.ok) throw new Error('Failed to create listing');
   return res.json();
 }
 
@@ -40,20 +45,20 @@ export async function updateAsk(
   token: string
 ) {
   const res = await fetch(`${BASE}/asks/${askId}`, {
-    method: "PUT",
+    method: 'PUT',
     headers: authHeaders(token),
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Failed to update listing");
+  if (!res.ok) throw new Error('Failed to update listing');
   return res.json();
 }
 
 export async function deleteAsk(askId: string, token: string) {
   const res = await fetch(`${BASE}/asks/${askId}`, {
-    method: "DELETE",
+    method: 'DELETE',
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to cancel listing");
+  if (!res.ok) throw new Error('Failed to cancel listing');
   return res.json();
 }
 
@@ -63,7 +68,7 @@ export async function fetchMyBids(token: string): Promise<Bid[]> {
   const res = await fetch(`${BASE}/me/bids`, {
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to fetch bids");
+  if (!res.ok) throw new Error('Failed to fetch bids');
   const data = await res.json();
   return data.bids || [];
 }
@@ -74,11 +79,11 @@ export async function placeBid(
   token: string
 ) {
   const res = await fetch(`${BASE}/${productId}/bids`, {
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Failed to place bid");
+  if (!res.ok) throw new Error('Failed to place bid');
   return res.json();
 }
 
@@ -88,20 +93,20 @@ export async function updateBid(
   token: string
 ) {
   const res = await fetch(`${BASE}/bids/${bidId}`, {
-    method: "PUT",
+    method: 'PUT',
     headers: authHeaders(token),
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Failed to update bid");
+  if (!res.ok) throw new Error('Failed to update bid');
   return res.json();
 }
 
 export async function deleteBid(bidId: string, token: string) {
   const res = await fetch(`${BASE}/bids/${bidId}`, {
-    method: "DELETE",
+    method: 'DELETE',
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to cancel bid");
+  if (!res.ok) throw new Error('Failed to cancel bid');
   return res.json();
 }
 
@@ -111,26 +116,26 @@ export async function fetchMyFavorites(token: string): Promise<FavoriteItem[]> {
   const res = await fetch(`${BASE}/me/favorites`, {
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to fetch favorites");
+  if (!res.ok) throw new Error('Failed to fetch favorites');
   const data = await res.json();
   return data.favorites || [];
 }
 
 export async function addFavorite(productId: string, token: string) {
   const res = await fetch(`${BASE}/me/favorites/${productId}`, {
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to add favorite");
+  if (!res.ok) throw new Error('Failed to add favorite');
   return res.json();
 }
 
 export async function removeFavorite(productId: string, token: string) {
   const res = await fetch(`${BASE}/me/favorites/${productId}`, {
-    method: "DELETE",
+    method: 'DELETE',
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to remove favorite");
+  if (!res.ok) throw new Error('Failed to remove favorite');
   return res.json();
 }
 
@@ -142,16 +147,16 @@ export async function uploadProductImages(
 ): Promise<string[]> {
   const formData = new FormData();
   for (const file of files) {
-    formData.append("images", file);
+    formData.append('images', file);
   }
 
-  const res = await fetch("/api/uploads/product-images", {
-    method: "POST",
+  const res = await fetch('/api/uploads/product-images', {
+    method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: formData,
   });
 
-  if (!res.ok) throw new Error("Failed to upload images");
+  if (!res.ok) throw new Error('Failed to upload images');
   const data = await res.json();
   return data.urls;
 }
@@ -163,7 +168,7 @@ export async function createProduct(
   token: string
 ) {
   const res = await fetch(BASE, {
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify(data),
   });
@@ -180,20 +185,20 @@ export async function updateProduct(
   token: string
 ) {
   const res = await fetch(`${BASE}/${id}`, {
-    method: "PUT",
+    method: 'PUT',
     headers: authHeaders(token),
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Failed to update product");
+  if (!res.ok) throw new Error('Failed to update product');
   return res.json();
 }
 
 export async function deleteProduct(id: string, token: string) {
   const res = await fetch(`${BASE}/${id}`, {
-    method: "DELETE",
+    method: 'DELETE',
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error("Failed to delete product");
+  if (!res.ok) throw new Error('Failed to delete product');
   return res.json();
 }
 
@@ -205,24 +210,27 @@ export async function createFeaturedCheckout(
   token: string
 ): Promise<{ checkoutUrl: string; sessionId: string }> {
   const res = await fetch(`${BASE}/featured/checkout`, {
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(token),
-    body: JSON.stringify({ product_id: productId, duration_days: durationDays }),
+    body: JSON.stringify({
+      product_id: productId,
+      duration_days: durationDays,
+    }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new Error(body?.error || "Failed to create checkout session");
+    throw new Error(body?.error || 'Failed to create checkout session');
   }
   return res.json();
 }
 
 export async function confirmFeaturedSlot(sessionId: string, token: string) {
   const res = await fetch(`${BASE}/featured/confirm`, {
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify({ session_id: sessionId }),
   });
-  if (!res.ok) throw new Error("Failed to confirm featured slot");
+  if (!res.ok) throw new Error('Failed to confirm featured slot');
   return res.json();
 }
 
@@ -230,13 +238,13 @@ export async function confirmFeaturedSlot(sessionId: string, token: string) {
 
 export async function createSponsoredCheckout(
   productId: string,
-  targetType: "category" | "keyword",
+  targetType: 'category' | 'keyword',
   target: { category?: string; keyword?: string },
   durationDays: number,
   token: string
 ): Promise<{ checkoutUrl: string; sessionId: string }> {
   const res = await fetch(`${BASE}/sponsored/checkout`, {
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify({
       product_id: productId,
@@ -248,18 +256,18 @@ export async function createSponsoredCheckout(
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new Error(body?.error || "Failed to create checkout session");
+    throw new Error(body?.error || 'Failed to create checkout session');
   }
   return res.json();
 }
 
 export async function confirmSponsoredSlot(sessionId: string, token: string) {
   const res = await fetch(`${BASE}/sponsored/confirm`, {
-    method: "POST",
+    method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify({ session_id: sessionId }),
   });
-  if (!res.ok) throw new Error("Failed to confirm sponsored slot");
+  if (!res.ok) throw new Error('Failed to confirm sponsored slot');
   return res.json();
 }
 
@@ -304,14 +312,14 @@ export async function createReview(
   },
   token: string
 ) {
-  const res = await fetch("/api/reviews", {
-    method: "POST",
+  const res = await fetch('/api/reviews', {
+    method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify(data),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new Error(body?.error || "Failed to create review");
+    throw new Error(body?.error || 'Failed to create review');
   }
   return res.json();
 }

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useTranslations } from "next-intl";
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   Footprints,
   Smartphone,
@@ -10,13 +10,13 @@ import {
   Watch,
   Trophy,
   ArrowUpRight,
-} from "lucide-react";
-import type { Category, Product } from "@/types";
+} from 'lucide-react';
+import type { Category, Product } from '@/types';
 import {
   FadeIn,
   StaggerContainer,
   StaggerItem,
-} from "@/components/motion/MotionWrapper";
+} from '@/components/motion/MotionWrapper';
 
 const iconMap: Record<string, React.ReactNode> = {
   Footprints: <Footprints size={28} />,
@@ -28,12 +28,12 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const accentColors = [
-  "from-[#FF6B6B]/20 to-transparent",
-  "from-[#4ECDC4]/20 to-transparent",
-  "from-[#FFE66D]/20 to-transparent",
-  "from-[#A78BFA]/20 to-transparent",
-  "from-[#F97316]/20 to-transparent",
-  "from-primary/20 to-transparent",
+  'from-[#FF6B6B]/20 to-transparent',
+  'from-[#4ECDC4]/20 to-transparent',
+  'from-[#FFE66D]/20 to-transparent',
+  'from-[#A78BFA]/20 to-transparent',
+  'from-[#F97316]/20 to-transparent',
+  'from-primary/20 to-transparent',
 ];
 
 export default function CategoryShowcase({
@@ -43,7 +43,7 @@ export default function CategoryShowcase({
   categories: Category[];
   categoryProducts: Record<string, Product[]>;
 }) {
-  const t = useTranslations("categories");
+  const t = useTranslations('categories');
 
   return (
     <section className="py-16 lg:py-24 bg-surface">
@@ -51,10 +51,10 @@ export default function CategoryShowcase({
         <FadeIn>
           <div className="text-center mb-14">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-2 block">
-              {t("browseCollections")}
+              {t('browseCollections')}
             </span>
             <h2 className="text-3xl sm:text-4xl font-display font-black text-foreground tracking-tight">
-              {t("shopByCategory")}
+              {t('shopByCategory')}
             </h2>
           </div>
         </FadeIn>
@@ -96,7 +96,9 @@ export default function CategoryShowcase({
                     {topProduct && (
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-primary font-semibold">
-                          {t("fromPrice", { price: `$${Math.min(...products.map((p) => p.price))}` })}
+                          {t('fromPrice', {
+                            price: `$${Math.min(...products.map((p) => p.price))}`,
+                          })}
                         </span>
                       </div>
                     )}

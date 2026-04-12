@@ -1,8 +1,12 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { fetchMyListings, fetchMyBids, fetchMyFavorites } from "@/lib/api-products";
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import {
+  fetchMyListings,
+  fetchMyBids,
+  fetchMyFavorites,
+} from '@/lib/api-products';
 import {
   fetchMyPurchases,
   fetchMyPayouts,
@@ -10,8 +14,18 @@ import {
   fetchMyOrders,
   fetchMySales,
   fetchPortfolio,
-} from "@/lib/api-orders";
-import type { Listing, Bid, Purchase, Payout, SellerStats, FavoriteItem, PortfolioItem, Order, SaleOrder } from "@/types";
+} from '@/lib/api-orders';
+import type {
+  Listing,
+  Bid,
+  Purchase,
+  Payout,
+  SellerStats,
+  FavoriteItem,
+  PortfolioItem,
+  Order,
+  SaleOrder,
+} from '@/types';
 
 interface DashboardData {
   listings: Listing[];
@@ -31,7 +45,7 @@ interface DashboardData {
 const emptyStats: SellerStats = {
   totalSales: 0,
   totalRevenue: 0,
-  avgShipTime: "N/A",
+  avgShipTime: 'N/A',
   completionRate: 100,
   sellerRating: 0,
   totalListings: 0,
@@ -98,21 +112,27 @@ export function useDashboardData(): DashboardData {
           sellerOrdersRes,
         ] = results;
 
-        if (listingsRes.status === "fulfilled") setListings(listingsRes.value);
-        if (bidsRes.status === "fulfilled") setBids(bidsRes.value);
-        if (purchasesRes.status === "fulfilled") setPurchases(purchasesRes.value);
-        if (payoutsRes.status === "fulfilled") setPayouts(payoutsRes.value);
-        if (statsRes.status === "fulfilled") setSellerStats(statsRes.value);
-        if (ordersRes.status === "fulfilled") {
+        if (listingsRes.status === 'fulfilled') setListings(listingsRes.value);
+        if (bidsRes.status === 'fulfilled') setBids(bidsRes.value);
+        if (purchasesRes.status === 'fulfilled')
+          setPurchases(purchasesRes.value);
+        if (payoutsRes.status === 'fulfilled') setPayouts(payoutsRes.value);
+        if (statsRes.status === 'fulfilled') setSellerStats(statsRes.value);
+        if (ordersRes.status === 'fulfilled') {
           const data = ordersRes.value;
           setOrders(data.orders || []);
         }
-        if (favoritesRes.status === "fulfilled") setFavorites(favoritesRes.value);
-        if (portfolioRes.status === "fulfilled") setPortfolio(portfolioRes.value);
-        if (sellerOrdersRes.status === "fulfilled") setSellerOrders(sellerOrdersRes.value);
+        if (favoritesRes.status === 'fulfilled')
+          setFavorites(favoritesRes.value);
+        if (portfolioRes.status === 'fulfilled')
+          setPortfolio(portfolioRes.value);
+        if (sellerOrdersRes.status === 'fulfilled')
+          setSellerOrders(sellerOrdersRes.value);
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load dashboard data");
+          setError(
+            err instanceof Error ? err.message : 'Failed to load dashboard data'
+          );
         }
       } finally {
         if (!cancelled) setLoading(false);

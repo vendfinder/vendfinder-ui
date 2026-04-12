@@ -20,7 +20,7 @@ class VendorDashboardCapture {
     // Launch browser
     this.browser = await chromium.launch({
       headless: false, // Set to true for background operation
-      slowMo: 1000 // Slow down for debugging
+      slowMo: 1000, // Slow down for debugging
     });
 
     this.page = await this.browser.newPage();
@@ -29,7 +29,11 @@ class VendorDashboardCapture {
     await this.page.setViewportSize({ width: 1920, height: 1080 });
   }
 
-  async captureVendorDashboard(vendorEmail, vendorPassword, vendorName = 'vendor') {
+  async captureVendorDashboard(
+    vendorEmail,
+    vendorPassword,
+    vendorName = 'vendor'
+  ) {
     try {
       console.log(`🔍 Capturing dashboard for ${vendorName}...`);
 
@@ -38,28 +42,50 @@ class VendorDashboardCapture {
       await this.page.waitForLoadState('networkidle');
 
       // Take debug screenshot of login page
-      await this.page.screenshot({ path: `${this.outputDir}/debug-signin-page.png` });
+      await this.page.screenshot({
+        path: `${this.outputDir}/debug-signin-page.png`,
+      });
       console.log('📸 Debug: Signin page screenshot saved');
 
       // Wait for form elements to appear and login
       console.log('⏳ Waiting for login form elements...');
-      await this.page.waitForSelector('input[type="email"], input[name="email"], input[placeholder*="email" i]', { timeout: 10000 });
-      await this.page.waitForSelector('input[type="password"], input[name="password"], input[placeholder*="password" i]', { timeout: 10000 });
+      await this.page.waitForSelector(
+        'input[type="email"], input[name="email"], input[placeholder*="email" i]',
+        { timeout: 10000 }
+      );
+      await this.page.waitForSelector(
+        'input[type="password"], input[name="password"], input[placeholder*="password" i]',
+        { timeout: 10000 }
+      );
 
       // Try multiple selectors for email input
-      const emailInput = this.page.locator('input[type="email"], input[name="email"], input[placeholder*="email" i]').first();
-      const passwordInput = this.page.locator('input[type="password"], input[name="password"], input[placeholder*="password" i]').first();
+      const emailInput = this.page
+        .locator(
+          'input[type="email"], input[name="email"], input[placeholder*="email" i]'
+        )
+        .first();
+      const passwordInput = this.page
+        .locator(
+          'input[type="password"], input[name="password"], input[placeholder*="password" i]'
+        )
+        .first();
 
       await emailInput.fill(vendorEmail);
       await passwordInput.fill(vendorPassword);
 
       // Try multiple selectors for submit button
-      const submitButton = this.page.locator('button[type="submit"], button:has-text("Sign in"), button:has-text("Login")').first();
+      const submitButton = this.page
+        .locator(
+          'button[type="submit"], button:has-text("Sign in"), button:has-text("Login")'
+        )
+        .first();
       await submitButton.click();
 
       // Take debug screenshot after login attempt
       await this.page.waitForTimeout(2000);
-      await this.page.screenshot({ path: `${this.outputDir}/debug-after-login.png` });
+      await this.page.screenshot({
+        path: `${this.outputDir}/debug-after-login.png`,
+      });
       console.log('📸 Debug: After login screenshot saved');
 
       // Wait for redirect (try multiple possible destinations)
@@ -69,9 +95,15 @@ class VendorDashboardCapture {
       } catch (error) {
         // Check if we're on a different page that indicates successful login
         const currentUrl = this.page.url();
-        console.log(`⚠️ Dashboard redirect timeout. Current URL: ${currentUrl}`);
+        console.log(
+          `⚠️ Dashboard redirect timeout. Current URL: ${currentUrl}`
+        );
 
-        if (currentUrl.includes('dashboard') || currentUrl.includes('profile') || currentUrl.includes('selling')) {
+        if (
+          currentUrl.includes('dashboard') ||
+          currentUrl.includes('profile') ||
+          currentUrl.includes('selling')
+        ) {
           console.log('✅ Login appears successful (alternative URL)');
         } else {
           // Check for various error messages and form validation
@@ -85,7 +117,7 @@ class VendorDashboardCapture {
             'text*="not found"',
             'text*="wrong"',
             '[class*="error"]',
-            '[role="alert"]'
+            '[role="alert"]',
           ];
 
           let errorMsg = null;
@@ -104,7 +136,9 @@ class VendorDashboardCapture {
           if (errorMsg) {
             throw new Error(`Login failed: ${errorMsg.trim()}`);
           } else {
-            throw new Error(`Login failed - credentials may be incorrect. URL: ${currentUrl}`);
+            throw new Error(
+              `Login failed - credentials may be incorrect. URL: ${currentUrl}`
+            );
           }
         }
       }
@@ -123,7 +157,7 @@ class VendorDashboardCapture {
       // Take full page screenshot
       await this.page.screenshot({
         path: filepath,
-        fullPage: true
+        fullPage: true,
       });
 
       console.log(`📸 Screenshot saved: ${filepath}`);
@@ -132,13 +166,15 @@ class VendorDashboardCapture {
       const metrics = await this.extractDashboardMetrics();
 
       // Save metrics as JSON
-      const metricsFile = path.join(this.outputDir, `${vendorName}-metrics-${timestamp}.json`);
+      const metricsFile = path.join(
+        this.outputDir,
+        `${vendorName}-metrics-${timestamp}.json`
+      );
       fs.writeFileSync(metricsFile, JSON.stringify(metrics, null, 2));
 
       console.log(`📊 Metrics saved: ${metricsFile}`);
 
       return { screenshot: filepath, metrics: metricsFile, data: metrics };
-
     } catch (error) {
       console.error('❌ Error capturing dashboard:', error);
       throw error;
@@ -152,24 +188,34 @@ class VendorDashboardCapture {
         const data = {};
 
         // Look for revenue/sales numbers
-        const revenueElements = document.querySelectorAll('[class*="revenue"], [class*="sales"], [class*="total"]');
+        const revenueElements = document.querySelectorAll(
+          '[class*="revenue"], [class*="sales"], [class*="total"]'
+        );
         revenueElements.forEach((el, i) => {
           const text = el.textContent.trim();
-          if (text.includes('$') || text.includes('revenue') || text.includes('sales')) {
+          if (
+            text.includes('$') ||
+            text.includes('revenue') ||
+            text.includes('sales')
+          ) {
             data[`metric_${i}`] = text;
           }
         });
 
         // Look for status indicators
-        const statusElements = document.querySelectorAll('[class*="status"], [class*="pending"], [class*="processing"]');
+        const statusElements = document.querySelectorAll(
+          '[class*="status"], [class*="pending"], [class*="processing"]'
+        );
         statusElements.forEach((el, i) => {
           data[`status_${i}`] = el.textContent.trim();
         });
 
         // Extract order information
         const orders = [];
-        const orderElements = document.querySelectorAll('[class*="order"], [class*="sale"]');
-        orderElements.forEach(el => {
+        const orderElements = document.querySelectorAll(
+          '[class*="order"], [class*="sale"]'
+        );
+        orderElements.forEach((el) => {
           const orderText = el.textContent.trim();
           if (orderText && orderText.length > 5) {
             orders.push(orderText);
@@ -223,14 +269,17 @@ Environment Variables:
 
   try {
     await capture.init();
-    const result = await capture.captureVendorDashboard(email, password, vendorName);
+    const result = await capture.captureVendorDashboard(
+      email,
+      password,
+      vendorName
+    );
 
     console.log('\n🎉 Capture completed successfully!');
     console.log(`📸 Screenshot: ${result.screenshot}`);
     console.log(`📊 Metrics: ${result.metrics}`);
     console.log('\n📋 Dashboard Data:');
     console.log(JSON.stringify(result.data, null, 2));
-
   } catch (error) {
     console.error('💥 Capture failed:', error);
     process.exit(1);

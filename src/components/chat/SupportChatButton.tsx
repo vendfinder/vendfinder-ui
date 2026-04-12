@@ -1,62 +1,66 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { MessageCircleQuestion, X, Send, Loader2 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { useChatStore } from "@/stores/chat";
-import { useRouter, usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { createSupportConversation } from "@/lib/api-chat";
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { MessageCircleQuestion, X, Send, Loader2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useChatStore } from '@/stores/chat';
+import { useRouter, usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { createSupportConversation } from '@/lib/api-chat';
 
 function useCategories() {
-  const t = useTranslations("chat");
+  const t = useTranslations('chat');
   return [
-    { id: "order", label: t("orderIssue") },
-    { id: "return", label: t("returnsRefunds") },
-    { id: "product", label: t("productQuestion") },
-    { id: "account", label: t("accountHelp") },
-    { id: "other", label: t("other") },
+    { id: 'order', label: t('orderIssue') },
+    { id: 'return', label: t('returnsRefunds') },
+    { id: 'product', label: t('productQuestion') },
+    { id: 'account', label: t('accountHelp') },
+    { id: 'other', label: t('other') },
   ];
 }
 
 export default function SupportChatButton() {
-  const t = useTranslations("chat");
+  const t = useTranslations('chat');
   const CATEGORIES = useCategories();
   const { user, token } = useAuth();
   const { fetchConversations } = useChatStore();
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const [step, setStep] = useState<"category" | "message">("category");
-  const [category, setCategory] = useState("");
-  const [message, setMessage] = useState("");
+  const [step, setStep] = useState<'category' | 'message'>('category');
+  const [category, setCategory] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Hide on messages page so it doesn't block the chat
-  if (pathname?.startsWith("/dashboard/messages")) return null;
+  if (pathname?.startsWith('/dashboard/messages')) return null;
   if (!user) return null;
 
   const handleCategorySelect = (catId: string) => {
     setCategory(catId);
-    setStep("message");
+    setStep('message');
   };
 
   const handleSubmit = async () => {
     if (!message.trim() || !token) return;
     setLoading(true);
     try {
-      const result = await createSupportConversation(token, message.trim(), category);
+      const result = await createSupportConversation(
+        token,
+        message.trim(),
+        category
+      );
       if (result.id) {
         await fetchConversations(token);
         setIsOpen(false);
-        setMessage("");
-        setCategory("");
-        setStep("category");
+        setMessage('');
+        setCategory('');
+        setStep('category');
         router.push(`/dashboard/messages?conversation=${result.id}`);
       }
     } catch (err) {
-      console.error("Failed to start support conversation:", err);
+      console.error('Failed to start support conversation:', err);
     } finally {
       setLoading(false);
     }
@@ -64,9 +68,9 @@ export default function SupportChatButton() {
 
   const handleClose = () => {
     setIsOpen(false);
-    setMessage("");
-    setCategory("");
-    setStep("category");
+    setMessage('');
+    setCategory('');
+    setStep('category');
   };
 
   return (
@@ -75,14 +79,14 @@ export default function SupportChatButton() {
       <button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "fixed right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full bottom-[calc(var(--tab-bar-height)+1.5rem)]",
-          "bg-primary text-white shadow-lg hover:shadow-xl",
-          "transition-all duration-200 hover:scale-105 cursor-pointer",
-          isOpen && "hidden"
+          'fixed right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full bottom-[calc(var(--tab-bar-height)+1.5rem)]',
+          'bg-primary text-white shadow-lg hover:shadow-xl',
+          'transition-all duration-200 hover:scale-105 cursor-pointer',
+          isOpen && 'hidden'
         )}
       >
         <MessageCircleQuestion size={20} />
-        <span className="text-sm font-medium">{t("getHelp")}</span>
+        <span className="text-sm font-medium">{t('getHelp')}</span>
       </button>
 
       {/* Support dialog */}
@@ -103,8 +107,12 @@ export default function SupportChatButton() {
                   <MessageCircleQuestion size={18} className="text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground">{t("vendBotSupport")}</h3>
-                  <p className="text-[11px] text-muted">{t("repliesInstantly")}</p>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {t('vendBotSupport')}
+                  </h3>
+                  <p className="text-[11px] text-muted">
+                    {t('repliesInstantly')}
+                  </p>
                 </div>
               </div>
               <button
@@ -117,10 +125,10 @@ export default function SupportChatButton() {
 
             {/* Content */}
             <div className="p-5">
-              {step === "category" ? (
+              {step === 'category' ? (
                 <div className="space-y-3">
                   <p className="text-[13px] text-muted">
-                    {t("whatHelpNeeded")}
+                    {t('whatHelpNeeded')}
                   </p>
                   <div className="space-y-2">
                     {CATEGORIES.map((cat) => (
@@ -137,22 +145,20 @@ export default function SupportChatButton() {
               ) : (
                 <div className="space-y-3">
                   <button
-                    onClick={() => setStep("category")}
+                    onClick={() => setStep('category')}
                     className="text-[11px] text-primary hover:underline cursor-pointer"
                   >
-                    &larr; {t("changeCategory")}
+                    &larr; {t('changeCategory')}
                   </button>
-                  <p className="text-[13px] text-muted">
-                    {t("describeIssue")}
-                  </p>
+                  <p className="text-[13px] text-muted">{t('describeIssue')}</p>
                   <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    placeholder={t("typeYourMessage")}
+                    placeholder={t('typeYourMessage')}
                     rows={4}
                     className="w-full px-4 py-3 rounded-xl border border-border bg-surface text-[13px] text-foreground placeholder:text-muted/50 resize-none focus:outline-none focus:border-primary/40"
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
+                      if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
                         handleSubmit();
                       }
@@ -162,21 +168,21 @@ export default function SupportChatButton() {
                     onClick={handleSubmit}
                     disabled={!message.trim() || loading}
                     className={cn(
-                      "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-colors cursor-pointer",
+                      'w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-colors cursor-pointer',
                       message.trim() && !loading
-                        ? "bg-primary text-white hover:bg-primary/90"
-                        : "bg-muted/20 text-muted cursor-not-allowed"
+                        ? 'bg-primary text-white hover:bg-primary/90'
+                        : 'bg-muted/20 text-muted cursor-not-allowed'
                     )}
                   >
                     {loading ? (
                       <>
                         <Loader2 size={14} className="animate-spin" />
-                        {t("startingConversation")}
+                        {t('startingConversation')}
                       </>
                     ) : (
                       <>
                         <Send size={14} />
-                        {t("sendMessage")}
+                        {t('sendMessage')}
                       </>
                     )}
                   </button>

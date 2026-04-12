@@ -1,4 +1,8 @@
-export type ConsentCategory = "necessary" | "functional" | "analytics" | "marketing";
+export type ConsentCategory =
+  | 'necessary'
+  | 'functional'
+  | 'analytics'
+  | 'marketing';
 
 export interface ConsentRecord {
   version: 1;
@@ -12,11 +16,11 @@ export interface ConsentRecord {
   };
 }
 
-const STORAGE_KEY = "cookie_consent";
+const STORAGE_KEY = 'cookie_consent';
 const THIRTEEN_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 13;
 
 export function getConsent(): ConsentRecord | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
@@ -32,7 +36,9 @@ export function getConsent(): ConsentRecord | null {
   }
 }
 
-export function setConsent(categories: Omit<ConsentRecord["categories"], "necessary">): ConsentRecord {
+export function setConsent(
+  categories: Omit<ConsentRecord['categories'], 'necessary'>
+): ConsentRecord {
   const record: ConsentRecord = {
     version: 1,
     timestamp: Date.now(),
@@ -44,9 +50,11 @@ export function setConsent(categories: Omit<ConsentRecord["categories"], "necess
       marketing: categories.marketing,
     },
   };
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(record));
-    window.dispatchEvent(new CustomEvent("consentchange", { detail: record.categories }));
+    window.dispatchEvent(
+      new CustomEvent('consentchange', { detail: record.categories })
+    );
   }
   return record;
 }
@@ -56,13 +64,13 @@ export function hasConsented(): boolean {
 }
 
 export function clearConsent(): void {
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     localStorage.removeItem(STORAGE_KEY);
   }
 }
 
 export function isCategoryAllowed(category: ConsentCategory): boolean {
-  if (category === "necessary") return true;
+  if (category === 'necessary') return true;
   const record = getConsent();
   if (!record) return false;
   return record.categories[category];

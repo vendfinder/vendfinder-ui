@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import Image from "next/image";
-import { ShoppingCart, Package, Eye, Globe } from "lucide-react";
-import { Product } from "@/types";
-import { useFormattedPrice } from "@/hooks/useFormattedPrice";
-import { useCart } from "@/context/CartContext";
-import { useTranslations } from "next-intl";
-import Rating from "@/components/ui/Rating";
-import { useTranslatedProduct } from "@/hooks/useTranslatedProduct";
+import Link from 'next/link';
+import Image from 'next/image';
+import { ShoppingCart, Package, Eye, Globe } from 'lucide-react';
+import { Product } from '@/types';
+import { useFormattedPrice } from '@/hooks/useFormattedPrice';
+import { useCart } from '@/context/CartContext';
+import { useTranslations } from 'next-intl';
+import Rating from '@/components/ui/Rating';
+import { useTranslatedProduct } from '@/hooks/useTranslatedProduct';
 
 interface ProductCardProps {
   product: Product;
@@ -52,7 +52,7 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <span className="px-3 py-1.5 rounded-lg bg-black/40 backdrop-blur-sm text-white text-[10px] font-semibold flex items-center gap-1.5">
               <Eye size={11} />
-              {t("product.quickView")}
+              {t('product.quickView')}
             </span>
           </div>
         </div>
@@ -62,19 +62,26 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
           </span>
         )}
         {discountPercent && (
-          <span className={`absolute ${product.isSponsored ? "top-10" : "top-3"} left-3 px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-accent text-white rounded-lg shadow-lg`}>
-            {t("product.percentOff", { percent: discountPercent })}
+          <span
+            className={`absolute ${product.isSponsored ? 'top-10' : 'top-3'} left-3 px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-accent text-white rounded-lg shadow-lg`}
+          >
+            {t('product.percentOff', { percent: discountPercent })}
           </span>
         )}
         {product.isGlobalListing && (
-          <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-black/60 text-blue-300 rounded-lg backdrop-blur-sm border border-blue-400/20" title="Available in multiple languages">
+          <span
+            className="absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-black/60 text-blue-300 rounded-lg backdrop-blur-sm border border-blue-400/20"
+            title="Available in multiple languages"
+          >
             <Globe size={9} />
             Global
           </span>
         )}
         {product.stockCount && product.stockCount <= 5 && (
-          <span className={`absolute ${product.isGlobalListing ? "top-10" : "top-3"} right-3 px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-black/50 text-amber-300 rounded-lg backdrop-blur-sm border border-amber-400/20`}>
-            {t("product.lowStock")}
+          <span
+            className={`absolute ${product.isGlobalListing ? 'top-10' : 'top-3'} right-3 px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-black/50 text-amber-300 rounded-lg backdrop-blur-sm border border-amber-400/20`}
+          >
+            {t('product.lowStock')}
           </span>
         )}
       </Link>
@@ -82,7 +89,7 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
       {/* Info */}
       <div className="p-4">
         <p className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold mb-1.5">
-          {product.category.replace("-", " & ")}
+          {product.category.replace('-', ' & ')}
         </p>
         <Link href={`/products/${product.slug}`}>
           <h3 className="text-sm font-semibold text-foreground line-clamp-2 hover:text-primary transition-colors leading-snug">
@@ -108,7 +115,7 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
           <button
             onClick={() => addItem(rawProduct)}
             className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center hover:bg-primary-dark hover:shadow-[0_0_16px_rgba(232,136,58,0.3)] transition-all cursor-pointer"
-            aria-label={t("product.addToCartAriaLabel", { name: product.name })}
+            aria-label={t('product.addToCartAriaLabel', { name: product.name })}
           >
             <ShoppingCart size={14} />
           </button>

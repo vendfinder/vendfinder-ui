@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { create } from "zustand";
-import type { Story, UserStoryGroup } from "@/types";
-import * as api from "@/lib/api-stories";
+import { create } from 'zustand';
+import type { Story, UserStoryGroup } from '@/types';
+import * as api from '@/lib/api-stories';
 
 interface StoryStore {
   // State
@@ -22,7 +22,11 @@ interface StoryStore {
   fetchFeed: (token: string) => Promise<void>;
   fetchUserStories: (userId: string, token?: string) => Promise<void>;
   createStory: (
-    payload: { mediaUrl: string; textOverlay?: string; textPosition?: "top" | "center" | "bottom" },
+    payload: {
+      mediaUrl: string;
+      textOverlay?: string;
+      textPosition?: 'top' | 'center' | 'bottom';
+    },
     token: string
   ) => Promise<boolean>;
   deleteStory: (storyId: string, token: string) => Promise<boolean>;
@@ -110,7 +114,11 @@ export const useStoryStore = create<StoryStore>((set, get) => ({
   },
 
   openViewer: (groupIndex, storyIndex = 0) =>
-    set({ viewerOpen: true, viewerGroupIndex: groupIndex, viewerStoryIndex: storyIndex }),
+    set({
+      viewerOpen: true,
+      viewerGroupIndex: groupIndex,
+      viewerStoryIndex: storyIndex,
+    }),
 
   closeViewer: () => set({ viewerOpen: false }),
 

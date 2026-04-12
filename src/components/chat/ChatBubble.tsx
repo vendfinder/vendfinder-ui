@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
-import { Flag, MoreHorizontal } from "lucide-react";
-import { cn } from "@/lib/utils";
-import OfferCard from "./OfferCard";
-import ReadReceipt from "./ReadReceipt";
-import type { ChatMessage } from "@/types";
+import { useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+import { Flag, MoreHorizontal } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import OfferCard from './OfferCard';
+import ReadReceipt from './ReadReceipt';
+import type { ChatMessage } from '@/types';
 
 interface ChatBubbleProps {
   message: ChatMessage;
@@ -23,7 +23,7 @@ interface ChatBubbleProps {
 
 function formatTime(dateStr: string): string {
   const d = new Date(dateStr);
-  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
 export default function ChatBubble({
@@ -38,20 +38,26 @@ export default function ChatBubble({
   onCounterOffer,
   onPayNow,
 }: ChatBubbleProps) {
-  const t = useTranslations("chat");
+  const t = useTranslations('chat');
   const locale = useLocale();
   const [showMenu, setShowMenu] = useState(false);
 
   // Resolve translated content for received messages (defensive - only if translations is an object)
-  const translations = message.translations && typeof message.translations === "object" && !Array.isArray(message.translations)
-    ? message.translations
-    : null;
-  const displayContent = !isSent && translations
-    ? (translations[locale] || translations[locale.split("-")[0]] || message.content)
-    : message.content;
+  const translations =
+    message.translations &&
+    typeof message.translations === 'object' &&
+    !Array.isArray(message.translations)
+      ? message.translations
+      : null;
+  const displayContent =
+    !isSent && translations
+      ? translations[locale] ||
+        translations[locale.split('-')[0]] ||
+        message.content
+      : message.content;
 
   // System messages
-  if (message.type === "system") {
+  if (message.type === 'system') {
     return (
       <div className="flex justify-center py-1">
         <span className="text-[11px] text-muted/50 bg-surface/50 px-3 py-1 rounded-full">
@@ -62,9 +68,9 @@ export default function ChatBubble({
   }
 
   // Offer messages
-  if (message.type === "offer" && message.metadata) {
+  if (message.type === 'offer' && message.metadata) {
     return (
-      <div className={cn("flex", isSent ? "justify-end" : "justify-start")}>
+      <div className={cn('flex', isSent ? 'justify-end' : 'justify-start')}>
         <div className="max-w-[80%] space-y-1">
           <OfferCard
             metadata={message.metadata}
@@ -76,7 +82,12 @@ export default function ChatBubble({
             onPayNow={onPayNow}
           />
           {showTimestamp && (
-            <div className={cn("flex items-center gap-1 px-1", isSent ? "justify-end" : "justify-start")}>
+            <div
+              className={cn(
+                'flex items-center gap-1 px-1',
+                isSent ? 'justify-end' : 'justify-start'
+              )}
+            >
               <p className="text-[10px] text-muted/50">
                 {formatTime(message.createdAt)}
               </p>
@@ -91,7 +102,7 @@ export default function ChatBubble({
   // Regular text/image messages
   return (
     <div
-      className={cn("flex group", isSent ? "justify-end" : "justify-start")}
+      className={cn('flex group', isSent ? 'justify-end' : 'justify-start')}
       onMouseLeave={() => setShowMenu(false)}
     >
       {/* Bot avatar */}
@@ -106,18 +117,22 @@ export default function ChatBubble({
         {/* Bot label */}
         {isBot && !isSent && (
           <div className="flex items-center gap-1.5 px-1 mb-0.5">
-            <span className="text-[10px] font-semibold text-primary">{t("vendBot")}</span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">{t("aiBadge")}</span>
+            <span className="text-[10px] font-semibold text-primary">
+              {t('vendBot')}
+            </span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+              {t('aiBadge')}
+            </span>
           </div>
         )}
         <div
           className={cn(
-            "px-4 py-2.5 text-[13px] leading-relaxed",
+            'px-4 py-2.5 text-[13px] leading-relaxed',
             isSent
-              ? "bg-primary/15 text-foreground rounded-2xl rounded-br-md"
+              ? 'bg-primary/15 text-foreground rounded-2xl rounded-br-md'
               : isBot
-                ? "bg-primary/5 border border-primary/20 text-foreground rounded-2xl rounded-bl-md"
-                : "bg-card border border-border/60 text-foreground rounded-2xl rounded-bl-md"
+                ? 'bg-primary/5 border border-primary/20 text-foreground rounded-2xl rounded-bl-md'
+                : 'bg-card border border-border/60 text-foreground rounded-2xl rounded-bl-md'
           )}
         >
           {displayContent}
@@ -142,7 +157,7 @@ export default function ChatBubble({
                   className="flex items-center gap-2 px-3 py-2 text-[12px] text-red-400 hover:bg-red-500/10 w-full cursor-pointer"
                 >
                   <Flag size={12} />
-                  {t("report")}
+                  {t('report')}
                 </button>
               </div>
             )}
@@ -150,7 +165,12 @@ export default function ChatBubble({
         )}
 
         {showTimestamp && (
-          <div className={cn("flex items-center gap-1 px-1", isSent ? "justify-end" : "justify-start")}>
+          <div
+            className={cn(
+              'flex items-center gap-1 px-1',
+              isSent ? 'justify-end' : 'justify-start'
+            )}
+          >
             <p className="text-[10px] text-muted/50">
               {formatTime(message.createdAt)}
             </p>

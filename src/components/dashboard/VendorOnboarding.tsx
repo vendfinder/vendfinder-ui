@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import Link from "next/link";
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
 import {
   Rocket,
   CheckCircle2,
@@ -13,9 +13,9 @@ import {
   ChevronRight,
   X,
   Circle,
-} from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { useTranslations } from "next-intl";
+} from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useTranslations } from 'next-intl';
 
 interface VendorOnboardingProps {
   activeListingsCount: number;
@@ -32,9 +32,12 @@ interface ChecklistItem {
   hint?: string;
 }
 
-export default function VendorOnboarding({ activeListingsCount, totalSales }: VendorOnboardingProps) {
+export default function VendorOnboarding({
+  activeListingsCount,
+  totalSales,
+}: VendorOnboardingProps) {
   const { user } = useAuth();
-  const t = useTranslations("vendorOnboarding");
+  const t = useTranslations('vendorOnboarding');
   const [dismissed, setDismissed] = useState<boolean>(false);
   const [messagesVisited, setMessagesVisited] = useState<boolean>(false);
 
@@ -43,8 +46,8 @@ export default function VendorOnboarding({ activeListingsCount, totalSales }: Ve
     if (!user?.id) return;
     const dismissKey = `vendor_onboarding_dismissed_${user.id}`;
     const msgKey = `vendor_onboarding_msgs_${user.id}`;
-    setDismissed(localStorage.getItem(dismissKey) === "true");
-    setMessagesVisited(localStorage.getItem(msgKey) === "true");
+    setDismissed(localStorage.getItem(dismissKey) === 'true');
+    setMessagesVisited(localStorage.getItem(msgKey) === 'true');
   }, [user?.id]);
 
   // Kill switch: never show if the vendor has any sales, is dismissed, or no user
@@ -56,36 +59,36 @@ export default function VendorOnboarding({ activeListingsCount, totalSales }: Ve
 
   const items: ChecklistItem[] = [
     {
-      key: "profile",
+      key: 'profile',
       icon: UserCircle,
-      title: t("profileTitle"),
-      subtitle: t("profileSubtitle"),
+      title: t('profileTitle'),
+      subtitle: t('profileSubtitle'),
       done: profileComplete,
-      href: "/dashboard/profile",
+      href: '/dashboard/profile',
     },
     {
-      key: "listing",
+      key: 'listing',
       icon: Package,
-      title: t("listingTitle"),
-      subtitle: t("listingSubtitle"),
+      title: t('listingTitle'),
+      subtitle: t('listingSubtitle'),
       done: firstListing,
-      href: "/dashboard/listings/new",
+      href: '/dashboard/listings/new',
     },
     {
-      key: "message",
+      key: 'message',
       icon: MessageCircle,
-      title: t("messagesTitle"),
-      subtitle: t("messagesSubtitle"),
+      title: t('messagesTitle'),
+      subtitle: t('messagesSubtitle'),
       done: firstMessage,
-      href: "/dashboard/messages",
+      href: '/dashboard/messages',
     },
     {
-      key: "sale",
+      key: 'sale',
       icon: DollarSign,
-      title: t("saleTitle"),
-      subtitle: t("saleSubtitle"),
+      title: t('saleTitle'),
+      subtitle: t('saleSubtitle'),
       done: false,
-      hint: t("organic"),
+      hint: t('organic'),
     },
   ];
 
@@ -96,13 +99,13 @@ export default function VendorOnboarding({ activeListingsCount, totalSales }: Ve
 
   const handleDismiss = () => {
     if (!user?.id) return;
-    localStorage.setItem(`vendor_onboarding_dismissed_${user.id}`, "true");
+    localStorage.setItem(`vendor_onboarding_dismissed_${user.id}`, 'true');
     setDismissed(true);
   };
 
   const handleMessagesClick = () => {
     if (!user?.id) return;
-    localStorage.setItem(`vendor_onboarding_msgs_${user.id}`, "true");
+    localStorage.setItem(`vendor_onboarding_msgs_${user.id}`, 'true');
   };
 
   return (
@@ -124,9 +127,9 @@ export default function VendorOnboarding({ activeListingsCount, totalSales }: Ve
             </div>
             <div>
               <h3 className="text-base font-bold text-foreground mb-0.5">
-                {t("welcome", { name: user.name?.split(" ")[0] || "Seller" })}
+                {t('welcome', { name: user.name?.split(' ')[0] || 'Seller' })}
               </h3>
-              <p className="text-[12px] text-muted">{t("desc")}</p>
+              <p className="text-[12px] text-muted">{t('desc')}</p>
             </div>
           </div>
           {allDone && (
@@ -144,9 +147,11 @@ export default function VendorOnboarding({ activeListingsCount, totalSales }: Ve
         <div className="mb-5">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-semibold text-muted uppercase tracking-wider">
-              {t("progress", { done: completedCount, total: 3 })}
+              {t('progress', { done: completedCount, total: 3 })}
             </span>
-            <span className="text-[11px] font-bold text-primary">{percent}%</span>
+            <span className="text-[11px] font-bold text-primary">
+              {percent}%
+            </span>
           </div>
           <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
             <motion.div
@@ -166,26 +171,32 @@ export default function VendorOnboarding({ activeListingsCount, totalSales }: Ve
               <div
                 className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
                   item.done
-                    ? "border-emerald-400/20 bg-emerald-400/[0.03]"
+                    ? 'border-emerald-400/20 bg-emerald-400/[0.03]'
                     : item.href
-                      ? "border-border bg-surface/50 hover:border-primary/30 hover:bg-surface/80 cursor-pointer"
-                      : "border-border bg-surface/30"
+                      ? 'border-border bg-surface/50 hover:border-primary/30 hover:bg-surface/80 cursor-pointer'
+                      : 'border-border bg-surface/30'
                 }`}
               >
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                     item.done
-                      ? "bg-emerald-400/15 text-emerald-400"
-                      : "bg-white/[0.04] text-muted"
+                      ? 'bg-emerald-400/15 text-emerald-400'
+                      : 'bg-white/[0.04] text-muted'
                   }`}
                 >
-                  {item.done ? <CheckCircle2 size={16} /> : <Circle size={16} />}
+                  {item.done ? (
+                    <CheckCircle2 size={16} />
+                  ) : (
+                    <Circle size={16} />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p
                       className={`text-sm font-semibold ${
-                        item.done ? "text-foreground/70 line-through" : "text-foreground"
+                        item.done
+                          ? 'text-foreground/70 line-through'
+                          : 'text-foreground'
                       }`}
                     >
                       {item.title}
@@ -196,13 +207,15 @@ export default function VendorOnboarding({ activeListingsCount, totalSales }: Ve
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-muted mt-0.5">{item.subtitle}</p>
+                  <p className="text-[11px] text-muted mt-0.5">
+                    {item.subtitle}
+                  </p>
                 </div>
                 <div
                   className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
                     item.href && !item.done
-                      ? "bg-primary/10 text-primary"
-                      : "text-transparent"
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-transparent'
                   }`}
                 >
                   <Icon size={14} />
@@ -218,7 +231,9 @@ export default function VendorOnboarding({ activeListingsCount, totalSales }: Ve
                 <Link
                   key={item.key}
                   href={item.href}
-                  onClick={item.key === "message" ? handleMessagesClick : undefined}
+                  onClick={
+                    item.key === 'message' ? handleMessagesClick : undefined
+                  }
                 >
                   {content}
                 </Link>
@@ -235,7 +250,7 @@ export default function VendorOnboarding({ activeListingsCount, totalSales }: Ve
             className="mt-4 flex items-center justify-center gap-2 text-[12px] text-emerald-400 font-semibold"
           >
             <CheckCircle2 size={14} />
-            {t("allSet")}
+            {t('allSet')}
           </motion.div>
         )}
       </div>

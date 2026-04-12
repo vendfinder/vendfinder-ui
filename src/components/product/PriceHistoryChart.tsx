@@ -1,9 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useTranslations } from "next-intl";
-import { TrendingUp, TrendingDown, Activity, BarChart3, Loader2 } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
+import {
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  BarChart3,
+  Loader2,
+} from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
 
 // --- Types ---
 
@@ -26,16 +32,16 @@ interface SalesHistoryResponse {
   };
 }
 
-type Period = "1M" | "3M" | "6M" | "1Y" | "ALL";
+type Period = '1M' | '3M' | '6M' | '1Y' | 'ALL';
 
-const PERIOD_KEYS: Period[] = ["1M", "3M", "6M", "1Y", "ALL"];
+const PERIOD_KEYS: Period[] = ['1M', '3M', '6M', '1Y', 'ALL'];
 
 const PERIOD_TRANSLATION_KEYS: Record<Period, string> = {
-  "1M": "period1M",
-  "3M": "period3M",
-  "6M": "period6M",
-  "1Y": "period1Y",
-  "ALL": "periodAll",
+  '1M': 'period1M',
+  '3M': 'period3M',
+  '6M': 'period6M',
+  '1Y': 'period1Y',
+  ALL: 'periodAll',
 };
 
 // --- SVG Chart ---
@@ -55,18 +61,26 @@ function buildPath(
   minPrice: number,
   maxPrice: number
 ): { linePath: string; areaPath: string } {
-  const { width, height, paddingTop, paddingRight, paddingBottom, paddingLeft } = dims;
+  const {
+    width,
+    height,
+    paddingTop,
+    paddingRight,
+    paddingBottom,
+    paddingLeft,
+  } = dims;
   const chartW = width - paddingLeft - paddingRight;
   const chartH = height - paddingTop - paddingBottom;
   const priceRange = maxPrice - minPrice || 1;
 
   const points = sales.map((s, i) => {
     const x = paddingLeft + (i / Math.max(sales.length - 1, 1)) * chartW;
-    const y = paddingTop + chartH - ((s.price - minPrice) / priceRange) * chartH;
+    const y =
+      paddingTop + chartH - ((s.price - minPrice) / priceRange) * chartH;
     return { x, y };
   });
 
-  if (points.length === 0) return { linePath: "", areaPath: "" };
+  if (points.length === 0) return { linePath: '', areaPath: '' };
   if (points.length === 1) {
     const p = points[0];
     return {
@@ -116,12 +130,12 @@ function getGridLines(
 function formatDateLabel(dateStr: string, totalDays: number): string {
   const date = new Date(dateStr);
   if (totalDays <= 31) {
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
   if (totalDays <= 365) {
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
-  return date.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+  return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 }
 
 function getDateLabels(
@@ -131,7 +145,10 @@ function getDateLabels(
   if (sales.length === 0) return [];
   const first = new Date(sales[0].date);
   const last = new Date(sales[sales.length - 1].date);
-  const totalDays = Math.max(1, (last.getTime() - first.getTime()) / (1000 * 60 * 60 * 24));
+  const totalDays = Math.max(
+    1,
+    (last.getTime() - first.getTime()) / (1000 * 60 * 60 * 24)
+  );
 
   const step = Math.max(1, Math.floor(sales.length / maxLabels));
   const labels: { index: number; label: string }[] = [];
@@ -141,7 +158,10 @@ function getDateLabels(
   // Always include the last label
   const lastIdx = sales.length - 1;
   if (labels.length === 0 || labels[labels.length - 1].index !== lastIdx) {
-    labels.push({ index: lastIdx, label: formatDateLabel(sales[lastIdx].date, totalDays) });
+    labels.push({
+      index: lastIdx,
+      label: formatDateLabel(sales[lastIdx].date, totalDays),
+    });
   }
   return labels;
 }
@@ -155,8 +175,8 @@ export default function PriceHistoryChart({
   productId: string;
   selectedSize?: string | null;
 }) {
-  const t = useTranslations("product");
-  const [period, setPeriod] = useState<Period>("3M");
+  const t = useTranslations('product');
+  const [period, setPeriod] = useState<Period>('3M');
   const [data, setData] = useState<SalesHistoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -188,8 +208,8 @@ export default function PriceHistoryChart({
     setError(null);
 
     const params = new URLSearchParams();
-    params.set("period", period);
-    if (selectedSize) params.set("size", selectedSize);
+    params.set('period', period);
+    if (selectedSize) params.set('size', selectedSize);
 
     fetch(`/api/products/${productId}/sales-history?${params.toString()}`)
       .then((res) => {
@@ -212,14 +232,17 @@ export default function PriceHistoryChart({
   }, [productId, period, selectedSize]);
 
   // Chart dimensions
-  const dims: ChartDimensions = useMemo(() => ({
-    width: containerWidth || 600,
-    height: 280,
-    paddingTop: 20,
-    paddingRight: 16,
-    paddingBottom: 32,
-    paddingLeft: 58,
-  }), [containerWidth]);
+  const dims: ChartDimensions = useMemo(
+    () => ({
+      width: containerWidth || 600,
+      height: 280,
+      paddingTop: 20,
+      paddingRight: 16,
+      paddingBottom: 32,
+      paddingLeft: 58,
+    }),
+    [containerWidth]
+  );
 
   const sales = data?.sales ?? [];
   const summary = data?.summary;
@@ -238,7 +261,10 @@ export default function PriceHistoryChart({
     () => buildPath(sales, dims, minPrice, maxPrice),
     [sales, dims, minPrice, maxPrice]
   );
-  const gridLines = useMemo(() => getGridLines(minPrice, maxPrice, 4), [minPrice, maxPrice]);
+  const gridLines = useMemo(
+    () => getGridLines(minPrice, maxPrice, 4),
+    [minPrice, maxPrice]
+  );
   const dateLabels = useMemo(() => getDateLabels(sales, 6), [sales]);
 
   // Mouse hover
@@ -263,8 +289,12 @@ export default function PriceHistoryChart({
     const chartW = dims.width - dims.paddingLeft - dims.paddingRight;
     const chartH = dims.height - dims.paddingTop - dims.paddingBottom;
     const priceRange = maxPrice - minPrice || 1;
-    const x = dims.paddingLeft + (hoverIndex / Math.max(sales.length - 1, 1)) * chartW;
-    const y = dims.paddingTop + chartH - ((sales[hoverIndex].price - minPrice) / priceRange) * chartH;
+    const x =
+      dims.paddingLeft + (hoverIndex / Math.max(sales.length - 1, 1)) * chartW;
+    const y =
+      dims.paddingTop +
+      chartH -
+      ((sales[hoverIndex].price - minPrice) / priceRange) * chartH;
     return { x, y, sale: sales[hoverIndex] };
   }, [hoverIndex, sales, dims, minPrice, maxPrice]);
 
@@ -288,8 +318,10 @@ export default function PriceHistoryChart({
   }, [dateLabels, dims, sales.length]);
 
   // Price change indicator
-  const priceChangeColor = (summary?.priceChange ?? 0) >= 0 ? "text-emerald-400" : "text-red-400";
-  const PriceChangeIcon = (summary?.priceChange ?? 0) >= 0 ? TrendingUp : TrendingDown;
+  const priceChangeColor =
+    (summary?.priceChange ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400';
+  const PriceChangeIcon =
+    (summary?.priceChange ?? 0) >= 0 ? TrendingUp : TrendingDown;
 
   return (
     <div className="bg-card rounded-2xl border border-border overflow-hidden">
@@ -300,14 +332,21 @@ export default function PriceHistoryChart({
             <BarChart3 size={16} className="text-primary" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-foreground">{t("priceHistory")}</h3>
+            <h3 className="text-sm font-bold text-foreground">
+              {t('priceHistory')}
+            </h3>
             {summary && (
               <div className="flex items-center gap-1.5 mt-0.5">
                 <PriceChangeIcon size={12} className={priceChangeColor} />
-                <span className={`text-[11px] font-semibold ${priceChangeColor}`}>
-                  {(summary.priceChange >= 0 ? "+" : "") + formatPrice(summary.priceChange)}
-                  {" "}
-                  ({(summary.priceChangePercent >= 0 ? "+" : "") + summary.priceChangePercent.toFixed(1)}%)
+                <span
+                  className={`text-[11px] font-semibold ${priceChangeColor}`}
+                >
+                  {(summary.priceChange >= 0 ? '+' : '') +
+                    formatPrice(summary.priceChange)}{' '}
+                  (
+                  {(summary.priceChangePercent >= 0 ? '+' : '') +
+                    summary.priceChangePercent.toFixed(1)}
+                  %)
                 </span>
               </div>
             )}
@@ -322,8 +361,8 @@ export default function PriceHistoryChart({
               onClick={() => setPeriod(p)}
               className={`px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                 period === p
-                  ? "bg-primary text-white shadow-[0_0_12px_rgba(232,136,58,0.15)]"
-                  : "text-muted hover:text-foreground"
+                  ? 'bg-primary text-white shadow-[0_0_12px_rgba(232,136,58,0.15)]'
+                  : 'text-muted hover:text-foreground'
               }`}
             >
               {t(PERIOD_TRANSLATION_KEYS[p])}
@@ -341,17 +380,17 @@ export default function PriceHistoryChart({
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-[280px] text-center px-4">
             <Activity size={28} className="text-muted/30 mb-2" />
-            <p className="text-sm text-muted">{t("noSalesData")}</p>
+            <p className="text-sm text-muted">{t('noSalesData')}</p>
             <p className="text-[11px] text-muted/50 mt-1">
-              {t("priceHistoryWillAppear")}
+              {t('priceHistoryWillAppear')}
             </p>
           </div>
         ) : sales.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-[280px] text-center px-4">
             <Activity size={28} className="text-muted/30 mb-2" />
-            <p className="text-sm text-muted">{t("noSalesData")}</p>
+            <p className="text-sm text-muted">{t('noSalesData')}</p>
             <p className="text-[11px] text-muted/50 mt-1">
-              {t("priceHistoryWillAppear")}
+              {t('priceHistoryWillAppear')}
             </p>
           </div>
         ) : (
@@ -364,7 +403,13 @@ export default function PriceHistoryChart({
             onMouseLeave={handleMouseLeave}
           >
             <defs>
-              <linearGradient id={`areaGrad-${productId}`} x1="0" y1="0" x2="0" y2="1">
+              <linearGradient
+                id={`areaGrad-${productId}`}
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
                 <stop offset="0%" stopColor="#E8883A" stopOpacity={0.2} />
                 <stop offset="100%" stopColor="#E8883A" stopOpacity={0} />
               </linearGradient>
@@ -459,10 +504,7 @@ export default function PriceHistoryChart({
           <div
             className="absolute pointer-events-none z-10"
             style={{
-              left: Math.min(
-                hoverPoint.x + 8,
-                (containerWidth || 600) - 140
-              ),
+              left: Math.min(hoverPoint.x + 8, (containerWidth || 600) - 140),
               top: hoverPoint.y - 50,
             }}
           >
@@ -471,15 +513,15 @@ export default function PriceHistoryChart({
                 {formatPrice(hoverPoint.sale.price)}
               </p>
               <p className="text-[10px] text-muted">
-                {new Date(hoverPoint.sale.date).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
+                {new Date(hoverPoint.sale.date).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
                 })}
               </p>
               {hoverPoint.sale.size && (
                 <p className="text-[10px] text-muted/60">
-                  {t("size")} {hoverPoint.sale.size}
+                  {t('size')} {hoverPoint.sale.size}
                 </p>
               )}
             </div>
@@ -490,12 +532,26 @@ export default function PriceHistoryChart({
       {/* Market Summary Stats */}
       {summary && !loading && sales.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-5 border-t border-white/[0.04]">
-          <SummaryStat label={t("avgSalePrice")} value={formatPrice(summary.avgPrice)} />
-          <SummaryStat label={t("high")} value={formatPrice(summary.highPrice)} accent="emerald" />
-          <SummaryStat label={t("low")} value={formatPrice(summary.lowPrice)} accent="red" />
-          <SummaryStat label={t("totalSales")} value={summary.totalSales.toLocaleString()} />
           <SummaryStat
-            label={t("volatility")}
+            label={t('avgSalePrice')}
+            value={formatPrice(summary.avgPrice)}
+          />
+          <SummaryStat
+            label={t('high')}
+            value={formatPrice(summary.highPrice)}
+            accent="emerald"
+          />
+          <SummaryStat
+            label={t('low')}
+            value={formatPrice(summary.lowPrice)}
+            accent="red"
+          />
+          <SummaryStat
+            label={t('totalSales')}
+            value={summary.totalSales.toLocaleString()}
+          />
+          <SummaryStat
+            label={t('volatility')}
             value={`${summary.volatility.toFixed(1)}%`}
             last
           />
@@ -513,21 +569,19 @@ function SummaryStat({
 }: {
   label: string;
   value: string;
-  accent?: "emerald" | "red";
+  accent?: 'emerald' | 'red';
   last?: boolean;
 }) {
   const valueColor =
-    accent === "emerald"
-      ? "text-emerald-400"
-      : accent === "red"
-        ? "text-red-400"
-        : "text-foreground";
+    accent === 'emerald'
+      ? 'text-emerald-400'
+      : accent === 'red'
+        ? 'text-red-400'
+        : 'text-foreground';
 
   return (
     <div
-      className={`px-4 py-3.5 ${!last ? "border-r border-white/[0.04]" : ""} ${
-        "sm:border-r sm:last:border-r-0"
-      }`}
+      className={`px-4 py-3.5 ${!last ? 'border-r border-white/[0.04]' : ''} ${'sm:border-r sm:last:border-r-0'}`}
     >
       <p className="text-[10px] text-muted/60 font-semibold uppercase tracking-wider">
         {label}

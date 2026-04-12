@@ -1,16 +1,25 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
-import { useTranslations } from "next-intl";
-import { Cookie, Check, X } from "lucide-react";
-import { hasConsented, acceptAll, rejectOptional, setConsent } from "@/lib/cookie-consent";
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Cookie, Check, X } from 'lucide-react';
+import {
+  hasConsented,
+  acceptAll,
+  rejectOptional,
+  setConsent,
+} from '@/lib/cookie-consent';
 
-type Categories = { functional: boolean; analytics: boolean; marketing: boolean };
+type Categories = {
+  functional: boolean;
+  analytics: boolean;
+  marketing: boolean;
+};
 
 export default function CookieConsent() {
-  const t = useTranslations("cookieConsent");
+  const t = useTranslations('cookieConsent');
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -48,7 +57,7 @@ export default function CookieConsent() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 30 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
         className="fixed bottom-4 left-4 right-4 md:bottom-6 md:left-auto md:right-6 md:w-[440px] z-[90]"
       >
         <div className="bg-card border border-white/[0.08] rounded-2xl p-5 shadow-2xl shadow-black/50 backdrop-blur-xl">
@@ -57,11 +66,17 @@ export default function CookieConsent() {
               <Cookie size={18} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-bold text-foreground mb-1">{t("title")}</h3>
+              <h3 className="text-sm font-bold text-foreground mb-1">
+                {t('title')}
+              </h3>
               <p className="text-[12px] text-muted leading-relaxed">
-                {t("description")}{" "}
-                <Link href="/privacy" className="text-primary hover:underline" target="_blank">
-                  {t("learnMore")}
+                {t('description')}{' '}
+                <Link
+                  href="/privacy"
+                  className="text-primary hover:underline"
+                  target="_blank"
+                >
+                  {t('learnMore')}
                 </Link>
               </p>
             </div>
@@ -74,43 +89,55 @@ export default function CookieConsent() {
                   onClick={handleAcceptAll}
                   className="flex-1 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-[13px] font-bold transition-colors"
                 >
-                  {t("acceptAll")}
+                  {t('acceptAll')}
                 </button>
                 <button
                   onClick={handleRejectOptional}
                   className="flex-1 px-4 py-2.5 rounded-xl bg-surface border border-border hover:border-border-hover text-foreground text-[13px] font-semibold transition-colors"
                 >
-                  {t("rejectOptional")}
+                  {t('rejectOptional')}
                 </button>
               </div>
               <button
                 onClick={() => setExpanded(true)}
                 className="text-[11px] text-muted hover:text-foreground transition-colors text-center py-1"
               >
-                {t("customize")}
+                {t('customize')}
               </button>
             </div>
           ) : (
             <div>
               <div className="space-y-2 mb-4">
-                <CategoryRow label={t("categoryNecessary")} desc={t("categoryNecessaryDesc")} checked={true} disabled alwaysOnLabel={t("alwaysOn")} />
                 <CategoryRow
-                  label={t("categoryFunctional")}
-                  desc={t("categoryFunctionalDesc")}
+                  label={t('categoryNecessary')}
+                  desc={t('categoryNecessaryDesc')}
+                  checked={true}
+                  disabled
+                  alwaysOnLabel={t('alwaysOn')}
+                />
+                <CategoryRow
+                  label={t('categoryFunctional')}
+                  desc={t('categoryFunctionalDesc')}
                   checked={categories.functional}
-                  onChange={(v) => setCategories({ ...categories, functional: v })}
+                  onChange={(v) =>
+                    setCategories({ ...categories, functional: v })
+                  }
                 />
                 <CategoryRow
-                  label={t("categoryAnalytics")}
-                  desc={t("categoryAnalyticsDesc")}
+                  label={t('categoryAnalytics')}
+                  desc={t('categoryAnalyticsDesc')}
                   checked={categories.analytics}
-                  onChange={(v) => setCategories({ ...categories, analytics: v })}
+                  onChange={(v) =>
+                    setCategories({ ...categories, analytics: v })
+                  }
                 />
                 <CategoryRow
-                  label={t("categoryMarketing")}
-                  desc={t("categoryMarketingDesc")}
+                  label={t('categoryMarketing')}
+                  desc={t('categoryMarketingDesc')}
                   checked={categories.marketing}
-                  onChange={(v) => setCategories({ ...categories, marketing: v })}
+                  onChange={(v) =>
+                    setCategories({ ...categories, marketing: v })
+                  }
                 />
               </div>
               <div className="flex gap-2">
@@ -118,13 +145,13 @@ export default function CookieConsent() {
                   onClick={handleSaveCustom}
                   className="flex-1 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-[13px] font-bold transition-colors"
                 >
-                  {t("savePreferences")}
+                  {t('savePreferences')}
                 </button>
                 <button
                   onClick={() => setExpanded(false)}
                   className="px-4 py-2.5 rounded-xl bg-surface border border-border hover:border-border-hover text-muted hover:text-foreground text-[13px] transition-colors"
                 >
-                  {t("backToOptions")}
+                  {t('backToOptions')}
                 </button>
               </div>
             </div>
@@ -164,15 +191,19 @@ function CategoryRow({
         <button
           onClick={() => onChange?.(!checked)}
           className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${
-            checked ? "bg-primary" : "bg-border"
+            checked ? 'bg-primary' : 'bg-border'
           }`}
         >
           <span
             className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all flex items-center justify-center ${
-              checked ? "left-[18px]" : "left-0.5"
+              checked ? 'left-[18px]' : 'left-0.5'
             }`}
           >
-            {checked ? <Check size={10} className="text-primary" /> : <X size={10} className="text-muted" />}
+            {checked ? (
+              <Check size={10} className="text-primary" />
+            ) : (
+              <X size={10} className="text-muted" />
+            )}
           </span>
         </button>
       )}

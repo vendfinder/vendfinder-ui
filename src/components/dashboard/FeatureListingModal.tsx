@@ -1,14 +1,19 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { X, Sparkles, Loader2, TrendingUp } from "lucide-react";
-import { createFeaturedCheckout } from "@/lib/api-products";
-import { useAuth } from "@/context/AuthContext";
+import { useState } from 'react';
+import { X, Sparkles, Loader2, TrendingUp } from 'lucide-react';
+import { createFeaturedCheckout } from '@/lib/api-products';
+import { useAuth } from '@/context/AuthContext';
 
 const TIERS = [
-  { days: 1, price: 25, label: "24 hours", description: "Quick boost" },
-  { days: 3, price: 60, label: "3 days", description: "Save $15" },
-  { days: 7, price: 125, label: "7 days", description: "Best value — save $50" },
+  { days: 1, price: 25, label: '24 hours', description: 'Quick boost' },
+  { days: 3, price: 60, label: '3 days', description: 'Save $15' },
+  {
+    days: 7,
+    price: 125,
+    label: '7 days',
+    description: 'Best value — save $50',
+  },
 ];
 
 interface FeatureListingModalProps {
@@ -17,7 +22,11 @@ interface FeatureListingModalProps {
   onClose: () => void;
 }
 
-export default function FeatureListingModal({ productId, productName, onClose }: FeatureListingModalProps) {
+export default function FeatureListingModal({
+  productId,
+  productName,
+  onClose,
+}: FeatureListingModalProps) {
   const { token } = useAuth();
   const [selected, setSelected] = useState<number>(3);
   const [loading, setLoading] = useState(false);
@@ -28,17 +37,24 @@ export default function FeatureListingModal({ productId, productName, onClose }:
     setLoading(true);
     setError(null);
     try {
-      const { checkoutUrl } = await createFeaturedCheckout(productId, selected, token);
+      const { checkoutUrl } = await createFeaturedCheckout(
+        productId,
+        selected,
+        token
+      );
       window.location.href = checkoutUrl;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to start checkout");
+      setError(err instanceof Error ? err.message : 'Failed to start checkout');
       setLoading(false);
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
       <div className="relative bg-card border border-border rounded-2xl w-full max-w-md overflow-hidden">
         <div className="flex items-center justify-between p-5 border-b border-border">
           <div className="flex items-center gap-2.5">
@@ -46,8 +62,12 @@ export default function FeatureListingModal({ productId, productName, onClose }:
               <Sparkles size={16} className="text-primary" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-foreground">Feature on Homepage</h3>
-              <p className="text-[11px] text-muted truncate max-w-[240px]">{productName}</p>
+              <h3 className="text-base font-bold text-foreground">
+                Feature on Homepage
+              </h3>
+              <p className="text-[11px] text-muted truncate max-w-[240px]">
+                {productName}
+              </p>
             </div>
           </div>
           <button
@@ -73,17 +93,21 @@ export default function FeatureListingModal({ productId, productName, onClose }:
                   onClick={() => setSelected(tier.days)}
                   className={`w-full flex items-center justify-between p-4 rounded-xl border text-left transition-all ${
                     isSelected
-                      ? "border-primary/40 bg-primary/[0.08]"
-                      : "border-border bg-surface hover:border-border-hover"
+                      ? 'border-primary/40 bg-primary/[0.08]'
+                      : 'border-border bg-surface hover:border-border-hover'
                   }`}
                 >
                   <div>
-                    <p className={`text-sm font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>
+                    <p
+                      className={`text-sm font-bold ${isSelected ? 'text-primary' : 'text-foreground'}`}
+                    >
                       {tier.label}
                     </p>
                     <p className="text-[11px] text-muted">{tier.description}</p>
                   </div>
-                  <p className={`text-lg font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>
+                  <p
+                    className={`text-lg font-bold ${isSelected ? 'text-primary' : 'text-foreground'}`}
+                  >
                     ${tier.price}
                   </p>
                 </button>

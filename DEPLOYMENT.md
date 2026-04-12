@@ -7,12 +7,14 @@ The frontend **REQUIRES** the Stripe publishable key to be passed as a Docker bu
 ### ✅ Correct Deployment Process
 
 **Option 1: Use the automated scripts (RECOMMENDED)**
+
 ```bash
 # Build and deploy in one command
 ./deploy.sh
 ```
 
 **Option 2: Manual deployment**
+
 ```bash
 # Build with Stripe keys
 ./build.sh v20260408-custom
@@ -27,6 +29,7 @@ kubectl set image deployment/frontend -n vendfinder frontend=registry.digitaloce
 ### ❌ What NOT to do
 
 **NEVER use basic docker build:**
+
 ```bash
 # ❌ THIS WILL BREAK STRIPE PAYMENTS
 docker build -t frontend .

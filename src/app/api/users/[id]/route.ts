@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL =
-  process.env.API_BASE_URL || "http://api-gateway:3000";
+const API_BASE_URL = process.env.API_BASE_URL || 'http://api-gateway:3000';
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const authHeader = request.headers.get("authorization");
+    const authHeader = request.headers.get('authorization');
     const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
       headers: {
         ...(authHeader ? { Authorization: authHeader } : {}),
@@ -19,7 +18,7 @@ export async function GET(
     return NextResponse.json(data, { status: res.status });
   } catch {
     return NextResponse.json(
-      { error: "Failed to connect to user service" },
+      { error: 'Failed to connect to user service' },
       { status: 502 }
     );
   }
@@ -32,12 +31,12 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const authHeader = request.headers.get("authorization");
+    const authHeader = request.headers.get('authorization');
 
     const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
-      method: "PUT",
+      method: 'PUT',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...(authHeader ? { Authorization: authHeader } : {}),
       },
       body: JSON.stringify(body),
@@ -47,7 +46,7 @@ export async function PUT(
     return NextResponse.json(data, { status: res.status });
   } catch {
     return NextResponse.json(
-      { error: "Failed to connect to user service" },
+      { error: 'Failed to connect to user service' },
       { status: 502 }
     );
   }

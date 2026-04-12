@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { ArrowRight, Package, Star, Sparkles, TrendingUp } from "lucide-react";
-import Button from "@/components/ui/Button";
-import { FadeIn } from "@/components/motion/MotionWrapper";
-import { useFormattedPrice } from "@/hooks/useFormattedPrice";
-import { useTranslations } from "next-intl";
-import { transformProduct } from "@/lib/api";
-import type { Product } from "@/types";
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ArrowRight, Package, Star, Sparkles, TrendingUp } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import { FadeIn } from '@/components/motion/MotionWrapper';
+import { useFormattedPrice } from '@/hooks/useFormattedPrice';
+import { useTranslations } from 'next-intl';
+import { transformProduct } from '@/lib/api';
+import type { Product } from '@/types';
 
 export default function HeroSection() {
   const t = useTranslations();
@@ -17,8 +17,8 @@ export default function HeroSection() {
   const [spotlight, setSpotlight] = useState<Product | null>(null);
 
   useEffect(() => {
-    fetch("/api/products/featured")
-      .then((r) => r.ok ? r.json() : { products: [] })
+    fetch('/api/products/featured')
+      .then((r) => (r.ok ? r.json() : { products: [] }))
       .then((data) => {
         const products = data.products || [];
         if (products.length > 0) {
@@ -42,29 +42,31 @@ export default function HeroSection() {
             <FadeIn>
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 mb-8">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-glow-pulse" />
-                {t("hero.newDropsBadge")}
+                {t('hero.newDropsBadge')}
               </span>
             </FadeIn>
 
             <FadeIn delay={0.1}>
               <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-black text-foreground leading-[0.95] tracking-tight">
-                {t("hero.headlinePart1")}{" "}
-                <span className="italic text-primary">{t("hero.headlineAccent")}</span>
+                {t('hero.headlinePart1')}{' '}
+                <span className="italic text-primary">
+                  {t('hero.headlineAccent')}
+                </span>
                 <br />
-                {t("hero.headlinePart2")}
+                {t('hero.headlinePart2')}
               </h1>
             </FadeIn>
 
             <FadeIn delay={0.2}>
               <p className="mt-6 text-lg text-muted max-w-lg leading-relaxed">
-                {t("hero.subheadline")}
+                {t('hero.subheadline')}
               </p>
             </FadeIn>
 
             <FadeIn delay={0.3}>
               <div className="mt-10 flex flex-wrap gap-4">
                 <Button href="/products" size="lg">
-                  {t("hero.shopNow")}
+                  {t('hero.shopNow')}
                   <ArrowRight size={18} className="ml-2" />
                 </Button>
                 <Button
@@ -73,7 +75,7 @@ export default function HeroSection() {
                   size="lg"
                   className="border-border text-foreground hover:border-primary hover:text-primary"
                 >
-                  {t("hero.browseCategories")}
+                  {t('hero.browseCategories')}
                 </Button>
               </div>
             </FadeIn>
@@ -82,23 +84,23 @@ export default function HeroSection() {
               <div className="mt-14 flex items-center gap-8 text-sm">
                 <div>
                   <span className="block text-3xl font-black text-foreground font-display">
-                    {t("hero.productsCount")}
+                    {t('hero.productsCount')}
                   </span>
-                  <span className="text-muted">{t("hero.productsLabel")}</span>
+                  <span className="text-muted">{t('hero.productsLabel')}</span>
                 </div>
                 <div className="w-px h-12 bg-border" />
                 <div>
                   <span className="block text-3xl font-black text-foreground font-display">
-                    {t("hero.brandsCount")}
+                    {t('hero.brandsCount')}
                   </span>
-                  <span className="text-muted">{t("hero.brandsLabel")}</span>
+                  <span className="text-muted">{t('hero.brandsLabel')}</span>
                 </div>
                 <div className="w-px h-12 bg-border" />
                 <div>
                   <span className="block text-3xl font-black text-foreground font-display">
-                    {t("hero.customersCount")}
+                    {t('hero.customersCount')}
                   </span>
-                  <span className="text-muted">{t("hero.customersLabel")}</span>
+                  <span className="text-muted">{t('hero.customersLabel')}</span>
                 </div>
               </div>
             </FadeIn>
@@ -119,7 +121,7 @@ export default function HeroSection() {
                       Premium Placement
                     </p>
                     <span className="absolute top-4 right-4 px-3 py-1 text-xs font-bold uppercase tracking-wider bg-primary/90 text-white rounded-full z-10">
-                      {t("common.featured")}
+                      {t('common.featured')}
                     </span>
                   </div>
                   <div className="p-6">
@@ -127,12 +129,15 @@ export default function HeroSection() {
                       Your product could be here
                     </h3>
                     <p className="text-sm text-muted mb-4 leading-relaxed">
-                      Feature your listing on the VendFinder homepage and reach buyers across 9 markets worldwide.
+                      Feature your listing on the VendFinder homepage and reach
+                      buyers across 9 markets worldwide.
                     </p>
                     <div className="flex items-center justify-between pt-3 border-t border-border/60">
                       <div className="flex items-center gap-2">
                         <TrendingUp size={14} className="text-emerald-400" />
-                        <span className="text-[12px] text-muted">From $25/day</span>
+                        <span className="text-[12px] text-muted">
+                          From $25/day
+                        </span>
                       </div>
                       <span className="text-[13px] font-bold text-primary group-hover:translate-x-0.5 transition-transform inline-flex items-center gap-1">
                         Start featuring
@@ -170,11 +175,11 @@ export default function HeroSection() {
                       )}
                       {spotlight.compareAtPrice && (
                         <span className="absolute top-4 left-4 px-3 py-1 text-xs font-bold uppercase tracking-wider bg-accent text-white rounded-full z-10">
-                          {t("common.sale")}
+                          {t('common.sale')}
                         </span>
                       )}
                       <span className="absolute top-4 right-4 px-3 py-1 text-xs font-bold uppercase tracking-wider bg-primary/90 text-white rounded-full z-10">
-                        {t("common.featured")}
+                        {t('common.featured')}
                       </span>
                     </div>
 

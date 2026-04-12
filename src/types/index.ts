@@ -20,12 +20,15 @@ export interface Product {
   sellerId?: string;
   sellerName?: string;
   createdAt: string;
-  translations?: Record<string, {
-    name: string;
-    description: string;
-    longDescription: string;
-    features: string[];
-  }>;
+  translations?: Record<
+    string,
+    {
+      name: string;
+      description: string;
+      longDescription: string;
+      features: string[];
+    }
+  >;
   sourceLanguage?: string;
   isGlobalListing?: boolean;
   isSponsored?: boolean;
@@ -94,7 +97,12 @@ export interface SellerStats {
   totalFavorites: number;
 }
 
-export type ListingStatus = "active" | "pending" | "sold" | "cancelled" | "expired";
+export type ListingStatus =
+  | 'active'
+  | 'pending'
+  | 'sold'
+  | 'cancelled'
+  | 'expired';
 
 export interface Listing {
   id: string;
@@ -103,7 +111,7 @@ export interface Listing {
   productImage: string;
   category: string;
   size?: string;
-  condition: "new" | "used_like_new" | "used_good" | "used_fair";
+  condition: 'new' | 'used_like_new' | 'used_good' | 'used_fair';
   askPrice: number;
   lowestAsk?: number;
   highestBid?: number;
@@ -126,7 +134,7 @@ export interface Bid {
   lowestAsk?: number;
   highestBid?: number;
   lastSale?: number;
-  status: "active" | "pending" | "won" | "lost" | "expired" | "cancelled";
+  status: 'active' | 'pending' | 'won' | 'lost' | 'expired' | 'cancelled';
   createdAt: string;
   expiresAt: string;
 }
@@ -138,7 +146,12 @@ export interface Purchase {
   category: string;
   size?: string;
   price: number;
-  status: "pending_shipment" | "shipped" | "delivered" | "authenticated" | "cancelled";
+  status:
+    | 'pending_shipment'
+    | 'shipped'
+    | 'delivered'
+    | 'authenticated'
+    | 'cancelled';
   date: string;
   trackingNumber?: string;
   carrier?: string;
@@ -151,7 +164,7 @@ export interface Payout {
   amount: number;
   fee: number;
   net: number;
-  status: "pending" | "processing" | "completed" | "failed";
+  status: 'pending' | 'processing' | 'completed' | 'failed';
   method: string;
   date: string;
   items: string[];
@@ -207,7 +220,7 @@ export interface Order {
   userId: string;
   items: { productName: string; quantity: number; price: number }[];
   total: number;
-  status: "processing" | "shipped" | "delivered" | "cancelled";
+  status: 'processing' | 'shipped' | 'delivered' | 'cancelled';
   date: string;
   trackingNumber?: string;
 }
@@ -254,7 +267,7 @@ export interface ChatParticipant {
 
 export interface Conversation {
   id: string;
-  type?: "direct" | "product" | "order" | "support";
+  type?: 'direct' | 'product' | 'order' | 'support';
   participants: ChatParticipant[];
   product?: { id: string; name: string; image: string; price: number };
   lastMessage?: { content: string; senderId: string; timestamp: string };
@@ -268,7 +281,7 @@ export interface ChatMessage {
   conversationId: string;
   senderId: string;
   content: string;
-  type: "text" | "image" | "system" | "offer";
+  type: 'text' | 'image' | 'system' | 'offer';
   metadata?: ChatMessageMetadata;
   isEdited?: boolean;
   translations?: Record<string, string> | null;
@@ -290,7 +303,13 @@ export interface ChatOffer {
   messageId: string;
   senderId: string;
   proposedPrice: number;
-  status: "pending" | "accepted" | "declined" | "countered" | "expired" | "cancelled";
+  status:
+    | 'pending'
+    | 'accepted'
+    | 'declined'
+    | 'countered'
+    | 'expired'
+    | 'cancelled';
   expiresAt: string;
   createdAt: string;
 }
@@ -309,9 +328,9 @@ export interface Story {
   displayName: string;
   avatarUrl?: string;
   mediaUrl: string;
-  mediaType: "image";
+  mediaType: 'image';
   textOverlay?: string;
-  textPosition?: "top" | "center" | "bottom";
+  textPosition?: 'top' | 'center' | 'bottom';
   createdAt: string;
   expiresAt: string;
   viewCount: number;

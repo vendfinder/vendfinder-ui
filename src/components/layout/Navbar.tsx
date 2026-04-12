@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { ShoppingCart, User, Menu, Search, MessageCircle } from "lucide-react";
-import { navItemHrefs } from "@/data/site";
-import { useCart } from "@/context/CartContext";
-import { useAuth } from "@/context/AuthContext";
-import { useTotalUnread } from "@/stores/chat";
-import { cn } from "@/lib/utils";
-import { useTranslations } from "next-intl";
-import MobileMenu from "./MobileMenu";
-import ChatInboxDrawer from "@/components/chat/ChatInboxDrawer";
+import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import { ShoppingCart, User, Menu, Search, MessageCircle } from 'lucide-react';
+import { navItemHrefs } from '@/data/site';
+import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
+import { useTotalUnread } from '@/stores/chat';
+import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
+import MobileMenu from './MobileMenu';
+import ChatInboxDrawer from '@/components/chat/ChatInboxDrawer';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -32,13 +32,13 @@ export default function Navbar() {
             <Link href="/" className="flex items-center gap-2.5 group">
               <Image
                 src="/logo.png"
-                alt={t("common.appName")}
+                alt={t('common.appName')}
                 width={36}
                 height={36}
                 className="rounded-md transition-transform group-hover:scale-105"
               />
               <span className="text-lg font-bold text-foreground tracking-tight">
-                {t("common.appName")}
+                {t('common.appName')}
               </span>
             </Link>
 
@@ -49,10 +49,10 @@ export default function Navbar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                    'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
                     pathname === item.href
-                      ? "text-primary bg-primary-50"
-                      : "text-muted hover:text-foreground hover:bg-surface"
+                      ? 'text-primary bg-primary-50'
+                      : 'text-muted hover:text-foreground hover:bg-surface'
                   )}
                 >
                   {t(`nav.${item.key}`)}
@@ -86,7 +86,11 @@ export default function Navbar() {
                   >
                     {user?.avatar ? (
                       <div className="w-8 h-8 rounded-lg overflow-hidden border border-border/60">
-                        <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+                        <img
+                          src={user.avatar}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                     ) : (
                       <User size={20} />
@@ -98,7 +102,7 @@ export default function Navbar() {
                   href="/login"
                   className="hidden lg:inline-flex items-center px-4 py-2 text-sm font-medium text-muted hover:text-foreground transition-colors"
                 >
-                  {t("nav.logIn")}
+                  {t('nav.logIn')}
                 </Link>
               )}
 
@@ -107,7 +111,7 @@ export default function Navbar() {
                   href="/signup"
                   className="hidden lg:inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors"
                 >
-                  {t("nav.signUp")}
+                  {t('nav.signUp')}
                 </Link>
               )}
 

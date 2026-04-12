@@ -21,7 +21,7 @@ env:
   REGISTRY: registry.digitalocean.com/vendfinder-registry
   PROD_URL: https://vendfinder.com
   API_URL: https://api.vendfinder.com
-  PRODUCTION_DEPLOYMENTS: "frontend,user-service,chat-service,product-service,order-service,websocket-service,support-bot,api-gateway"
+  PRODUCTION_DEPLOYMENTS: 'frontend,user-service,chat-service,product-service,order-service,websocket-service,support-bot,api-gateway'
 
 jobs:
   pre-production-checks:

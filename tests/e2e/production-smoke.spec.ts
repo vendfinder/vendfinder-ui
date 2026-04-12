@@ -35,7 +35,7 @@ test.describe('Production Smoke Tests @smoke', () => {
       { path: '/api/users/health', name: 'User Service' },
       { path: '/api/products/health', name: 'Product Service' },
       { path: '/api/orders/health', name: 'Order Service' },
-      { path: '/api/chat/health', name: 'Chat Service' }
+      { path: '/api/chat/health', name: 'Chat Service' },
     ];
 
     for (const endpoint of endpoints) {
@@ -60,9 +60,13 @@ test.describe('Production Smoke Tests @smoke', () => {
     });
 
     await test.step('Verify login form elements', async () => {
-      await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /sign in/i })
+      ).toBeVisible();
       await expect(page.getByRole('textbox', { name: /email/i })).toBeVisible();
-      await expect(page.getByRole('textbox', { name: /password/i })).toBeVisible();
+      await expect(
+        page.getByRole('textbox', { name: /password/i })
+      ).toBeVisible();
     });
 
     await test.step('Check signup link is available', async () => {
@@ -71,12 +75,20 @@ test.describe('Production Smoke Tests @smoke', () => {
 
     await test.step('Verify form is interactive', async () => {
       // Check that form inputs are functional
-      await page.getByRole('textbox', { name: /email/i }).fill('test@example.com');
-      await page.getByRole('textbox', { name: /password/i }).fill('testpassword');
+      await page
+        .getByRole('textbox', { name: /email/i })
+        .fill('test@example.com');
+      await page
+        .getByRole('textbox', { name: /password/i })
+        .fill('testpassword');
 
       // Verify the form accepts input
-      await expect(page.getByRole('textbox', { name: /email/i })).toHaveValue('test@example.com');
-      await expect(page.getByRole('textbox', { name: /password/i })).toHaveValue('testpassword');
+      await expect(page.getByRole('textbox', { name: /email/i })).toHaveValue(
+        'test@example.com'
+      );
+      await expect(
+        page.getByRole('textbox', { name: /password/i })
+      ).toHaveValue('testpassword');
     });
   });
 
@@ -96,7 +108,9 @@ test.describe('Production Smoke Tests @smoke', () => {
 
     await test.step('Check for search/filter functionality', async () => {
       // Look for search or filter elements
-      const searchInput = page.locator('input[type="search"], input[placeholder*="search"]').first();
+      const searchInput = page
+        .locator('input[type="search"], input[placeholder*="search"]')
+        .first();
       if (await searchInput.isVisible()) {
         await expect(searchInput).toBeVisible();
       }
@@ -155,14 +169,17 @@ test.describe('Production Smoke Tests @smoke', () => {
       const headers = response.headers();
       console.log('Security headers check:', {
         'x-frame-options': headers['x-frame-options'] || 'missing',
-        'x-content-type-options': headers['x-content-type-options'] || 'missing',
-        'strict-transport-security': headers['strict-transport-security'] || 'missing'
+        'x-content-type-options':
+          headers['x-content-type-options'] || 'missing',
+        'strict-transport-security':
+          headers['strict-transport-security'] || 'missing',
       });
 
       // At minimum, we should have some security headers
-      const hasSecurityHeaders = headers['x-frame-options'] ||
-                                headers['x-content-type-options'] ||
-                                headers['strict-transport-security'];
+      const hasSecurityHeaders =
+        headers['x-frame-options'] ||
+        headers['x-content-type-options'] ||
+        headers['strict-transport-security'];
 
       if (!hasSecurityHeaders) {
         console.warn('No security headers detected - consider adding them');
@@ -192,7 +209,7 @@ test.describe('Production Smoke Tests @smoke', () => {
     const pages = [
       { url: '/', name: 'Homepage' },
       { url: '/products', name: 'Products' },
-      { url: '/login', name: 'Login' }
+      { url: '/login', name: 'Login' },
     ];
 
     for (const testPage of pages) {
@@ -243,7 +260,10 @@ test.describe('Production Smoke Tests @smoke', () => {
       // Listen for console errors related to WebSocket
       const consoleErrors: string[] = [];
       page.on('console', (msg) => {
-        if (msg.type() === 'error' && msg.text().toLowerCase().includes('websocket')) {
+        if (
+          msg.type() === 'error' &&
+          msg.text().toLowerCase().includes('websocket')
+        ) {
           consoleErrors.push(msg.text());
         }
       });

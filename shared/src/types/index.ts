@@ -82,7 +82,12 @@ export interface SellerStats {
   totalFavorites: number;
 }
 
-export type ListingStatus = "active" | "pending" | "sold" | "cancelled" | "expired";
+export type ListingStatus =
+  | 'active'
+  | 'pending'
+  | 'sold'
+  | 'cancelled'
+  | 'expired';
 
 export interface Listing {
   id: string;
@@ -91,7 +96,7 @@ export interface Listing {
   productImage: string;
   category: string;
   size?: string;
-  condition: "new" | "used_like_new" | "used_good" | "used_fair";
+  condition: 'new' | 'used_like_new' | 'used_good' | 'used_fair';
   askPrice: number;
   lowestAsk?: number;
   highestBid?: number;
@@ -114,7 +119,7 @@ export interface Bid {
   lowestAsk?: number;
   highestBid?: number;
   lastSale?: number;
-  status: "active" | "pending" | "won" | "lost" | "expired" | "cancelled";
+  status: 'active' | 'pending' | 'won' | 'lost' | 'expired' | 'cancelled';
   createdAt: string;
   expiresAt: string;
 }
@@ -126,7 +131,12 @@ export interface Purchase {
   category: string;
   size?: string;
   price: number;
-  status: "pending_shipment" | "shipped" | "delivered" | "authenticated" | "cancelled";
+  status:
+    | 'pending_shipment'
+    | 'shipped'
+    | 'delivered'
+    | 'authenticated'
+    | 'cancelled';
   date: string;
   trackingNumber?: string;
   sellerId: string;
@@ -138,7 +148,7 @@ export interface Payout {
   amount: number;
   fee: number;
   net: number;
-  status: "pending" | "processing" | "completed" | "failed";
+  status: 'pending' | 'processing' | 'completed' | 'failed';
   method: string;
   date: string;
   items: string[];
@@ -177,7 +187,7 @@ export interface Order {
   userId: string;
   items: { productName: string; quantity: number; price: number }[];
   total: number;
-  status: "processing" | "shipped" | "delivered" | "cancelled";
+  status: 'processing' | 'shipped' | 'delivered' | 'cancelled';
   date: string;
   trackingNumber?: string;
 }

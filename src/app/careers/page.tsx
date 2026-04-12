@@ -1,8 +1,8 @@
-import { Briefcase, Mail, Sparkles } from "lucide-react";
-import { FadeIn } from "@/components/motion/MotionWrapper";
+import { Briefcase, Mail, Sparkles } from 'lucide-react';
+import { FadeIn } from '@/components/motion/MotionWrapper';
 
 export const metadata = {
-  title: "Careers | VendFinder",
+  title: 'Careers | VendFinder',
   description:
     "Join VendFinder as we build the future of global commerce. We're growing our founding team.",
 };
@@ -42,14 +42,13 @@ export default function CareersPage() {
                 We launched in 2026 with a simple idea: verified vendors,
                 protected payments, and automatic translation can open global
                 commerce to anyone. Every feature we ship &mdash; escrow, Buyer
-                Protection, VendBot AI support &mdash; exists to make that
-                real.
+                Protection, VendBot AI support &mdash; exists to make that real.
               </p>
               <p>
                 We&apos;re currently growing our founding team. If you care
                 about building trustworthy marketplaces, solving hard
-                localization problems, or designing experiences that work
-                across cultures, we want to talk.
+                localization problems, or designing experiences that work across
+                cultures, we want to talk.
               </p>
             </div>
           </FadeIn>
@@ -66,10 +65,10 @@ export default function CareersPage() {
                 No open positions right now
               </h2>
               <p className="text-muted leading-relaxed mb-6 max-w-2xl">
-                We don&apos;t have active openings at the moment, but
-                we&apos;d love to hear from you. If you think you&apos;d be a
-                great fit for the founding team, send us a note and tell us
-                how you&apos;d move the needle.
+                We don&apos;t have active openings at the moment, but we&apos;d
+                love to hear from you. If you think you&apos;d be a great fit
+                for the founding team, send us a note and tell us how you&apos;d
+                move the needle.
               </p>
               <a
                 href="mailto:careers@vendfinder.com"

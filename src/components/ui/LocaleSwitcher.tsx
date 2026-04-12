@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
-import { locales, type Locale } from "@/i18n/config";
-import { setLocale } from "@/i18n/actions";
+import { useLocale } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
+import { locales, type Locale } from '@/i18n/config';
+import { setLocale } from '@/i18n/actions';
 
 const localeLabels: Record<Locale, string> = {
-  "en-US": "English (US)",
-  "en-GB": "English (UK)",
-  "es-MX": "Español (MX)",
-  "zh-TW": "中文 (繁體)",
-  "ja-JP": "日本語",
-  "de-DE": "Deutsch",
-  "fr-FR": "Français",
-  "pt-BR": "Português (BR)",
-  "zh-CN": "中文 (简体)",
+  'en-US': 'English (US)',
+  'en-GB': 'English (UK)',
+  'es-MX': 'Español (MX)',
+  'zh-TW': '中文 (繁體)',
+  'ja-JP': '日本語',
+  'de-DE': 'Deutsch',
+  'fr-FR': 'Français',
+  'pt-BR': 'Português (BR)',
+  'zh-CN': '中文 (简体)',
 };
 
 export default function LocaleSwitcher() {

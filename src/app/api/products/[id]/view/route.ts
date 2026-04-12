@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.API_BASE_URL || "http://api-gateway:3000";
+const API_BASE_URL = process.env.API_BASE_URL || 'http://api-gateway:3000';
 
 export async function POST(
   request: NextRequest,
@@ -9,11 +9,14 @@ export async function POST(
   try {
     const { id } = await params;
     const res = await fetch(`${API_BASE_URL}/api/products/${id}/view`, {
-      method: "POST",
+      method: 'POST',
     });
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
   } catch {
-    return NextResponse.json({ error: "Failed to record view" }, { status: 502 });
+    return NextResponse.json(
+      { error: 'Failed to record view' },
+      { status: 502 }
+    );
   }
 }

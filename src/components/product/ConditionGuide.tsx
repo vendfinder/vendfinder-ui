@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { useTranslations } from "next-intl";
-import { X, Info } from "lucide-react";
-import { CONDITIONS } from "@/components/product/ConditionBadge";
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
+import { X, Info } from 'lucide-react';
+import { CONDITIONS } from '@/components/product/ConditionBadge';
 
 const CONDITION_LABEL_KEYS: Record<string, string> = {
-  new: "conditionNew",
-  used_like_new: "conditionExcellent",
-  used_good: "conditionGood",
-  used_fair: "conditionFair",
+  new: 'conditionNew',
+  used_like_new: 'conditionExcellent',
+  used_good: 'conditionGood',
+  used_fair: 'conditionFair',
 };
 
 const CONDITION_DESC_KEYS: Record<string, string> = {
-  new: "conditionNewDesc",
-  used_like_new: "conditionExcellentDesc",
-  used_good: "conditionGoodDesc",
-  used_fair: "conditionFairDesc",
+  new: 'conditionNewDesc',
+  used_like_new: 'conditionExcellentDesc',
+  used_good: 'conditionGoodDesc',
+  used_fair: 'conditionFairDesc',
 };
 
 export default function ConditionGuide({
@@ -27,7 +27,7 @@ export default function ConditionGuide({
   open: boolean;
   onClose: () => void;
 }) {
-  const t = useTranslations("product");
+  const t = useTranslations('product');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
@@ -35,9 +35,9 @@ export default function ConditionGuide({
   // Lock body scroll when open
   useEffect(() => {
     if (!open) return;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = '';
     };
   }, [open]);
 
@@ -63,9 +63,11 @@ export default function ConditionGuide({
               <Info size={15} className="text-primary" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-foreground">{t("conditionGuide")}</h2>
+              <h2 className="text-lg font-bold text-foreground">
+                {t('conditionGuide')}
+              </h2>
               <p className="text-[11px] text-muted">
-                {t("conditionGuideSubtitle")}
+                {t('conditionGuideSubtitle')}
               </p>
             </div>
           </div>
@@ -80,7 +82,7 @@ export default function ConditionGuide({
         {/* Intro */}
         <div className="px-5 pb-4">
           <p className="text-[11px] text-muted leading-relaxed">
-            {t("conditionGuideIntro")}
+            {t('conditionGuideIntro')}
           </p>
         </div>
 
@@ -100,9 +102,7 @@ export default function ConditionGuide({
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className={`text-sm font-bold ${c.color}`}
-                    >
+                    <span className={`text-sm font-bold ${c.color}`}>
                       {t(CONDITION_LABEL_KEYS[c.value])}
                     </span>
                   </div>
@@ -119,7 +119,7 @@ export default function ConditionGuide({
         <div className="px-5 pb-5">
           <div className="bg-surface rounded-xl border border-border p-3.5">
             <p className="text-[10px] text-muted/70 leading-relaxed">
-              {t("conditionGuideDisclaimer")}
+              {t('conditionGuideDisclaimer')}
             </p>
           </div>
         </div>

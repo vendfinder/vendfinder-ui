@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { X, SlidersHorizontal, Layers } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { categories } from "@/data/categories";
-import { cn } from "@/lib/utils";
+import { X, SlidersHorizontal, Layers } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { categories } from '@/data/categories';
+import { cn } from '@/lib/utils';
 
 interface ProductFiltersProps {
   selectedCategory: string;
@@ -14,11 +14,11 @@ interface ProductFiltersProps {
 }
 
 const sortOptionKeys = [
-  { value: "relevance", key: "relevance" },
-  { value: "price-asc", key: "priceLowHigh" },
-  { value: "price-desc", key: "priceHighLow" },
-  { value: "rating", key: "highestRated" },
-  { value: "newest", key: "newest" },
+  { value: 'relevance', key: 'relevance' },
+  { value: 'price-asc', key: 'priceLowHigh' },
+  { value: 'price-desc', key: 'priceHighLow' },
+  { value: 'rating', key: 'highestRated' },
+  { value: 'newest', key: 'newest' },
 ] as const;
 
 export default function ProductFilters({
@@ -28,8 +28,8 @@ export default function ProductFilters({
   onSortChange,
   onClear,
 }: ProductFiltersProps) {
-  const t = useTranslations("sort");
-  const hasFilters = selectedCategory || sortBy !== "relevance";
+  const t = useTranslations('sort');
+  const hasFilters = selectedCategory || sortBy !== 'relevance';
 
   const sortOptions = sortOptionKeys.map((opt) => ({
     value: opt.value,
@@ -45,7 +45,7 @@ export default function ProductFilters({
             <SlidersHorizontal size={12} />
           </div>
           <label className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold">
-            {t("sortBy")}
+            {t('sortBy')}
           </label>
         </div>
         <div className="space-y-1">
@@ -54,10 +54,10 @@ export default function ProductFilters({
               key={opt.value}
               onClick={() => onSortChange(opt.value)}
               className={cn(
-                "block w-full text-left px-3 py-2 rounded-xl text-sm transition-all",
+                'block w-full text-left px-3 py-2 rounded-xl text-sm transition-all',
                 sortBy === opt.value
-                  ? "bg-primary/[0.08] text-primary font-semibold"
-                  : "text-muted hover:bg-surface hover:text-foreground"
+                  ? 'bg-primary/[0.08] text-primary font-semibold'
+                  : 'text-muted hover:bg-surface hover:text-foreground'
               )}
             >
               {opt.label}
@@ -73,30 +73,30 @@ export default function ProductFilters({
             <Layers size={12} />
           </div>
           <label className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold">
-            {t("category")}
+            {t('category')}
           </label>
         </div>
         <div className="space-y-1">
           <button
-            onClick={() => onCategoryChange("")}
+            onClick={() => onCategoryChange('')}
             className={cn(
-              "block w-full text-left px-3 py-2 rounded-xl text-sm transition-all",
+              'block w-full text-left px-3 py-2 rounded-xl text-sm transition-all',
               !selectedCategory
-                ? "bg-primary/[0.08] text-primary font-semibold"
-                : "text-muted hover:bg-surface hover:text-foreground"
+                ? 'bg-primary/[0.08] text-primary font-semibold'
+                : 'text-muted hover:bg-surface hover:text-foreground'
             )}
           >
-            {t("allCategories")}
+            {t('allCategories')}
           </button>
           {categories.map((cat) => (
             <button
               key={cat.slug}
               onClick={() => onCategoryChange(cat.slug)}
               className={cn(
-                "flex items-center justify-between w-full text-left px-3 py-2 rounded-xl text-sm transition-all",
+                'flex items-center justify-between w-full text-left px-3 py-2 rounded-xl text-sm transition-all',
                 selectedCategory === cat.slug
-                  ? "bg-primary/[0.08] text-primary font-semibold"
-                  : "text-muted hover:bg-surface hover:text-foreground"
+                  ? 'bg-primary/[0.08] text-primary font-semibold'
+                  : 'text-muted hover:bg-surface hover:text-foreground'
               )}
             >
               {cat.name}
@@ -112,7 +112,7 @@ export default function ProductFilters({
           className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 font-semibold transition-colors"
         >
           <X size={12} />
-          {t("clearFilters")}
+          {t('clearFilters')}
         </button>
       )}
     </div>

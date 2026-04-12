@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
-import { ChevronDown, Clock, Loader2 } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import { ChevronDown, Clock, Loader2 } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
 
 interface SaleRecord {
   date: string;
@@ -33,7 +33,7 @@ export default function SalesHistoryTable({
   productId: string;
   selectedSize?: string | null;
 }) {
-  const t = useTranslations("product");
+  const t = useTranslations('product');
   const [sales, setSales] = useState<SaleRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,9 +46,9 @@ export default function SalesHistoryTable({
     setVisibleCount(PAGE_SIZE);
 
     const params = new URLSearchParams();
-    params.set("period", "ALL");
-    params.set("limit", "200");
-    if (selectedSize) params.set("size", selectedSize);
+    params.set('period', 'ALL');
+    params.set('limit', '200');
+    if (selectedSize) params.set('size', selectedSize);
 
     fetch(`/api/products/${productId}/sales-history?${params.toString()}`)
       .then((res) => {
@@ -91,10 +91,8 @@ export default function SalesHistoryTable({
     return (
       <div className="bg-card rounded-2xl border border-border py-12 text-center">
         <Clock size={24} className="mx-auto text-muted/30 mb-2" />
-        <p className="text-sm text-muted">{t("noRecentSales")}</p>
-        <p className="text-[11px] text-muted/50 mt-1">
-          {t("salesWillAppear")}
-        </p>
+        <p className="text-sm text-muted">{t('noRecentSales')}</p>
+        <p className="text-[11px] text-muted/50 mt-1">{t('salesWillAppear')}</p>
       </div>
     );
   }
@@ -107,9 +105,11 @@ export default function SalesHistoryTable({
           <Clock size={16} className="text-primary" />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-foreground">{t("recentSales")}</h3>
+          <h3 className="text-sm font-bold text-foreground">
+            {t('recentSales')}
+          </h3>
           <p className="text-[11px] text-muted/60 mt-0.5">
-            {t("salesRecorded", { count: sales.length })}
+            {t('salesRecorded', { count: sales.length })}
           </p>
         </div>
       </div>
@@ -120,13 +120,13 @@ export default function SalesHistoryTable({
           <thead>
             <tr className="border-b border-white/[0.04]">
               <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted/60 uppercase tracking-wider">
-                {t("date")}
+                {t('date')}
               </th>
               <th className="px-5 py-3 text-left text-[10px] font-semibold text-muted/60 uppercase tracking-wider">
-                {t("size")}
+                {t('size')}
               </th>
               <th className="px-5 py-3 text-right text-[10px] font-semibold text-muted/60 uppercase tracking-wider">
-                {t("salePrice")}
+                {t('salePrice')}
               </th>
             </tr>
           </thead>
@@ -135,18 +135,20 @@ export default function SalesHistoryTable({
               <tr
                 key={`${sale.date}-${sale.price}-${i}`}
                 className={`transition-colors hover:bg-white/[0.02] ${
-                  i < visibleSales.length - 1 ? "border-b border-white/[0.04]" : ""
+                  i < visibleSales.length - 1
+                    ? 'border-b border-white/[0.04]'
+                    : ''
                 }`}
               >
                 <td className="px-5 py-3 text-sm text-muted">
-                  {new Date(sale.date).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
+                  {new Date(sale.date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
                   })}
                 </td>
                 <td className="px-5 py-3 text-sm text-foreground font-medium">
-                  {sale.size || "--"}
+                  {sale.size || '--'}
                 </td>
                 <td className="px-5 py-3 text-sm text-foreground font-bold text-right">
                   {formatPrice(sale.price)}
@@ -165,7 +167,7 @@ export default function SalesHistoryTable({
             className="w-full flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-semibold text-primary hover:text-primary-dark transition-colors cursor-pointer rounded-lg hover:bg-primary/[0.04]"
           >
             <ChevronDown size={14} />
-            {t("showMore")} ({sales.length - visibleCount})
+            {t('showMore')} ({sales.length - visibleCount})
           </button>
         </div>
       )}

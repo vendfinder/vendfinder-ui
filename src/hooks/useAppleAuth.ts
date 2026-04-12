@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef } from 'react';
 
 const APPLE_CLIENT_ID = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID;
 
@@ -46,18 +46,18 @@ export function useAppleAuth(
     if (!APPLE_CLIENT_ID) return;
 
     // Load Apple Sign In JS SDK
-    if (document.getElementById("apple-signin-script")) return;
+    if (document.getElementById('apple-signin-script')) return;
 
-    const script = document.createElement("script");
-    script.id = "apple-signin-script";
+    const script = document.createElement('script');
+    script.id = 'apple-signin-script';
     script.src =
-      "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
+      'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
     script.async = true;
     script.defer = true;
     script.onload = () => {
       window.AppleID?.auth.init({
         clientId: APPLE_CLIENT_ID,
-        scope: "name email",
+        scope: 'name email',
         redirectURI: window.location.origin,
         usePopup: true,
       });
@@ -67,11 +67,11 @@ export function useAppleAuth(
 
   const triggerAppleLogin = useCallback(async () => {
     if (!APPLE_CLIENT_ID) {
-      errorRef.current?.("Apple sign-in is not configured");
+      errorRef.current?.('Apple sign-in is not configured');
       return;
     }
     if (!window.AppleID) {
-      errorRef.current?.("Apple SDK not loaded yet. Please try again.");
+      errorRef.current?.('Apple SDK not loaded yet. Please try again.');
       return;
     }
 
@@ -83,13 +83,13 @@ export function useAppleAuth(
       let name: string | undefined;
       if (response.user?.name) {
         const { firstName, lastName } = response.user.name;
-        name = [firstName, lastName].filter(Boolean).join(" ");
+        name = [firstName, lastName].filter(Boolean).join(' ');
       }
 
       callbackRef.current(token, name);
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "Apple sign-in was cancelled";
+        err instanceof Error ? err.message : 'Apple sign-in was cancelled';
       errorRef.current?.(message);
     }
   }, []);

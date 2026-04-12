@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertTriangle,
   X,
@@ -15,25 +15,25 @@ import {
   Package,
   Ban,
   HelpCircle,
-} from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { useTranslations } from "next-intl";
+} from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useTranslations } from 'next-intl';
 
 type DisputeReason =
-  | "not_as_described"
-  | "not_received"
-  | "counterfeit"
-  | "damaged"
-  | "wrong_item"
-  | "other";
+  | 'not_as_described'
+  | 'not_received'
+  | 'counterfeit'
+  | 'damaged'
+  | 'wrong_item'
+  | 'other';
 
-type DisputeStatus = "open" | "under_review" | "resolved" | "closed";
+type DisputeStatus = 'open' | 'under_review' | 'resolved' | 'closed';
 
 type DisputeResolution =
-  | "buyer_refund"
-  | "seller_paid"
-  | "partial_refund"
-  | "cancelled";
+  | 'buyer_refund'
+  | 'seller_paid'
+  | 'partial_refund'
+  | 'cancelled';
 
 interface DisputeEvent {
   id: string;
@@ -79,12 +79,12 @@ interface DisputeModalProps {
 }
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
   });
 }
 
@@ -98,9 +98,9 @@ export default function DisputeModal({
   onDisputeCreated,
 }: DisputeModalProps) {
   const { token } = useAuth();
-  const t = useTranslations("disputes");
-  const [reason, setReason] = useState<DisputeReason | "">("");
-  const [description, setDescription] = useState("");
+  const t = useTranslations('disputes');
+  const [reason, setReason] = useState<DisputeReason | ''>('');
+  const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -112,40 +112,40 @@ export default function DisputeModal({
     description: string;
   }[] = [
     {
-      value: "not_as_described",
-      label: t("reasonLabels.notAsDescribed"),
+      value: 'not_as_described',
+      label: t('reasonLabels.notAsDescribed'),
       icon: ShieldAlert,
-      description: t("reasonLabels.notAsDescribedDesc"),
+      description: t('reasonLabels.notAsDescribedDesc'),
     },
     {
-      value: "not_received",
-      label: t("reasonLabels.notReceived"),
+      value: 'not_received',
+      label: t('reasonLabels.notReceived'),
       icon: Package,
-      description: t("reasonLabels.notReceivedDesc"),
+      description: t('reasonLabels.notReceivedDesc'),
     },
     {
-      value: "counterfeit",
-      label: t("reasonLabels.counterfeit"),
+      value: 'counterfeit',
+      label: t('reasonLabels.counterfeit'),
       icon: Ban,
-      description: t("reasonLabels.counterfeitDesc"),
+      description: t('reasonLabels.counterfeitDesc'),
     },
     {
-      value: "damaged",
-      label: t("reasonLabels.damaged"),
+      value: 'damaged',
+      label: t('reasonLabels.damaged'),
       icon: AlertTriangle,
-      description: t("reasonLabels.damagedDesc"),
+      description: t('reasonLabels.damagedDesc'),
     },
     {
-      value: "wrong_item",
-      label: t("reasonLabels.wrongItem"),
+      value: 'wrong_item',
+      label: t('reasonLabels.wrongItem'),
       icon: Package,
-      description: t("reasonLabels.wrongItemDesc"),
+      description: t('reasonLabels.wrongItemDesc'),
     },
     {
-      value: "other",
-      label: t("reasonLabels.other"),
+      value: 'other',
+      label: t('reasonLabels.other'),
       icon: HelpCircle,
-      description: t("reasonLabels.otherDesc"),
+      description: t('reasonLabels.otherDesc'),
     },
   ];
 
@@ -154,42 +154,42 @@ export default function DisputeModal({
     { label: string; color: string; bgColor: string; icon: typeof Clock }
   > = {
     open: {
-      label: t("statusLabels.open"),
-      color: "text-amber-400",
-      bgColor: "bg-amber-400/10",
+      label: t('statusLabels.open'),
+      color: 'text-amber-400',
+      bgColor: 'bg-amber-400/10',
       icon: Clock,
     },
     under_review: {
-      label: t("statusLabels.underReview"),
-      color: "text-blue-400",
-      bgColor: "bg-blue-400/10",
+      label: t('statusLabels.underReview'),
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-400/10',
       icon: MessageSquare,
     },
     resolved: {
-      label: t("statusLabels.resolved"),
-      color: "text-emerald-400",
-      bgColor: "bg-emerald-400/10",
+      label: t('statusLabels.resolved'),
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-400/10',
       icon: CheckCircle2,
     },
     closed: {
-      label: t("statusLabels.closed"),
-      color: "text-muted",
-      bgColor: "bg-muted/10",
+      label: t('statusLabels.closed'),
+      color: 'text-muted',
+      bgColor: 'bg-muted/10',
       icon: XCircle,
     },
   };
 
   const RESOLUTION_LABELS: Record<DisputeResolution, string> = {
-    buyer_refund: t("resolutionLabels.buyerRefund"),
-    seller_paid: t("resolutionLabels.sellerPaid"),
-    partial_refund: t("resolutionLabels.partialRefund"),
-    cancelled: t("resolutionLabels.cancelled"),
+    buyer_refund: t('resolutionLabels.buyerRefund'),
+    seller_paid: t('resolutionLabels.sellerPaid'),
+    partial_refund: t('resolutionLabels.partialRefund'),
+    cancelled: t('resolutionLabels.cancelled'),
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reason) {
-      setError(t("reasonLabels.selectReason"));
+      setError(t('reasonLabels.selectReason'));
       return;
     }
 
@@ -198,9 +198,9 @@ export default function DisputeModal({
 
     try {
       const res = await fetch(`/api/orders/${orderId}/dispute`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
@@ -212,14 +212,14 @@ export default function DisputeModal({
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || t("reasonLabels.failedToOpen"));
+        setError(data.error || t('reasonLabels.failedToOpen'));
         return;
       }
 
       setSuccess(true);
       onDisputeCreated?.(data);
     } catch {
-      setError(t("reasonLabels.networkError"));
+      setError(t('reasonLabels.networkError'));
     } finally {
       setSubmitting(false);
     }
@@ -227,8 +227,8 @@ export default function DisputeModal({
 
   const handleClose = () => {
     if (!submitting) {
-      setReason("");
-      setDescription("");
+      setReason('');
+      setDescription('');
       setError(null);
       setSuccess(false);
       onClose();
@@ -254,14 +254,14 @@ export default function DisputeModal({
             </span>
           </div>
           <span className="text-[11px] text-muted">
-            {t("timelineLabels.opened")} {formatDate(dispute.created_at)}
+            {t('timelineLabels.opened')} {formatDate(dispute.created_at)}
           </span>
         </div>
 
         {/* Reason */}
         <div className="bg-surface rounded-xl border border-border p-4">
           <p className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold mb-2">
-            {t("timelineLabels.reason")}
+            {t('timelineLabels.reason')}
           </p>
           <div className="flex items-center gap-2">
             {reasonOption && (
@@ -282,7 +282,7 @@ export default function DisputeModal({
         {dispute.resolution && (
           <div className="bg-emerald-400/5 border border-emerald-400/10 rounded-xl p-4">
             <p className="text-[10px] text-emerald-400/60 uppercase tracking-[0.12em] font-bold mb-2">
-              {t("timelineLabels.resolution")}
+              {t('timelineLabels.resolution')}
             </p>
             <p className="text-sm font-semibold text-emerald-400">
               {RESOLUTION_LABELS[dispute.resolution] || dispute.resolution}
@@ -294,7 +294,7 @@ export default function DisputeModal({
             )}
             {dispute.resolved_at && (
               <p className="text-[11px] text-muted/60 mt-2">
-                {t("timelineLabels.resolved")} {formatDate(dispute.resolved_at)}
+                {t('timelineLabels.resolved')} {formatDate(dispute.resolved_at)}
               </p>
             )}
           </div>
@@ -304,7 +304,7 @@ export default function DisputeModal({
         {dispute.events && dispute.events.length > 0 && (
           <div>
             <p className="text-[10px] text-muted/60 uppercase tracking-[0.12em] font-bold mb-3">
-              {t("timelineLabels.timeline")}
+              {t('timelineLabels.timeline')}
             </p>
             <div className="space-y-0">
               {dispute.events.map((event, index) => (
@@ -326,18 +326,17 @@ export default function DisputeModal({
             <div className="flex items-center gap-2">
               <ShieldAlert size={14} className="text-amber-400" />
               <p className="text-xs font-semibold text-foreground">
-                {t("escrowMessages.escrowStatus")}
+                {t('escrowMessages.escrowStatus')}
               </p>
             </div>
             <p className="text-xs text-muted mt-1.5">
-              {dispute.escrow_status === "disputed" &&
-                t("escrowMessages.disputed")}
-              {dispute.escrow_status === "released" &&
-                t("escrowMessages.released")}
-              {dispute.escrow_status === "refunded" &&
-                t("escrowMessages.refunded")}
-              {dispute.escrow_status === "held" &&
-                t("escrowMessages.held")}
+              {dispute.escrow_status === 'disputed' &&
+                t('escrowMessages.disputed')}
+              {dispute.escrow_status === 'released' &&
+                t('escrowMessages.released')}
+              {dispute.escrow_status === 'refunded' &&
+                t('escrowMessages.refunded')}
+              {dispute.escrow_status === 'held' && t('escrowMessages.held')}
             </p>
           </div>
         )}
@@ -355,16 +354,16 @@ export default function DisputeModal({
         <CheckCircle2 size={28} />
       </div>
       <h3 className="text-base font-bold text-foreground mb-1.5">
-        {t("disputeOpened")}
+        {t('disputeOpened')}
       </h3>
       <p className="text-sm text-muted mb-6 max-w-xs mx-auto">
-        {t("successMessage")}
+        {t('successMessage')}
       </p>
       <button
         onClick={handleClose}
         className="px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark transition-colors"
       >
-        {t("timelineLabels.gotIt")}
+        {t('timelineLabels.gotIt')}
       </button>
     </motion.div>
   );
@@ -403,14 +402,14 @@ export default function DisputeModal({
                   </div>
                   <div>
                     <h2 className="text-base font-bold text-foreground">
-                      {existingDispute ? t("disputeDetails") : t("openDispute")}
+                      {existingDispute ? t('disputeDetails') : t('openDispute')}
                     </h2>
                     {orderNumber && (
                       <p className="text-[11px] text-muted mt-0.5">
-                        {t("timelineLabels.order")} {orderNumber}
+                        {t('timelineLabels.order')} {orderNumber}
                         {productName && (
                           <span className="text-muted/60">
-                            {" "}
+                            {' '}
                             &middot; {productName}
                           </span>
                         )}
@@ -437,14 +436,14 @@ export default function DisputeModal({
                     {/* Info banner */}
                     <div className="bg-amber-400/5 border border-amber-400/10 rounded-xl p-4">
                       <p className="text-xs text-amber-300/80 leading-relaxed">
-                        {t("escrowMessages.infoBanner")}
+                        {t('escrowMessages.infoBanner')}
                       </p>
                     </div>
 
                     {/* Reason selector */}
                     <div>
                       <label className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-2.5 block">
-                        {t("reasonLabels.reasonForDispute")}
+                        {t('reasonLabels.reasonForDispute')}
                       </label>
                       <div className="grid grid-cols-2 gap-2">
                         {REASON_OPTIONS.map((option) => {
@@ -460,14 +459,11 @@ export default function DisputeModal({
                               }}
                               className={`flex items-start gap-2.5 p-3 rounded-xl text-left transition-all border ${
                                 isSelected
-                                  ? "bg-red-500/10 border-red-500/20 text-red-400"
-                                  : "bg-surface border-border text-muted hover:text-foreground hover:border-border-hover"
+                                  ? 'bg-red-500/10 border-red-500/20 text-red-400'
+                                  : 'bg-surface border-border text-muted hover:text-foreground hover:border-border-hover'
                               }`}
                             >
-                              <Icon
-                                size={14}
-                                className="mt-0.5 shrink-0"
-                              />
+                              <Icon size={14} className="mt-0.5 shrink-0" />
                               <div>
                                 <p className="text-xs font-semibold">
                                   {option.label}
@@ -475,8 +471,8 @@ export default function DisputeModal({
                                 <p
                                   className={`text-[10px] mt-0.5 leading-snug ${
                                     isSelected
-                                      ? "text-red-400/60"
-                                      : "text-muted/60"
+                                      ? 'text-red-400/60'
+                                      : 'text-muted/60'
                                   }`}
                                 >
                                   {option.description}
@@ -491,12 +487,12 @@ export default function DisputeModal({
                     {/* Description */}
                     <div>
                       <label className="text-[11px] text-muted font-semibold uppercase tracking-wider mb-1.5 block">
-                        {t("description")}
+                        {t('description')}
                       </label>
                       <textarea
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        placeholder={t("reasonLabels.descriptionPlaceholder")}
+                        placeholder={t('reasonLabels.descriptionPlaceholder')}
                         rows={4}
                         className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted/30 focus:outline-none focus:border-red-500/40 focus:ring-1 focus:ring-red-500/20 transition-all resize-none"
                       />
@@ -520,7 +516,7 @@ export default function DisputeModal({
                         onClick={handleClose}
                         className="flex-1 px-4 py-2.5 rounded-xl bg-surface border border-border text-sm font-semibold text-muted hover:text-foreground hover:border-border-hover transition-all"
                       >
-                        {t("cancel")}
+                        {t('cancel')}
                       </button>
                       <button
                         type="submit"
@@ -530,7 +526,7 @@ export default function DisputeModal({
                         {submitting && (
                           <Loader2 size={14} className="animate-spin" />
                         )}
-                        {t("openDisputeBtn")}
+                        {t('openDisputeBtn')}
                       </button>
                     </div>
                   </form>
@@ -556,9 +552,9 @@ function TimelineItem({
   resolutionLabels: Record<string, string>;
 }) {
   const eventLabels: Record<string, string> = {
-    dispute_opened: t("timelineLabels.disputeOpened"),
-    dispute_response: t("timelineLabels.sellerResponded"),
-    dispute_resolved: t("timelineLabels.disputeResolved"),
+    dispute_opened: t('timelineLabels.disputeOpened'),
+    dispute_response: t('timelineLabels.sellerResponded'),
+    dispute_resolved: t('timelineLabels.disputeResolved'),
   };
 
   const metadata = event.metadata || {};
@@ -572,7 +568,7 @@ function TimelineItem({
       </div>
 
       {/* Content */}
-      <div className={`pb-4 ${isLast ? "pb-0" : ""}`}>
+      <div className={`pb-4 ${isLast ? 'pb-0' : ''}`}>
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium text-foreground">
             {eventLabels[event.event_type] || event.event_type}
@@ -592,7 +588,8 @@ function TimelineItem({
         ) : null}
         {metadata.offer ? (
           <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-400/10 text-blue-400 mt-1.5">
-            {t("timelineLabels.offer")}: {String(metadata.offer).replace("_", " ")}
+            {t('timelineLabels.offer')}:{' '}
+            {String(metadata.offer).replace('_', ' ')}
           </span>
         ) : null}
         {metadata.resolution ? (

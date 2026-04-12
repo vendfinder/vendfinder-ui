@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 let audioCtx: AudioContext | null = null;
 
@@ -14,7 +14,7 @@ export function playNotificationChime() {
     const ctx = getAudioContext();
 
     // Resume context if suspended (browser autoplay policy)
-    if (ctx.state === "suspended") {
+    if (ctx.state === 'suspended') {
       ctx.resume();
     }
 
@@ -23,7 +23,7 @@ export function playNotificationChime() {
     // First tone — lower pitch
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
-    osc1.type = "sine";
+    osc1.type = 'sine';
     osc1.frequency.value = 830;
     osc1.connect(gain1);
     gain1.connect(ctx.destination);
@@ -35,7 +35,7 @@ export function playNotificationChime() {
     // Second tone — higher pitch (the "pop up")
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
-    osc2.type = "sine";
+    osc2.type = 'sine';
     osc2.frequency.value = 1200;
     osc2.connect(gain2);
     gain2.connect(ctx.destination);

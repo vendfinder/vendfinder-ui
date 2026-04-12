@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.API_BASE_URL || "http://api-gateway:3000";
+const API_BASE_URL = process.env.API_BASE_URL || 'http://api-gateway:3000';
 
 // DELETE /api/stories/:id
 export async function DELETE(
@@ -9,12 +9,12 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const authHeader = request.headers.get("authorization");
+    const authHeader = request.headers.get('authorization');
     const headers: Record<string, string> = {};
-    if (authHeader) headers["Authorization"] = authHeader;
+    if (authHeader) headers['Authorization'] = authHeader;
 
     const res = await fetch(`${API_BASE_URL}/api/stories/${id}`, {
-      method: "DELETE",
+      method: 'DELETE',
       headers,
     });
 
@@ -23,7 +23,7 @@ export async function DELETE(
     return NextResponse.json(data, { status: res.status });
   } catch {
     return NextResponse.json(
-      { error: "Failed to delete story" },
+      { error: 'Failed to delete story' },
       { status: 502 }
     );
   }
