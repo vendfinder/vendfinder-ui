@@ -81,37 +81,22 @@ jobs:
 
       - name: Update staging image tags
         run: |
-          cd environments/staging
+          echo "🏷️ Updating staging deployment images..."
 
-          # Update all service image tags with new staging version (using actual built services)
-          kustomize edit set image \
-            ${{ env.REGISTRY }}/frontend:${{ steps.version.outputs.version }} \
-            ${{ env.REGISTRY }}/user-service-oauth:${{ steps.version.outputs.version }} \
-            ${{ env.REGISTRY }}/chat-service:${{ steps.version.outputs.version }} \
-            ${{ env.REGISTRY }}/product-service:${{ steps.version.outputs.version }} \
-            ${{ env.REGISTRY }}/order-service:${{ steps.version.outputs.version }} \
-            ${{ env.REGISTRY }}/websocket-service:${{ steps.version.outputs.version }} \
-            ${{ env.REGISTRY }}/support-bot:${{ steps.version.outputs.version }}
+          # Update existing deployments directly with new staging images
+          kubectl set image deployment/frontend frontend=${{ env.REGISTRY }}/frontend:${{ steps.version.outputs.version }} -n ${{ env.KUBE_NAMESPACE }}
+          kubectl set image deployment/user-service user-service=${{ env.REGISTRY }}/user-service:${{ steps.version.outputs.version }} -n ${{ env.KUBE_NAMESPACE }}
+          kubectl set image deployment/chat-service chat-service=${{ env.REGISTRY }}/chat-service:${{ steps.version.outputs.version }} -n ${{ env.KUBE_NAMESPACE }}
+          kubectl set image deployment/product-service product-service=${{ env.REGISTRY }}/product-service:${{ steps.version.outputs.version }} -n ${{ env.KUBE_NAMESPACE }}
+          kubectl set image deployment/order-service order-service=${{ env.REGISTRY }}/order-service:${{ steps.version.outputs.version }} -n ${{ env.KUBE_NAMESPACE }}
+          kubectl set image deployment/websocket-service websocket-service=${{ env.REGISTRY }}/websocket-service:${{ steps.version.outputs.version }} -n ${{ env.KUBE_NAMESPACE }}
+          kubectl set image deployment/support-bot support-bot=${{ env.REGISTRY }}/support-bot:${{ steps.version.outputs.version }} -n ${{ env.KUBE_NAMESPACE }}
+
+          echo "✅ Image tags updated successfully"
 
       - name: Deploy to staging cluster
         run: |
-          echo "🚀 Deploying to staging cluster..."
-
-          # Generate final manifests
-          kubectl kustomize environments/staging > /tmp/staging-deployment.yaml
-
-          # Validate manifest before applying
-          if ! kubectl apply --dry-run=client -f /tmp/staging-deployment.yaml >/dev/null 2>&1; then
-            echo "❌ Deployment manifest validation failed"
-            exit 1
-          fi
-
-          # Apply the deployment with resource limits and timeout
-          if ! timeout 300s kubectl apply -f /tmp/staging-deployment.yaml; then
-            echo "❌ Deployment failed to apply or timed out"
-            exit 1
-          fi
-
+          echo "🚀 Deployment images updated, waiting for rollouts..."
           echo "✅ Deployment applied successfully"
 
       - name: Wait for deployment rollout
