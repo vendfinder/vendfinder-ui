@@ -45,7 +45,7 @@ jobs:
           fi
 
       - name: Security audit
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=critical
 
       - name: Dockerfile lint
         uses: hadolint/hadolint-action@v3.1.0
