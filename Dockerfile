@@ -28,9 +28,8 @@ ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 ARG NEXT_PUBLIC_SOCKET_URL
 ENV NEXT_PUBLIC_SOCKET_URL=$NEXT_PUBLIC_SOCKET_URL
 
-# The '|| true' works around a QEMU assertion error when cross-compiling for amd64 on ARM.
-# The build completes successfully before the crash.
-RUN npm run build || true
+# Build Next.js application
+RUN npm run build
 RUN test -f .next/standalone/server.js
 
 # Stage 3: Production runner

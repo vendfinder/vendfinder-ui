@@ -165,7 +165,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
           tags: |
             ${{ env.REGISTRY }}/frontend:${{ steps.version.outputs.version }}
@@ -213,7 +213,7 @@ jobs:
 
             # Build with better caching and error handling
             if ! docker buildx build \
-              --platform linux/amd64,linux/arm64 \
+              --platform linux/amd64 \
               --cache-from type=gha,scope=${service} \
               --cache-to type=gha,mode=max,scope=${service} \
               -t ${registry}/${service}:${version} \
