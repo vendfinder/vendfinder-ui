@@ -33,8 +33,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const stored = localStorage.getItem("vendfinder-cart");
     if (stored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setItems(JSON.parse(stored));
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoaded(true);
   }, []);
 
