@@ -20,7 +20,7 @@ const {
   translateText,
   translateToMultiple,
   getSupportedLanguages
-} = require('./translation.js');
+} = require('./lib/translation.js');
 
 const app = express();
 const server = http.createServer(app);
