@@ -192,6 +192,17 @@ jobs:
             services=("user-service-oauth" "chat-service" "product-service" "order-service" "websocket-service" "support-bot" "api-gateway-build")
           fi
 
+          # Ensure critical services are always included if directories exist
+          critical_services=("api-gateway-build")
+          for critical in "${critical_services[@]}"; do
+            if [ -d "./${critical}" ] && [ -f "./${critical}/Dockerfile" ]; then
+              if [[ ! " ${services[@]} " =~ " ${critical} " ]]; then
+                services+=("$critical")
+                echo "Added missing critical service: $critical"
+              fi
+            fi
+          done
+
           echo "Discovered services: ${services[*]}"
 
           # Function to build a service with error handling
@@ -200,7 +211,19 @@ jobs:
             local version=$2
             local registry=$3
 
-            echo "🔨 Building ${service}..."
+            # Map directory names to image names for production compatibility
+            local image_name="$service"
+            case "$service" in
+              "api-gateway-build")
+                image_name="api-gateway"
+                ;;
+              "user-service-oauth")
+                # Keep both names for compatibility
+                image_name="user-service-oauth"
+                ;;
+            esac
+
+            echo "🔨 Building ${service} → ${image_name}..."
 
             if [ ! -d "./${service}" ]; then
               echo "❌ Directory ./${service} does not exist, skipping"
@@ -217,15 +240,15 @@ jobs:
               --platform linux/amd64 \
               --cache-from type=gha,scope=${service} \
               --cache-to type=gha,mode=max,scope=${service} \
-              -t ${registry}/${service}:${version} \
-              -t ${registry}/${service}:latest \
+              -t ${registry}/${image_name}:${version} \
+              -t ${registry}/${image_name}:latest \
               --push \
               ./${service}; then
-              echo "❌ Failed to build ${service}"
+              echo "❌ Failed to build ${service} → ${image_name}"
               return 1
             fi
 
-            echo "✅ Successfully built and pushed ${service}"
+            echo "✅ Successfully built and pushed ${service} → ${image_name}"
             return 0
           }
 
