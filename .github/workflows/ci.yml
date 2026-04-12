@@ -144,7 +144,10 @@ jobs:
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
             VERSION="staging-$(git rev-parse --short HEAD)"
           elif [ "${{ github.ref }}" == "refs/heads/production" ]; then
-            VERSION="v$(date +%Y%m%d)-$(git rev-parse --short HEAD)"
+            # Generate semver-compatible version: v1.0.0-YYYYMMDD.commit
+            DATE=$(date +%Y%m%d)
+            COMMIT=$(git rev-parse --short HEAD)
+            VERSION="v1.0.0-${DATE}.${COMMIT}"
           elif [[ "${{ github.ref }}" == refs/heads/release/* ]]; then
             VERSION=$(echo "${{ github.ref }}" | sed 's/refs\/heads\/release\///')
           else

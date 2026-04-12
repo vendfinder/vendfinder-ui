@@ -43,8 +43,10 @@ jobs:
           if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
             VERSION="${{ github.event.inputs.version }}"
           else
-            # Auto-generate version from production branch: v{date}-{commit}
-            VERSION="v$(date +%Y%m%d)-$(git rev-parse --short HEAD)"
+            # Auto-generate semver-compatible version: v1.0.0-YYYYMMDD.commit
+            DATE=$(date +%Y%m%d)
+            COMMIT=$(git rev-parse --short HEAD)
+            VERSION="v1.0.0-${DATE}.${COMMIT}"
           fi
 
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
