@@ -1,0 +1,52 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit (non-blocking)
+        run: |
+          echo "🔍 Running npm audit..."
+          npm audit --audit-level=moderate || echo "⚠️ Vulnerabilities found - check output above"
+          echo "✅ npm audit completed (non-blocking)"
+        continue-on-error: true
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+      - name: Security scan completed
+        run: |
+          echo "🎉 Security scan completed!"
+          echo "📊 Results available in GitHub Security tab"
+          echo "✅ This scan is non-blocking - deployment can proceed"

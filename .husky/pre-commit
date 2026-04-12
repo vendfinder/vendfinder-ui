@@ -11,7 +11,13 @@ npm run lint
 if [ "$SKIP_SECURITY_SCAN" = "true" ]; then
     echo "⚠️ Security scan bypassed via SKIP_SECURITY_SCAN=true"
 else
-    echo "🔒 Running security scan..."
-    # Note: Security scan integration will be added when Opsera is available
-    echo "ℹ️ Security scan placeholder - will be enabled when Opsera integration is configured"
+    echo "🔒 Running free security checks..."
+
+    # Run npm audit (non-blocking)
+    echo "📦 Checking dependencies with npm audit..."
+    npm audit --audit-level=high || echo "⚠️ Vulnerabilities found - check npm audit output"
+
+    # Note: Full CodeQL analysis runs in GitHub Actions
+    echo "ℹ️ Full security analysis available in GitHub Actions workflow"
+    echo "✅ Pre-commit security check completed (non-blocking)"
 fi

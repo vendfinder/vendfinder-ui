@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const USER_SERVICE_URL =
-  process.env.USER_SERVICE_URL || 'http://user-service:3004';
 
 export async function POST(request: NextRequest) {
   try {

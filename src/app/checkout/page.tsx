@@ -12,7 +12,6 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import {
   CreditCard,
   Lock,
@@ -32,8 +31,6 @@ import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { useTranslations } from 'next-intl';
 import {
   createCheckout,
-  createPayPalCheckout,
-  capturePayPalPayment,
   type CheckoutData,
 } from '@/lib/api-orders';
 
@@ -47,7 +44,6 @@ const getStripePromise = () => {
   return Promise.resolve(null);
 };
 
-type PaymentMethod = 'card' | 'paypal';
 
 function CheckoutForm() {
   const { items, totalPrice, clearCart } = useCart();
@@ -59,7 +55,6 @@ function CheckoutForm() {
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const paymentMethod = 'card'; // Stripe only
 
   const [shipping, setShipping] = useState({
     firstName: '',
@@ -115,16 +110,6 @@ function CheckoutForm() {
     };
   }
 
-  function isShippingComplete() {
-    return (
-      shipping.firstName &&
-      shipping.lastName &&
-      shipping.address &&
-      shipping.city &&
-      shipping.state &&
-      shipping.zip
-    );
-  }
 
   const handleStripeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

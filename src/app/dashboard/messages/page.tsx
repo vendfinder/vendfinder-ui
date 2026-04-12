@@ -59,7 +59,12 @@ export default function MessagesPage() {
   // Debug token availability for chat functionality
   useEffect(() => {
     if (typeof window !== 'undefined' && user) {
-      console.log('[Chat Debug] User authenticated:', !!user.id, 'Token available:', !!token);
+      console.log(
+        '[Chat Debug] User authenticated:',
+        !!user.id,
+        'Token available:',
+        !!token
+      );
     }
   }, [user, token]);
 
