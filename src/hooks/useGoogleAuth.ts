@@ -38,8 +38,11 @@ export function useGoogleAuth(
 ) {
   const callbackRef = useRef(onSuccess);
   const errorRef = useRef(onError);
-  callbackRef.current = onSuccess;
-  errorRef.current = onError;
+
+  useEffect(() => {
+    callbackRef.current = onSuccess;
+    errorRef.current = onError;
+  }, [onSuccess, onError]);
 
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) return;

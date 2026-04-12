@@ -36,8 +36,11 @@ export function useAppleAuth(
 ) {
   const callbackRef = useRef(onSuccess);
   const errorRef = useRef(onError);
-  callbackRef.current = onSuccess;
-  errorRef.current = onError;
+
+  useEffect(() => {
+    callbackRef.current = onSuccess;
+    errorRef.current = onError;
+  }, [onSuccess, onError]);
 
   useEffect(() => {
     if (!APPLE_CLIENT_ID) return;
