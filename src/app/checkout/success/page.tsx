@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { CheckCircle2, Package, ArrowRight, ShoppingBag, Mail, Truck, BarChart3 } from "lucide-react";
 
 export default function CheckoutSuccessPage() {
   const t = useTranslations("checkoutSuccess");
   const t2 = useTranslations("common");
-  const orderId = `ORD-${Date.now().toString().slice(-8)}`;
+  // Use useState to avoid impure function during render
+  const [orderId] = useState(() => `ORD-${Date.now().toString().slice(-8)}`);
 
   return (
     <div className="max-w-lg mx-auto px-4 py-16 text-center">
