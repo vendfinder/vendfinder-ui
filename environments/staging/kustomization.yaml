@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: vendfinder
+namespace: vendfinder-staging
 
 resources:
   - ../base
@@ -12,7 +12,7 @@ labels:
   pairs:
     environment: staging
 
-namePrefix: staging-
+# namePrefix: staging-  # Removed to match existing deployment names
 
 images:
   - name: registry.digitalocean.com/vendfinder-registry/frontend
