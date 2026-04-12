@@ -1,7 +1,7 @@
 // Staging Environment E2E Tests
 // These tests verify basic functionality of the staging deployment
 
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 test.describe('Staging Environment Verification', () => {
   test.beforeEach(async ({ page }) => {

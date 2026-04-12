@@ -1,6 +1,6 @@
 // Global setup for E2E tests
 // This file is used when running tests against local development server
-const { chromium } = require('@playwright/test');
+import { chromium } from '@playwright/test';
 
 async function globalSetup() {
   console.log('🔧 Setting up E2E test environment...');
