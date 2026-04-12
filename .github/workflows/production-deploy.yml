@@ -21,6 +21,7 @@ env:
   REGISTRY: registry.digitalocean.com/vendfinder-registry
   PROD_URL: https://vendfinder.com
   API_URL: https://api.vendfinder.com
+  PRODUCTION_DEPLOYMENTS: "frontend,user-service,chat-service,product-service,order-service,websocket-service,support-bot,api-gateway"
 
 jobs:
   pre-production-checks:
@@ -53,9 +54,10 @@ jobs:
       - name: Validate version format
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          # Enhanced semver validation with pre-release and build metadata support
+          if [[ ! "$VERSION" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
             echo "❌ Invalid version format: $VERSION"
-            echo "Expected format: v1.2.3"
+            echo "Expected semver format: v1.2.3, v1.2.3-alpha.1, v1.2.3+build.1"
             exit 1
           fi
           echo "✅ Version format is valid: $VERSION"
@@ -176,13 +178,24 @@ jobs:
             exit 1
           fi
 
-          # Verify required secrets exist
-          required_secrets=("kubeconfig")
+          # Verify required secrets exist with proper syntax
+          required_secrets=("KUBECONFIG" "SLACK_WEBHOOK_URL")
           for secret in "${required_secrets[@]}"; do
-            if [ -z "${{ secrets[secret] }}" ]; then
-              echo "❌ Required secret not found: $secret"
-              exit 1
-            fi
+            # Use proper GitHub Actions secret validation
+            case "$secret" in
+              "KUBECONFIG")
+                if [ -z "${{ secrets.KUBECONFIG }}" ]; then
+                  echo "❌ Required secret not found: $secret"
+                  exit 1
+                fi
+                ;;
+              "SLACK_WEBHOOK_URL")
+                # Optional secret - warn if missing but don't fail
+                if [ -z "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+                  echo "⚠️ Optional secret not configured: $secret (notifications disabled)"
+                fi
+                ;;
+            esac
           done
           echo "✅ All required secrets are available"
 
@@ -193,16 +206,16 @@ jobs:
           VERSION="${{ needs.pre-production-checks.outputs.version }}"
           echo "🔧 Updating production images to version: $VERSION"
 
-          # Update all service image tags with production version
+          # Update all service image tags with production version (aligned with kustomization.yaml)
           kustomize edit set image \
             registry.digitalocean.com/vendfinder-registry/frontend:$VERSION \
-            registry.digitalocean.com/vendfinder-registry/user-service-oauth:$VERSION \
+            registry.digitalocean.com/vendfinder-registry/user-service:$VERSION \
             registry.digitalocean.com/vendfinder-registry/chat-service:$VERSION \
             registry.digitalocean.com/vendfinder-registry/product-service:$VERSION \
             registry.digitalocean.com/vendfinder-registry/order-service:$VERSION \
             registry.digitalocean.com/vendfinder-registry/websocket-service:$VERSION \
             registry.digitalocean.com/vendfinder-registry/support-bot:$VERSION \
-            registry.digitalocean.com/vendfinder-registry/api-gateway-build:$VERSION
+            registry.digitalocean.com/vendfinder-registry/api-gateway:$VERSION
 
           echo "✅ Image tags updated"
 
@@ -227,7 +240,7 @@ jobs:
           kubectl apply -f /tmp/production-deployment.yaml
 
           # Annotate all deployments with version info
-          deployments=("frontend" "user-service" "chat-service" "product-service" "order-service" "websocket-service" "support-bot" "api-gateway")
+          IFS=',' read -ra deployments <<< "${{ env.PRODUCTION_DEPLOYMENTS }}"
 
           for deployment in "${deployments[@]}"; do
             kubectl annotate deployment $deployment -n ${{ env.KUBE_NAMESPACE }} \
@@ -281,7 +294,7 @@ jobs:
           }
 
           # Check each deployment with individual timeouts
-          deployments=("frontend" "user-service" "chat-service" "product-service" "order-service" "websocket-service" "support-bot" "api-gateway")
+          IFS=',' read -ra deployments <<< "${{ env.PRODUCTION_DEPLOYMENTS }}"
 
           failed_deployments=()
           for deployment in "${deployments[@]}"; do
@@ -593,7 +606,7 @@ jobs:
           }
 
           # Rollback all deployments
-          deployments=("frontend" "user-service" "chat-service" "product-service" "order-service" "websocket-service" "support-bot" "api-gateway")
+          IFS=',' read -ra deployments <<< "${{ env.PRODUCTION_DEPLOYMENTS }}"
 
           failed_rollbacks=()
           successful_rollbacks=()
