@@ -10,7 +10,7 @@ on:
     branches: [main]
 
 env:
-  KUBE_NAMESPACE: vendfinder
+  KUBE_NAMESPACE: vendfinder-staging
   REGISTRY: registry.digitalocean.com/vendfinder-registry
   STAGING_URL: https://staging.vendfinder.com
   PROD_URL: https://vendfinder.com
@@ -80,7 +80,7 @@ jobs:
         run: |
           cd environments/staging
 
-          # Update all service image tags with new staging version
+          # Update all service image tags with new staging version (using actual built services)
           kustomize edit set image \
             ${{ env.REGISTRY }}/frontend:${{ steps.version.outputs.version }} \
             ${{ env.REGISTRY }}/user-service-oauth:${{ steps.version.outputs.version }} \
@@ -88,8 +88,7 @@ jobs:
             ${{ env.REGISTRY }}/product-service:${{ steps.version.outputs.version }} \
             ${{ env.REGISTRY }}/order-service:${{ steps.version.outputs.version }} \
             ${{ env.REGISTRY }}/websocket-service:${{ steps.version.outputs.version }} \
-            ${{ env.REGISTRY }}/support-bot:${{ steps.version.outputs.version }} \
-            ${{ env.REGISTRY }}/api-gateway-build:${{ steps.version.outputs.version }}
+            ${{ env.REGISTRY }}/support-bot:${{ steps.version.outputs.version }}
 
       - name: Deploy to staging cluster
         run: |
@@ -124,7 +123,6 @@ jobs:
           kubectl rollout status deployment/staging-order-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
           kubectl rollout status deployment/staging-websocket-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
           kubectl rollout status deployment/staging-support-bot -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
-          kubectl rollout status deployment/staging-api-gateway -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
 
           echo "✅ All deployments completed successfully"
 
@@ -263,7 +261,7 @@ jobs:
             echo "📝 Current revision: $PREVIOUS_DEPLOYMENT, rolling back to: $ROLLBACK_REVISION"
 
             # List of deployments with existence verification
-            DEPLOYMENTS=("staging-frontend" "staging-user-service" "staging-chat-service" "staging-product-service" "staging-order-service" "staging-websocket-service" "staging-support-bot" "staging-api-gateway")
+            DEPLOYMENTS=("staging-frontend" "staging-user-service" "staging-chat-service" "staging-product-service" "staging-order-service" "staging-websocket-service" "staging-support-bot")
             ROLLBACK_FAILED=false
             ROLLBACK_STARTED=false
 
