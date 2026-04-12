@@ -5,7 +5,7 @@ const { checkMessage } = require('../flagging');
 const { messagesTotal } = require('../metrics');
 
 module.exports = function (pool, redis) {
-  const translationService = require('../lib/translation')(redis);
+  const translationService = require('../lib/translation.js')(redis);
   const translationEnabled = translationService.init();
 
   // Translate a message for the other participant's locale
