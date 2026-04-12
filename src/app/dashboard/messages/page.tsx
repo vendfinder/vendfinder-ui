@@ -56,6 +56,13 @@ export default function MessagesPage() {
       ? localStorage.getItem('vendfinder-token')
       : null;
 
+  // Debug token availability for chat functionality
+  useEffect(() => {
+    if (typeof window !== 'undefined' && user) {
+      console.log('[Chat Debug] User authenticated:', !!user.id, 'Token available:', !!token);
+    }
+  }, [user, token]);
+
   const {
     joinConversation,
     leaveConversation,
@@ -327,6 +334,7 @@ export default function MessagesPage() {
       activeConversation && emitTypingStart(activeConversation),
     onTypingStop: () =>
       activeConversation && emitTypingStop(activeConversation),
+    disabled: !token || !user?.id, // Only disable if no token or user ID
   };
 
   return (
