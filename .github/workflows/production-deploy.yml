@@ -2,13 +2,12 @@ name: Deploy to Production
 
 on:
   push:
-    branches:
-      - 'release/**'
+    branches: [production]
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to deploy (e.g., v1.2.3)'
-        required: true
+        description: 'Version to deploy (leave empty for auto-generated)'
+        required: false
         type: string
       skip_tests:
         description: 'Skip E2E tests (emergency deployment)'
@@ -41,11 +40,11 @@ jobs:
       - name: Determine version
         id: version
         run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
             VERSION="${{ github.event.inputs.version }}"
           else
-            # Extract version from release branch name (release/v1.2.3 -> v1.2.3)
-            VERSION=$(echo "${{ github.ref }}" | sed 's/refs\/heads\/release\///')
+            # Auto-generate version from production branch: v{date}-{commit}
+            VERSION="v$(date +%Y%m%d)-$(git rev-parse --short HEAD)"
           fi
 
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
@@ -68,7 +67,7 @@ jobs:
           echo "🔍 Checking staging deployment status..."
 
           # Check if staging environment is healthy before production deployment
-          if curl -f --max-time 30 "https://staging.vendfinder.com/api/health" > /dev/null 2>&1; then
+          if curl -f --max-time 30 "http://129.212.133.110/api/health" > /dev/null 2>&1; then
             echo "✅ Staging environment is healthy"
             echo "verified=true" >> $GITHUB_OUTPUT
           else
