@@ -193,7 +193,7 @@ jobs:
           fi
 
           # Ensure critical services are always included if directories exist
-          critical_services=("api-gateway-build")
+          critical_services=("api-gateway-build" "user-service-oauth")
           for critical in "${critical_services[@]}"; do
             if [ -d "./${critical}" ] && [ -f "./${critical}/Dockerfile" ]; then
               if [[ ! " ${services[@]} " =~ " ${critical} " ]]; then
@@ -218,8 +218,8 @@ jobs:
                 image_name="api-gateway"
                 ;;
               "user-service-oauth")
-                # Keep both names for compatibility
-                image_name="user-service-oauth"
+                # This directory contains the main user-service
+                image_name="user-service"
                 ;;
             esac
 
