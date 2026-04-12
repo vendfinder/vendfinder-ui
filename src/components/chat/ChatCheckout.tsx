@@ -30,8 +30,13 @@ import { createCheckout, createPayPalCheckout, capturePayPalPayment } from "@/li
 
 const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!;
 
-// Only load Stripe on client side
-const stripePromise = typeof window !== 'undefined' ? loadStripe(stripeKey) : Promise.resolve(null);
+// Lazy load Stripe to avoid impure function during render
+const getStripePromise = () => {
+  if (typeof window !== 'undefined') {
+    return loadStripe(stripeKey);
+  }
+  return Promise.resolve(null);
+};
 
 interface ChatCheckoutProps {
   price: number;
@@ -637,7 +642,7 @@ export default function ChatCheckout(props: ChatCheckoutProps) {
         intent: "capture",
       }}
     >
-      <Elements stripe={stripePromise}>
+      <Elements stripe={getStripePromise()}>
         <ChatCheckoutInner {...props} />
       </Elements>
     </PayPalScriptProvider>
