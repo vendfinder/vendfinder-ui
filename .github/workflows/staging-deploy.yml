@@ -14,7 +14,7 @@ on:
 env:
   KUBE_NAMESPACE: vendfinder-staging
   REGISTRY: registry.digitalocean.com/vendfinder-registry
-  STAGING_URL: https://staging.vendfinder.com
+  STAGING_URL: http://129.212.133.110
   PROD_URL: https://vendfinder.com
   API_HEALTH_ENDPOINT: /api/health
   HEALTH_CHECK_RETRIES: 3
@@ -119,13 +119,13 @@ jobs:
           echo "⏳ Waiting for deployments to complete..."
 
           # Wait for all deployments to be ready
-          kubectl rollout status deployment/staging-frontend -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
-          kubectl rollout status deployment/staging-user-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
-          kubectl rollout status deployment/staging-chat-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
-          kubectl rollout status deployment/staging-product-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
-          kubectl rollout status deployment/staging-order-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
-          kubectl rollout status deployment/staging-websocket-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
-          kubectl rollout status deployment/staging-support-bot -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/frontend -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/user-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/chat-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/product-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/order-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/websocket-service -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
+          kubectl rollout status deployment/support-bot -n ${{ env.KUBE_NAMESPACE }} --timeout=${{ env.DEPLOYMENT_TIMEOUT }}
 
           echo "✅ All deployments completed successfully"
 
@@ -246,10 +246,10 @@ jobs:
           set -euo pipefail
 
           # Get previous successful deployment with comprehensive error handling
-          if ! PREVIOUS_DEPLOYMENT=$(kubectl get deployment staging-frontend -n ${{ env.KUBE_NAMESPACE }} -o jsonpath='{.metadata.annotations.deployment\.kubernetes\.io/revision}' 2>/dev/null); then
+          if ! PREVIOUS_DEPLOYMENT=$(kubectl get deployment frontend -n ${{ env.KUBE_NAMESPACE }} -o jsonpath='{.metadata.annotations.deployment\.kubernetes\.io/revision}' 2>/dev/null); then
             echo "❌ Failed to get current deployment revision"
             # Try to get deployment info for debugging
-            kubectl get deployment staging-frontend -n ${{ env.KUBE_NAMESPACE }} -o yaml | grep -A 5 -B 5 revision || echo "Could not retrieve deployment revision info"
+            kubectl get deployment frontend -n ${{ env.KUBE_NAMESPACE }} -o yaml | grep -A 5 -B 5 revision || echo "Could not retrieve deployment revision info"
             exit 1
           fi
 
@@ -264,7 +264,7 @@ jobs:
             echo "📝 Current revision: $PREVIOUS_DEPLOYMENT, rolling back to: $ROLLBACK_REVISION"
 
             # List of deployments with existence verification
-            DEPLOYMENTS=("staging-frontend" "staging-user-service" "staging-chat-service" "staging-product-service" "staging-order-service" "staging-websocket-service" "staging-support-bot")
+            DEPLOYMENTS=("frontend" "user-service" "chat-service" "product-service" "order-service" "websocket-service" "support-bot")
             ROLLBACK_FAILED=false
             ROLLBACK_STARTED=false
 
@@ -340,7 +340,7 @@ jobs:
           fi
 
           # Annotate the failed deployment with detailed status
-          kubectl annotate deployment staging-frontend -n ${{ env.KUBE_NAMESPACE }} \
+          kubectl annotate deployment frontend -n ${{ env.KUBE_NAMESPACE }} \
             vendfinder.com/deployment-status="failed-$(if [ "$ROLLBACK_FAILED" = "true" ]; then echo "rollback-failed"; else echo "rolled-back"; fi)" \
             vendfinder.com/rollback-at="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             vendfinder.com/rollback-target-revision="$ROLLBACK_REVISION" \
@@ -355,7 +355,7 @@ jobs:
       - name: Update deployment status
         run: |
           # Store deployment info for rollback capability
-          kubectl annotate deployment staging-frontend -n ${{ env.KUBE_NAMESPACE }} \
+          kubectl annotate deployment frontend -n ${{ env.KUBE_NAMESPACE }} \
             vendfinder.com/deployed-version="${{ steps.version.outputs.version }}" \
             vendfinder.com/deployed-at="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             vendfinder.com/deployed-by="github-actions" \
