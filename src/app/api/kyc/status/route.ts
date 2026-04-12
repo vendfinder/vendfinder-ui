@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Token available if needed for future implementation
-    // const token = request.headers.get('authorization');
 
     // For testuser12345, return verified status directly as a temporary fix
     const kycResponse = {
