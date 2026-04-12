@@ -42,7 +42,7 @@ jobs:
       - name: Generate staging version
         id: version
         run: |
-          VERSION="staging-$(git rev-parse --short HEAD)-$(date +%Y%m%d%H%M%S)"
+          VERSION="staging-$(git rev-parse --short HEAD)"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "short-sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
           echo "Generated staging version: ${VERSION}"
