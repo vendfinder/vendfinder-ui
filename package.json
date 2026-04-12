@@ -105,5 +105,8 @@
       "@semantic-release/npm",
       "@semantic-release/git"
     ]
+  },
+  "overrides": {
+    "minimist": "^1.2.6"
   }
 }
