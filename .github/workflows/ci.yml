@@ -197,6 +197,15 @@ jobs:
             services=("user-service-oauth" "chat-service" "product-service" "order-service" "websocket-service" "support-bot" "api-gateway-build")
           fi
 
+          # Filter out hidden directories and Dockerfile in root
+          filtered_services=()
+          for service in "${services[@]}"; do
+            if [[ ! "$service" =~ ^\. ]] && [[ "$service" != "Dockerfile" ]]; then
+              filtered_services+=("$service")
+            fi
+          done
+          services=("${filtered_services[@]}")
+
           echo "Discovered services: ${services[*]}"
 
           # Function to build a service with error handling

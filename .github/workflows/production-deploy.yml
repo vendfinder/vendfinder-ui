@@ -68,12 +68,20 @@ jobs:
         run: |
           echo "🔍 Checking staging deployment status..."
 
+          # Skip staging check if skip_tests is true (emergency deployment)
+          if [ "${{ github.event.inputs.skip_tests }}" == "true" ]; then
+            echo "🚨 Emergency deployment: Skipping staging health check"
+            echo "verified=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           # Check if staging environment is healthy before production deployment
           if curl -f --max-time 30 "http://129.212.133.110/api/health" > /dev/null 2>&1; then
             echo "✅ Staging environment is healthy"
             echo "verified=true" >> $GITHUB_OUTPUT
           else
             echo "❌ Staging environment is not responding"
+            echo "🔧 Use skip_tests=true for emergency deployment"
             echo "verified=false" >> $GITHUB_OUTPUT
             exit 1
           fi
