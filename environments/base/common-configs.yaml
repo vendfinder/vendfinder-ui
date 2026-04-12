@@ -15,9 +15,15 @@ data:
   WEBSOCKET_SERVICE_URL: "http://websocket-service:3006"
   PRODUCT_SERVICE_URL: "http://product-service:3000"
   ORDER_SERVICE_URL: "http://order-service:3000"
+  VENDOR_SERVICE_URL: "http://vendor-service:3003"
   SUPPORT_BOT_URL: "http://support-bot:3009"
   # Redis and database connection patterns
   REDIS_URL: "redis://redis:6379"
+  # Database URLs for microservices
+  USER_DB_URL: "postgresql://postgres:stagingpassword123@user-db:5432/vendfinder"
+  ORDER_DB_URL: "postgresql://postgres:stagingpassword123@order-db:5432/vendfinder"
+  PRODUCT_DB_URL: "postgresql://postgres:stagingpassword123@product-db:5432/vendfinder"
+  CHAT_DB_URL: "postgresql://postgres:stagingpassword123@chat-db:5432/vendfinder"
   # Monitoring
   METRICS_ENABLED: "true"
   HEALTH_CHECK_INTERVAL: "30s"

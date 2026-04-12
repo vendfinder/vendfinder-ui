@@ -1,6 +1,6 @@
 {
   "name": "@vendfinder/chat-service",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "VendFinder Chat & Messaging Service",
   "main": "index.js",
   "scripts": {
@@ -14,7 +14,9 @@
     "ioredis": "^5.3.2",
     "node-fetch": "^3.3.2",
     "prom-client": "^15.1.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "ws": "^8.14.2",
+    "jsonwebtoken": "^9.0.2"
   },
   "engines": {
     "node": ">=18.0.0"

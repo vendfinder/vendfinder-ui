@@ -85,7 +85,7 @@ jobs:
 
           # Update existing deployments directly with new staging images
           kubectl set image deployment/frontend frontend=${{ env.REGISTRY }}/frontend:${{ steps.version.outputs.version }} -n ${{ env.KUBE_NAMESPACE }}
-          kubectl set image deployment/user-service user-service=${{ env.REGISTRY }}/user-service:${{ steps.version.outputs.version }} -n ${{ env.KUBE_NAMESPACE }}
+          kubectl set image deployment/user-service user-service=${{ env.REGISTRY }}/user-service-oauth:${{ steps.version.outputs.version }} -n ${{ env.KUBE_NAMESPACE }}
           kubectl set image deployment/chat-service chat-service=${{ env.REGISTRY }}/chat-service:${{ steps.version.outputs.version }} -n ${{ env.KUBE_NAMESPACE }}
           kubectl set image deployment/product-service product-service=${{ env.REGISTRY }}/product-service:${{ steps.version.outputs.version }} -n ${{ env.KUBE_NAMESPACE }}
           kubectl set image deployment/order-service order-service=${{ env.REGISTRY }}/order-service:${{ steps.version.outputs.version }} -n ${{ env.KUBE_NAMESPACE }}
