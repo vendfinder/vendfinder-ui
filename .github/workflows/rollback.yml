@@ -1,0 +1,311 @@
+name: Emergency Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        type: choice
+        options:
+        - staging
+        - production
+      rollback_type:
+        description: 'Rollback type'
+        required: true
+        type: choice
+        options:
+        - previous
+        - version
+        default: previous
+      target_version:
+        description: 'Target version (only for version rollback, e.g., v1.2.3)'
+        required: false
+        type: string
+      skip_verification:
+        description: 'Skip health checks (emergency mode)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  KUBE_NAMESPACE: vendfinder
+
+jobs:
+  rollback:
+    name: Execute Rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl for DigitalOcean
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+          # Silent cluster validation without exposing sensitive info
+          if kubectl auth can-i get pods -n ${{ env.KUBE_NAMESPACE }} > /dev/null 2>&1; then
+            echo "✅ kubectl authentication successful"
+          else
+            echo "❌ kubectl authentication failed"
+            exit 1
+          fi
+
+      - name: Validate rollback inputs
+        run: |
+          echo "🔍 Validating rollback inputs..."
+
+          if [ "${{ github.event.inputs.rollback_type }}" = "version" ] && [ -z "${{ github.event.inputs.target_version }}" ]; then
+            echo "❌ Target version is required for version rollback"
+            exit 1
+          fi
+
+          if [ "${{ github.event.inputs.rollback_type }}" = "version" ]; then
+            VERSION="${{ github.event.inputs.target_version }}"
+            # Enhanced semver validation to match production workflow
+            if [[ ! "$VERSION" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+              echo "❌ Invalid version format: $VERSION (expected semver format: v1.2.3, v1.2.3-alpha.1, etc.)"
+              exit 1
+            fi
+          fi
+
+          echo "✅ Rollback inputs validated"
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Rollback type: ${{ github.event.inputs.rollback_type }}"
+          echo "Target version: ${{ github.event.inputs.target_version || 'previous' }}"
+          echo "Skip verification: ${{ github.event.inputs.skip_verification }}"
+
+      - name: List current deployments before rollback
+        run: |
+          echo "📋 Current deployment state before rollback:"
+          echo
+
+          # Check if namespace exists
+          if ! kubectl get namespace ${{ env.KUBE_NAMESPACE }} >/dev/null 2>&1; then
+            echo "❌ Namespace ${{ env.KUBE_NAMESPACE }} not found"
+            exit 1
+          fi
+
+          # Get deployment information with error handling
+          if kubectl get deployments -n ${{ env.KUBE_NAMESPACE }} --no-headers 2>/dev/null | wc -l | grep -q "0"; then
+            echo "⚠️ No deployments found in namespace ${{ env.KUBE_NAMESPACE }}"
+          else
+            kubectl get deployments -n ${{ env.KUBE_NAMESPACE }} \
+              -o custom-columns=NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image,READY:.status.readyReplicas,AVAILABLE:.status.availableReplicas 2>/dev/null || \
+              echo "⚠️ Could not retrieve deployment information"
+          fi
+
+      - name: Execute rollback
+        run: |
+          echo "🔄 Executing rollback..."
+
+          chmod +x scripts/rollback.sh
+
+          # Build rollback command
+          ROLLBACK_CMD="./scripts/rollback.sh ${{ github.event.inputs.environment }} --force"
+
+          if [ "${{ github.event.inputs.rollback_type }}" = "version" ]; then
+            ROLLBACK_CMD="$ROLLBACK_CMD --version ${{ github.event.inputs.target_version }}"
+          else
+            ROLLBACK_CMD="$ROLLBACK_CMD --previous"
+          fi
+
+          if [ "${{ github.event.inputs.skip_verification }}" = "true" ]; then
+            ROLLBACK_CMD="$ROLLBACK_CMD --emergency"
+          fi
+
+          echo "Executing rollback command: $ROLLBACK_CMD"
+
+          # Set Slack webhook for notifications (if configured)
+          export SLACK_WEBHOOK="${{ secrets.SLACK_WEBHOOK_URL }}"
+
+          # Execute rollback
+          $ROLLBACK_CMD
+
+      - name: Verify rollback completion
+        if: success()
+        run: |
+          echo "✅ Rollback completed. Verifying final state..."
+          echo
+
+          # Show final deployment state
+          if kubectl get deployments -n ${{ env.KUBE_NAMESPACE }} --no-headers 2>/dev/null | wc -l | grep -q "0"; then
+            echo "⚠️ No deployments found after rollback"
+          else
+            echo "📊 Final deployment state:"
+            kubectl get deployments -n ${{ env.KUBE_NAMESPACE }} \
+              -o custom-columns=NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image,READY:.status.readyReplicas,AVAILABLE:.status.availableReplicas 2>/dev/null || \
+              echo "⚠️ Could not retrieve final deployment state"
+          fi
+
+          echo
+          echo "📝 Rollback annotations:"
+          # Show rollback annotations with error handling
+          kubectl get deployments -n ${{ env.KUBE_NAMESPACE }} \
+            -o jsonpath='{range .items[*]}{.metadata.name}: {.metadata.annotations.vendfinder\.com/last-rollback-at}{"\n"}{end}' 2>/dev/null | \
+            head -10 || echo "⚠️ Could not retrieve rollback annotations"
+
+      - name: Create rollback issue
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const environment = '${{ github.event.inputs.environment }}';
+            const rollbackType = '${{ github.event.inputs.rollback_type }}';
+            const targetVersion = '${{ github.event.inputs.target_version }}' || 'previous';
+            const skipVerification = '${{ github.event.inputs.skip_verification }}' === 'true';
+            const status = '${{ job.status }}';
+
+            const title = `🚨 Rollback executed: ${environment} to ${targetVersion}`;
+            const body = `
+## 🔄 Rollback Summary
+
+- **Environment**: ${environment}
+- **Type**: ${rollbackType}
+- **Target**: ${targetVersion}
+- **Status**: ${status}
+- **Skip Verification**: ${skipVerification}
+- **Executed by**: ${{ github.actor }}
+- **Timestamp**: ${new Date().toISOString()}
+- **Workflow Run**: [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+## 📊 Rollback Details
+
+${status === 'success' ?
+  '✅ **Rollback completed successfully**\n\n**Next Steps:**\n- Monitor the environment for stability\n- Investigate the root cause of the issue that triggered this rollback\n- Review application logs and metrics\n- Consider whether a new deployment is needed after fixing the root cause' :
+  '❌ **Rollback failed**\n\n**Immediate Actions Required:**\n- Check the workflow logs for error details\n- Verify Kubernetes cluster state manually\n- Consider manual intervention or alternative rollback methods\n- Escalate to on-call engineer if this is a production issue'
+}
+
+## 🔗 Environment URLs
+
+- **Staging**: https://staging.vendfinder.com
+- **Production**: https://vendfinder.com
+
+## 📋 Troubleshooting
+
+If the rollback failed:
+1. Check kubectl connectivity: \`kubectl auth can-i get pods -n vendfinder\`
+2. Verify deployment status: \`kubectl get deployments -n vendfinder\`
+3. Review pod status: \`kubectl get pods -n vendfinder\`
+4. Check recent events: \`kubectl get events -n vendfinder --sort-by='.lastTimestamp'\`
+
+## ⚠️ Production Impact
+
+${environment === 'production' ?
+  '**HIGH PRIORITY**: This affects the production environment. Immediate attention required.' :
+  'This affects the staging environment. Monitor for any ongoing issues.'
+}
+
+---
+*This issue was automatically created by the emergency rollback workflow.*
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: [
+                'rollback',
+                'ops',
+                environment === 'production' ? 'critical' : 'staging',
+                status === 'failure' ? 'urgent' : 'monitoring'
+              ]
+            });
+
+  post-rollback-monitoring:
+    name: Post-Rollback Monitoring
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: rollback
+    if: success() && github.event.inputs.skip_verification != 'true'
+
+    steps:
+      - name: Monitor for 5 minutes
+        run: |
+          echo "👀 Monitoring ${{ github.event.inputs.environment }} for 5 minutes post-rollback..."
+
+          # Determine URL
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            URL="https://vendfinder.com"
+          else
+            URL="https://staging.vendfinder.com"
+          fi
+
+          echo "🔍 Monitoring URL: $URL"
+
+          end_time=$(($(date +%s) + 300)) # 5 minutes from now
+          failed_checks=0
+          total_checks=0
+
+          while [ $(date +%s) -lt $end_time ]; do
+            total_checks=$((total_checks + 1))
+
+            # Test main site
+            main_site_ok=false
+            if curl -f --max-time 10 "$URL/" > /dev/null 2>&1; then
+              main_site_ok=true
+            fi
+
+            # Test API health
+            api_ok=false
+            if curl -f --max-time 10 "$URL/api/health" > /dev/null 2>&1; then
+              api_ok=true
+            fi
+
+            if [ "$main_site_ok" = true ] && [ "$api_ok" = true ]; then
+              failed_checks=0
+              echo "✅ $(date): Health check passed (check #$total_checks)"
+            else
+              failed_checks=$((failed_checks + 1))
+              echo "❌ $(date): Health check failed (failures: $failed_checks, check #$total_checks)"
+
+              # Log which specific checks failed
+              if [ "$main_site_ok" != true ]; then
+                echo "  - Main site check failed"
+              fi
+              if [ "$api_ok" != true ]; then
+                echo "  - API health check failed"
+              fi
+
+              if [ $failed_checks -ge 3 ]; then
+                echo "🚨 Multiple consecutive health check failures detected!"
+                echo "💡 Consider manual investigation or another rollback attempt"
+                exit 1
+              fi
+            fi
+
+            sleep 30
+          done
+
+          echo "✅ 5-minute monitoring completed successfully"
+          echo "📊 Total health checks performed: $total_checks"
+
+      - name: Final monitoring report
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          ENV="${{ github.event.inputs.environment }}"
+
+          echo "📋 Post-Rollback Monitoring Report"
+          echo "=================================="
+          echo "Environment: $ENV"
+          echo "Status: $STATUS"
+          echo "Duration: 5 minutes"
+          echo "Timestamp: $(date -u)"
+
+          if [ "$STATUS" = "success" ]; then
+            echo "✅ Environment appears stable after rollback"
+          else
+            echo "❌ Issues detected during monitoring period"
+            echo "🔍 Manual investigation recommended"
+          fi
