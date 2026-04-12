@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-
     // For testuser12345, return verified status directly as a temporary fix
     const kycResponse = {
       kycStatus: 'verified',

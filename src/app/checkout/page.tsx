@@ -29,10 +29,7 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { useTranslations } from 'next-intl';
-import {
-  createCheckout,
-  type CheckoutData,
-} from '@/lib/api-orders';
+import { createCheckout, type CheckoutData } from '@/lib/api-orders';
 
 const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!;
 
@@ -43,7 +40,6 @@ const getStripePromise = () => {
   }
   return Promise.resolve(null);
 };
-
 
 function CheckoutForm() {
   const { items, totalPrice, clearCart } = useCart();
@@ -109,7 +105,6 @@ function CheckoutForm() {
       shipping_zip: shipping.zip,
     };
   }
-
 
   const handleStripeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
