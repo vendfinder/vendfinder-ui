@@ -38,7 +38,7 @@ export class RouterErrorBoundary extends React.Component<
       if (typeof window !== 'undefined') {
         try {
           const keys = Object.keys(localStorage);
-          keys.forEach(key => {
+          keys.forEach((key) => {
             if (key.includes('next-router') || key.includes('__next')) {
               localStorage.removeItem(key);
             }

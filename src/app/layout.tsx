@@ -65,9 +65,7 @@ export default async function RootLayout({
               <ChatInitializer />
               <Navbar />
               <main className="min-h-screen pb-[var(--tab-bar-height)]">
-                <RouterErrorBoundary>
-                  {children}
-                </RouterErrorBoundary>
+                <RouterErrorBoundary>{children}</RouterErrorBoundary>
               </main>
               <Footer />
               <CartDrawer />
