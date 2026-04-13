@@ -13,8 +13,8 @@ export function useSocket(token: string | null) {
   const store = useChatStore();
 
   useEffect(() => {
+    // Handle token removal - always disconnect
     if (!token) {
-      // Disconnect if no token
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
@@ -23,9 +23,19 @@ export function useSocket(token: string | null) {
       return;
     }
 
-    // Don't reconnect if already connected
-    if (socketRef.current?.connected) return;
+    // If socket exists and is connected with a valid token, don't recreate
+    // This prevents unnecessary reconnections
+    if (socketRef.current?.connected) {
+      return;
+    }
 
+    // If socket exists but is disconnected, clean it up first
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+
+    // Create new socket connection with current token
     const socket = io(SOCKET_URL, {
       auth: { token },
       transports: ['websocket', 'polling'],
@@ -34,12 +44,24 @@ export function useSocket(token: string | null) {
       reconnectionAttempts: 10,
     });
 
+    // Handle connection events
     socket.on('connect', () => {
       store.setConnected(true);
     });
 
     socket.on('disconnect', () => {
       store.setConnected(false);
+    });
+
+    // Handle authentication errors
+    socket.on('connect_error', (error: any) => {
+      console.warn('Socket connection error:', error);
+      // If auth error, disconnect and clear socket
+      if (error?.data?.content === 'Authentication error') {
+        socket.disconnect();
+        socketRef.current = null;
+        store.setConnected(false);
+      }
     });
 
     // Message events
