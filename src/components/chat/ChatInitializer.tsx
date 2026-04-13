@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuthToken } from '@/context/AuthContext';
 import { useChatStore, useChatStoreWithAuth } from '@/stores/chat';
 import { useSocket } from '@/hooks/useSocket';
 
 export default function ChatInitializer() {
-  const { isAuthenticated, token } = useAuth();
+  const { isAuthenticated, token } = useAuthToken();
   const { reset, conversationsLoaded } = useChatStore();
   const { fetchConversations } = useChatStoreWithAuth();
 
