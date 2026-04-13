@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from 'react';
 import { User } from '@/types';
 import {
@@ -70,10 +71,33 @@ function apiUserToUser(u: NonNullable<AuthResponse['user']> | ApiUser): User {
   };
 }
 
+// Event emitter for token changes
+const tokenChangeListeners = new Set<(token: string | null) => void>();
+
+export function onTokenChange(
+  callback: (token: string | null) => void
+): () => void {
+  tokenChangeListeners.add(callback);
+  return () => tokenChangeListeners.delete(callback);
+}
+
+function emitTokenChange(token: string | null) {
+  tokenChangeListeners.forEach((listener) => listener(token));
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const prevTokenRef = useRef<string | null>(null);
+
+  // Emit token change events when token changes
+  useEffect(() => {
+    if (authToken !== prevTokenRef.current) {
+      prevTokenRef.current = authToken;
+      emitTokenChange(authToken);
+    }
+  }, [authToken]);
 
   // Rehydrate user from token on mount
   const rehydrate = useCallback(async () => {
@@ -242,4 +266,26 @@ export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
+}
+
+export function useAuthToken() {
+  const { token, isAuthenticated } = useAuth();
+  const [isValidating, setIsValidating] = useState(false);
+
+  const validateToken = useCallback(async () => {
+    if (!token) return false;
+    setIsValidating(true);
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.ok;
+    } catch {
+      return false;
+    } finally {
+      setIsValidating(false);
+    }
+  }, [token]);
+
+  return { token, isAuthenticated, validateToken, isValidating };
 }
