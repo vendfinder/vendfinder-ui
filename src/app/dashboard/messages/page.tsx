@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, ArrowLeft, MessageCircle } from 'lucide-react';
 import { useAuth, useAuthToken } from '@/context/AuthContext';
 import { useLocale } from 'next-intl';
-import { useChatStore } from '@/stores/chat';
+import { useChatStore, useChatStoreWithAuth } from '@/stores/chat';
 import { useSocket } from '@/hooks/useSocket';
 import ConversationList from '@/components/chat/ConversationList';
 import MessageThread from '@/components/chat/MessageThread';
@@ -37,7 +37,7 @@ export default function MessagesPage() {
     onlineUsers,
     messagesHasMore,
     conversationsLoaded,
-  } = useChatStore();
+  } = useChatStoreWithAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [mobileShowThread, setMobileShowThread] = useState(false);
@@ -105,20 +105,22 @@ export default function MessagesPage() {
       if (sellerId && !creatingRef.current) {
         creatingRef.current = true;
         handledParamsRef.current = paramsKey;
-        useChatStore
-          .getState()
-          .startConversation(productId, sellerId)
-          .then((convId) => {
-            creatingRef.current = false;
-            if (convId) {
-              activate(convId);
-              router.replace('/dashboard/messages', { scroll: false });
-            }
-          })
-          .catch((error) => {
-            creatingRef.current = false;
-            console.error('Failed to create conversation:', error);
-          });
+        if (token) {
+          useChatStore
+            .getState()
+            .startConversation(productId, sellerId, token)
+            .then((convId) => {
+              creatingRef.current = false;
+              if (convId) {
+                activate(convId);
+                router.replace('/dashboard/messages', { scroll: false });
+              }
+            })
+            .catch((error) => {
+              creatingRef.current = false;
+              console.error('Failed to create conversation:', error);
+            });
+        }
       }
       return;
     }
@@ -138,20 +140,22 @@ export default function MessagesPage() {
       if (!creatingRef.current) {
         creatingRef.current = true;
         handledParamsRef.current = paramsKey;
-        useChatStore
-          .getState()
-          .startConversation('', sellerId)
-          .then((convId) => {
-            creatingRef.current = false;
-            if (convId) {
-              activate(convId);
-              router.replace('/dashboard/messages', { scroll: false });
-            }
-          })
-          .catch((error) => {
-            creatingRef.current = false;
-            console.error('Failed to create conversation:', error);
-          });
+        if (token) {
+          useChatStore
+            .getState()
+            .startConversation('', sellerId, token)
+            .then((convId) => {
+              creatingRef.current = false;
+              if (convId) {
+                activate(convId);
+                router.replace('/dashboard/messages', { scroll: false });
+              }
+            })
+            .catch((error) => {
+              creatingRef.current = false;
+              console.error('Failed to create conversation:', error);
+            });
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

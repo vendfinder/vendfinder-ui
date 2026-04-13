@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { MessageCircleQuestion, X, Send, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { useChatStore } from '@/stores/chat';
+import { useChatStoreWithAuth } from '@/stores/chat';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -23,7 +23,7 @@ export default function SupportChatButton() {
   const t = useTranslations('chat');
   const CATEGORIES = useCategories();
   const { user, token } = useAuth();
-  const { fetchConversations, startSupportConversation } = useChatStore();
+  const { fetchConversations, startSupportConversation } = useChatStoreWithAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);

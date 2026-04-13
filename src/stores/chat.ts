@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import type { Conversation, ChatMessage, TypingIndicator } from '@/types';
 import * as chatApi from '@/lib/api-chat';
-import { onTokenChange } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 
 interface ChatStore {
   // State
@@ -19,37 +19,43 @@ interface ChatStore {
   messagesCursors: Record<string, string | null>;
 
   // Actions
-  fetchConversations: () => Promise<void>;
-  loadMessages: (conversationId: string) => Promise<void>;
-  loadMoreMessages: (conversationId: string) => Promise<void>;
+  fetchConversations: (token: string) => Promise<void>;
+  loadMessages: (conversationId: string, token: string) => Promise<void>;
+  loadMoreMessages: (conversationId: string, token: string) => Promise<void>;
   sendMessage: (
     conversationId: string,
     content: string,
+    token: string,
     locale?: string
   ) => Promise<void>;
   sendOffer: (
     conversationId: string,
-    price: number
+    price: number,
+    token: string
   ) => Promise<void>;
   respondToOffer: (
     offerId: string,
     action: string,
+    token: string,
     counterPrice?: number
   ) => Promise<void>;
   startConversation: (
     productId: string,
     sellerId: string,
+    token: string,
     productInfo?: { name: string; image: string; price: number }
   ) => Promise<string | null>;
   startSupportConversation: (
     message: string,
+    token: string,
     category?: string
   ) => Promise<string | null>;
-  markAsRead: (conversationId: string) => void;
+  markAsRead: (conversationId: string, token?: string) => void;
   setActiveConversation: (id: string | null) => void;
   reportMessage: (
     messageId: string,
     reason: string,
+    token: string,
     details?: string
   ) => Promise<void>;
   reset: () => void;
@@ -70,77 +76,20 @@ interface ChatStore {
   setConnected: (connected: boolean) => void;
 }
 
-// Token management for the store
-let currentToken: string | null = null;
-
-// Get the current auth token with retry logic for 401s
-const getAuthToken = async (retryCount = 0): Promise<string> => {
-  // First try to get the current token
-  if (!currentToken) {
-    if (typeof window !== 'undefined') {
-      currentToken = localStorage.getItem('vendfinder-token');
-    }
-  }
-
-  if (!currentToken) {
-    throw new Error('Not authenticated');
-  }
-
-  // If this is a retry attempt, try to refresh the token
-  if (retryCount > 0) {
-    try {
-      // Trigger a token refresh by calling the auth endpoint
-      const res = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${currentToken}` },
-      });
-
-      if (res.ok) {
-        // Token is still valid, return it
-        return currentToken;
-      } else if (res.status === 401 || res.status === 403) {
-        // Token is invalid, clear it and throw error
-        currentToken = null;
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('vendfinder-token');
-          localStorage.removeItem('vendfinder-user');
-        }
-        throw new Error('Authentication expired');
-      }
-    } catch (error) {
-      // If refresh fails, clear token and throw
-      currentToken = null;
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('vendfinder-token');
-        localStorage.removeItem('vendfinder-user');
-      }
-      throw error;
-    }
-  }
-
-  return currentToken;
-};
-
-// Wrapper function to handle API calls with retry logic for 401s
+// Simple retry wrapper for 401 errors - retry the API call once
 const callApiWithRetry = async <T>(
-  apiCall: (token: string) => Promise<T>
+  apiCall: () => Promise<T>
 ): Promise<T> => {
   try {
-    const token = await getAuthToken();
-    return await apiCall(token);
+    return await apiCall();
   } catch (error: unknown) {
-    // If it's a 401 error and we haven't retried yet, try once more
+    // If it's a 401 error, try once more
     const errorWithStatus = error as { status?: number; response?: { status?: number } };
     const isUnauthorized =
       errorWithStatus?.status === 401 ||
       errorWithStatus?.response?.status === 401;
     if (isUnauthorized) {
-      try {
-        const token = await getAuthToken(1);
-        return await apiCall(token);
-      } catch (retryError) {
-        console.error('API call failed after retry:', retryError);
-        throw retryError;
-      }
+      return await apiCall();
     }
     throw error;
   }
@@ -158,9 +107,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   messagesHasMore: {},
   messagesCursors: {},
 
-  fetchConversations: async () => {
+  fetchConversations: async (token: string) => {
     try {
-      const conversations = await callApiWithRetry((token) =>
+      if (!token) throw new Error('Not authenticated');
+      const conversations = await callApiWithRetry(() =>
         chatApi.fetchConversations(token)
       );
       const totalUnread = conversations.reduce(
@@ -173,12 +123,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  loadMessages: async (conversationId) => {
+  loadMessages: async (conversationId, token) => {
     // Skip if already loaded
     if (get().messages[conversationId]?.length) return;
 
     try {
-      const result = await callApiWithRetry((token) =>
+      if (!token) throw new Error('Not authenticated');
+      const result = await callApiWithRetry(() =>
         chatApi.fetchMessages(conversationId, token)
       );
       set((state) => ({
@@ -197,12 +148,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  loadMoreMessages: async (conversationId) => {
+  loadMoreMessages: async (conversationId, token) => {
     const cursor = get().messagesCursors[conversationId];
     if (!cursor || !get().messagesHasMore[conversationId]) return;
 
     try {
-      const result = await callApiWithRetry((token) =>
+      if (!token) throw new Error('Not authenticated');
+      const result = await callApiWithRetry(() =>
         chatApi.fetchMessages(conversationId, token, cursor)
       );
       set((state) => ({
@@ -227,9 +179,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  sendMessage: async (conversationId, content, locale) => {
+  sendMessage: async (conversationId, content, token, locale?) => {
     try {
-      const msg = await callApiWithRetry((token) =>
+      if (!token) throw new Error('Not authenticated');
+      const msg = await callApiWithRetry(() =>
         chatApi.sendMessage(
           conversationId,
           content,
@@ -265,9 +218,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  sendOffer: async (conversationId, price) => {
+  sendOffer: async (conversationId, price, token) => {
     try {
-      const result = await callApiWithRetry((token) =>
+      if (!token) throw new Error('Not authenticated');
+      const result = await callApiWithRetry(() =>
         chatApi.createOffer(conversationId, price, token)
       );
       // Message will arrive via socket
@@ -288,9 +242,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  respondToOffer: async (offerId, action, counterPrice?) => {
+  respondToOffer: async (offerId, action, token, counterPrice?) => {
     try {
-      await callApiWithRetry((token) =>
+      if (!token) throw new Error('Not authenticated');
+      await callApiWithRetry(() =>
         chatApi.respondToOffer(offerId, action, token, counterPrice)
       );
     } catch (err) {
@@ -298,9 +253,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  startConversation: async (productId, sellerId, productInfo?) => {
+  startConversation: async (productId, sellerId, token, productInfo?) => {
     try {
-      const result = await callApiWithRetry((token) =>
+      if (!token) throw new Error('Not authenticated');
+      const result = await callApiWithRetry(() =>
         chatApi.createConversation(
           productId,
           sellerId,
@@ -310,7 +266,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       );
       if (result.id) {
         // Refresh conversations to get the full object
-        await get().fetchConversations();
+        await get().fetchConversations(token);
         return result.id;
       }
       return null;
@@ -320,9 +276,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  startSupportConversation: async (message, category?) => {
+  startSupportConversation: async (message, token, category?) => {
     try {
-      const result = await callApiWithRetry((token) =>
+      if (!token) throw new Error('Not authenticated');
+      const result = await callApiWithRetry(() =>
         chatApi.createSupportConversation(
           token,
           message,
@@ -330,7 +287,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         )
       );
       if (result.id) {
-        await get().fetchConversations();
+        await get().fetchConversations(token);
         return result.id;
       }
       return null;
@@ -340,8 +297,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  markAsRead: (conversationId) => {
-    callApiWithRetry((token) => chatApi.markAsRead(conversationId, token)).catch(() => {});
+  markAsRead: (conversationId, token) => {
+    if (token) {
+      callApiWithRetry(() => chatApi.markAsRead(conversationId, token)).catch(() => {});
+    }
     set((state) => {
       const conv = state.conversations.find((c) => c.id === conversationId);
       if (!conv || conv.unreadCount === 0) return state;
@@ -356,8 +315,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   setActiveConversation: (id) => set({ activeConversation: id }),
 
-  reportMessage: async (messageId, reason, details?) => {
-    await callApiWithRetry((token) =>
+  reportMessage: async (messageId, reason, token, details?) => {
+    if (!token) throw new Error('Not authenticated');
+    await callApiWithRetry(() =>
       chatApi.reportMessage(messageId, reason, token, details)
     );
   },
@@ -480,14 +440,44 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   setConnected: (connected) => set({ isConnected: connected }),
 }));
 
-// Listen for token changes to update the store's token
-onTokenChange((newToken) => {
-  currentToken = newToken;
-});
+// Custom hooks that use useAuth() to inject token into store methods
+export function useChatStoreWithAuth() {
+  const { token } = useAuth();
+  const store = useChatStore();
 
-// Initialize currentToken on first load
-if (typeof window !== 'undefined') {
-  currentToken = localStorage.getItem('vendfinder-token');
+  if (!token) throw new Error('Not authenticated');
+
+  return {
+    ...store,
+    fetchConversations: () => store.fetchConversations(token),
+    loadMessages: (conversationId: string) =>
+      store.loadMessages(conversationId, token),
+    loadMoreMessages: (conversationId: string) =>
+      store.loadMoreMessages(conversationId, token),
+    sendMessage: (
+      conversationId: string,
+      content: string,
+      locale?: string
+    ) => store.sendMessage(conversationId, content, token, locale),
+    sendOffer: (conversationId: string, price: number) =>
+      store.sendOffer(conversationId, price, token),
+    respondToOffer: (
+      offerId: string,
+      action: string,
+      counterPrice?: number
+    ) => store.respondToOffer(offerId, action, token, counterPrice),
+    startConversation: (
+      productId: string,
+      sellerId: string,
+      productInfo?: { name: string; image: string; price: number }
+    ) => store.startConversation(productId, sellerId, token, productInfo),
+    startSupportConversation: (message: string, category?: string) =>
+      store.startSupportConversation(message, token, category),
+    markAsRead: (conversationId: string) =>
+      store.markAsRead(conversationId, token),
+    reportMessage: (messageId: string, reason: string, details?: string) =>
+      store.reportMessage(messageId, reason, token, details),
+  };
 }
 
 // Hook for components that just need totalUnread (lightweight selector)

@@ -2,18 +2,13 @@
 
 import { useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useChatStore } from '@/stores/chat';
+import { useChatStore, useChatStoreWithAuth } from '@/stores/chat';
 import { useSocket } from '@/hooks/useSocket';
 
 export default function ChatInitializer() {
-  const { isAuthenticated } = useAuth();
-  const { fetchConversations, reset, conversationsLoaded } = useChatStore();
-
-  // Get token from localStorage
-  const token =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('vendfinder-token')
-      : null;
+  const { isAuthenticated, token } = useAuth();
+  const { reset, conversationsLoaded } = useChatStore();
+  const { fetchConversations } = useChatStoreWithAuth();
 
   // Initialize socket connection
   useSocket(isAuthenticated ? token : null);
