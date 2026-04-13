@@ -12,6 +12,7 @@ import SupportChatButton from '@/components/chat/SupportChatButton';
 import CookieConsent from '@/components/CookieConsent';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
+import RouterErrorBoundary from '@/components/RouterErrorBoundary';
 
 const playfair = Playfair_Display({
   variable: '--font-playfair',
@@ -64,7 +65,9 @@ export default async function RootLayout({
               <ChatInitializer />
               <Navbar />
               <main className="min-h-screen pb-[var(--tab-bar-height)]">
-                {children}
+                <RouterErrorBoundary>
+                  {children}
+                </RouterErrorBoundary>
               </main>
               <Footer />
               <CartDrawer />
