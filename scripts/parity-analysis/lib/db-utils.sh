@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-source "$(dirname "$0")/common.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 # Database schema comparison
 compare_database_schemas() {
