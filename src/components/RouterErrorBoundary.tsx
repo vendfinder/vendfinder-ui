@@ -39,7 +39,8 @@ export class RouterErrorBoundary extends React.Component<
         try {
           const keys = Object.keys(localStorage);
           keys.forEach((key) => {
-            if (key.includes('next-router') || key.includes('__next')) {
+            // Only clear Next.js router keys, preserve auth data
+            if (key.includes('next-router') && !key.includes('vendfinder-token') && !key.includes('vendfinder-user')) {
               localStorage.removeItem(key);
             }
           });
