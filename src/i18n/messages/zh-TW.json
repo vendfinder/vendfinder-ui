@@ -620,7 +620,10 @@
     "conversationCount": "{count} 個對話",
     "selectConversation": "選擇一個對話",
     "selectConversationDesc": "從左側選擇一個對話開始聊天",
-    "online": "在線"
+    "online": "在線",
+    "validatingAuth": "正在驗證身份...",
+    "pleaseLogin": "請登入以存取訊息。",
+    "goToLogin": "前往登入"
   },
   "dashboardOrders": {
     "title": "訂單記錄",

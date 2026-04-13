@@ -620,7 +620,10 @@
     "conversationCount": "{count}件の会話",
     "selectConversation": "会話を選択",
     "selectConversationDesc": "左から会話を選択してチャットを始めましょう",
-    "online": "オンライン"
+    "online": "オンライン",
+    "validatingAuth": "認証を検証中...",
+    "pleaseLogin": "メッセージにアクセスするにはログインしてください。",
+    "goToLogin": "ログインに移動"
   },
   "dashboardOrders": {
     "title": "注文履歴",

@@ -620,7 +620,10 @@
     "conversationCount": "{count} conversación(es)",
     "selectConversation": "Selecciona una conversación",
     "selectConversationDesc": "Elige una conversación de la izquierda para comenzar a chatear",
-    "online": "En línea"
+    "online": "En línea",
+    "validatingAuth": "Validando autenticación...",
+    "pleaseLogin": "Inicia sesión para acceder a los mensajes.",
+    "goToLogin": "Ir a Iniciar sesión"
   },
   "dashboardOrders": {
     "title": "Historial de pedidos",

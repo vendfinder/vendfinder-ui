@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, ArrowLeft, MessageCircle } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, useAuthToken } from '@/context/AuthContext';
 import { useLocale } from 'next-intl';
 import { useChatStore } from '@/stores/chat';
 import { useSocket } from '@/hooks/useSocket';
@@ -51,10 +51,7 @@ export default function MessagesPage() {
   const handledParamsRef = useRef<string | null>(null);
   const creatingRef = useRef(false);
 
-  const token =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('vendfinder-token')
-      : null;
+  const { token, isAuthenticated, isValidating } = useAuthToken();
 
   const {
     joinConversation,
@@ -117,6 +114,10 @@ export default function MessagesPage() {
               activate(convId);
               router.replace('/dashboard/messages', { scroll: false });
             }
+          })
+          .catch((error) => {
+            creatingRef.current = false;
+            console.error('Failed to create conversation:', error);
           });
       }
       return;
@@ -146,6 +147,10 @@ export default function MessagesPage() {
               activate(convId);
               router.replace('/dashboard/messages', { scroll: false });
             }
+          })
+          .catch((error) => {
+            creatingRef.current = false;
+            console.error('Failed to create conversation:', error);
           });
       }
     }
@@ -328,6 +333,30 @@ export default function MessagesPage() {
     onTypingStop: () =>
       activeConversation && emitTypingStop(activeConversation),
   };
+
+  // Show loading state while validating authentication
+  if (isValidating) {
+    return (
+      <div className="flex items-center justify-center py-24 text-center">
+        <p className="text-sm text-muted">{t('validatingAuth')}</p>
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated || !token) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <p className="text-sm text-muted mb-4">{t('pleaseLogin')}</p>
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-dark transition-colors"
+        >
+          {t('goToLogin')}
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <motion.div

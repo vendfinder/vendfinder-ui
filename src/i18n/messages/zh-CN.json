@@ -621,7 +621,10 @@
     "conversationCount": "{count}个对话",
     "selectConversation": "选择一个对话",
     "selectConversationDesc": "从左侧选择一个对话开始聊天",
-    "online": "在线"
+    "online": "在线",
+    "validatingAuth": "正在验证身份...",
+    "pleaseLogin": "请登录以访问消息。",
+    "goToLogin": "前往登录"
   },
   "dashboardOrders": {
     "title": "订单历史",

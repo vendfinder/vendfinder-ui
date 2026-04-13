@@ -620,7 +620,10 @@
     "conversationCount": "{count} Unterhaltung(en)",
     "selectConversation": "Wähle eine Unterhaltung",
     "selectConversationDesc": "Wähle links eine Unterhaltung aus, um den Chat zu starten",
-    "online": "Online"
+    "online": "Online",
+    "validatingAuth": "Authentifizierung wird überprüft...",
+    "pleaseLogin": "Bitte melden Sie sich an, um auf Nachrichten zuzugreifen.",
+    "goToLogin": "Zur Anmeldung gehen"
   },
   "dashboardOrders": {
     "title": "Bestellverlauf",

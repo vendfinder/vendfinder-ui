@@ -621,7 +621,10 @@
     "conversationCount": "{count} conversation(s)",
     "selectConversation": "Select a conversation",
     "selectConversationDesc": "Choose a conversation from the left to start chatting",
-    "online": "Online"
+    "online": "Online",
+    "validatingAuth": "Validating authentication...",
+    "pleaseLogin": "Please log in to access messages.",
+    "goToLogin": "Go to Login"
   },
   "dashboardOrders": {
     "title": "Order History",

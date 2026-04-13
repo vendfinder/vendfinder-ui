@@ -620,7 +620,10 @@
     "conversationCount": "{count} conversation(s)",
     "selectConversation": "Sélectionnez une conversation",
     "selectConversationDesc": "Choisissez une conversation à gauche pour commencer à discuter",
-    "online": "En ligne"
+    "online": "En ligne",
+    "validatingAuth": "Validation de l'authentification...",
+    "pleaseLogin": "Veuillez vous connecter pour accéder aux messages.",
+    "goToLogin": "Aller à la connexion"
   },
   "dashboardOrders": {
     "title": "Historique des commandes",
