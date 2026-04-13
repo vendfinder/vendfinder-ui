@@ -215,6 +215,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       });
     } catch (err) {
       console.error('Failed to send message:', err);
+      throw err; // Re-throw to allow MessageInput to handle the error
     }
   },
 
@@ -239,6 +240,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }
     } catch (err) {
       console.error('Failed to send offer:', err);
+      throw err; // Re-throw to allow MessageInput to handle the error
     }
   },
 

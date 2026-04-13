@@ -3,6 +3,7 @@ import { Playfair_Display, Outfit } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import BottomTabBar from '@/components/layout/BottomTabBar';
@@ -62,7 +63,8 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <AuthProvider>
             <CartProvider>
-              <ChatInitializer />
+              <ToastProvider>
+                <ChatInitializer />
               <Navbar />
               <main className="min-h-screen pb-[var(--tab-bar-height)]">
                 <RouterErrorBoundary>{children}</RouterErrorBoundary>
@@ -72,6 +74,7 @@ export default async function RootLayout({
               <SupportChatButton />
               <CookieConsent />
               <BottomTabBar />
+              </ToastProvider>
             </CartProvider>
           </AuthProvider>
         </NextIntlClientProvider>

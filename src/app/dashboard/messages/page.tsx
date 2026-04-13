@@ -188,17 +188,21 @@ export default function MessagesPage() {
 
   const locale = useLocale();
   const handleSend = useCallback(
-    (content: string) => {
-      if (!activeConversation || !token) return;
-      sendMessage(activeConversation, content, locale);
+    async (content: string) => {
+      if (!activeConversation || !token) {
+        throw new Error('Not authenticated or no active conversation');
+      }
+      await sendMessage(activeConversation, content, locale);
     },
     [activeConversation, sendMessage, token, locale]
   );
 
   const handleSendOffer = useCallback(
-    (price: number) => {
-      if (!activeConversation || !token) return;
-      sendOffer(activeConversation, price);
+    async (price: number) => {
+      if (!activeConversation || !token) {
+        throw new Error('Not authenticated or no active conversation');
+      }
+      await sendOffer(activeConversation, price);
     },
     [activeConversation, sendOffer, token]
   );

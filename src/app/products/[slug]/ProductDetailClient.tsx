@@ -25,6 +25,7 @@ import { useRouter } from 'next/navigation';
 import type { Product, Review } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
 import { formatPrice } from '@/lib/utils';
 import Rating from '@/components/ui/Rating';
 import ProductCard from '@/components/product/ProductCard';
@@ -39,6 +40,7 @@ import SalesHistoryTable from '@/components/product/SalesHistoryTable';
 import { useTranslatedProduct } from '@/hooks/useTranslatedProduct';
 import ReportDialog from '@/components/ui/ReportDialog';
 import { Flag } from 'lucide-react';
+import { useChatStoreWithAuth } from '@/stores/chat';
 
 export default function ProductDetailClient({
   product: rawProduct,
@@ -73,9 +75,23 @@ export default function ProductDetailClient({
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [showConditionGuide, setShowConditionGuide] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [contactingVendor, setContactingVendor] = useState(false);
   const { addItem } = useCart();
   const { isAuthenticated, user, token } = useAuth();
+  const { showToast } = useToast();
   const router = useRouter();
+
+  // Get store functions safely
+  let startConversation: ((productId: string, sellerId: string, productInfo?: { name: string; image: string; price: number }) => Promise<string | null>) | undefined;
+  try {
+    if (isAuthenticated && token) {
+      const { startConversation: sc } = useChatStoreWithAuth();
+      startConversation = sc;
+    }
+  } catch (error) {
+    // Store will throw if not authenticated, we'll handle this in the click handler
+    console.warn('Chat store not available:', error);
+  }
 
   useEffect(() => {
     fetch(`/api/products/${product.id}/view`, { method: 'POST' }).catch(
@@ -181,6 +197,64 @@ export default function ProductDetailClient({
     }
     setSizeError(false);
     addItem(product, quantity, selectedSize || undefined);
+  };
+
+  const handleContactVendor = async () => {
+    if (!isAuthenticated || !token) {
+      showToast('error', 'Authentication required', 'Please log in to contact vendors');
+      return;
+    }
+
+    if (!product.sellerId) {
+      showToast('error', 'Unable to contact vendor', 'Seller information is not available');
+      return;
+    }
+
+    if (!startConversation) {
+      showToast('error', 'Service unavailable', 'Chat service is not available. Please try again later.');
+      return;
+    }
+
+    setContactingVendor(true);
+
+    try {
+      const productInfo = {
+        name: product.name,
+        image: product.images[0] || '',
+        price: product.price,
+      };
+
+      const conversationId = await startConversation(
+        product.id,
+        product.sellerId,
+        productInfo
+      );
+
+      if (conversationId) {
+        showToast('success', 'Conversation started', 'Redirecting to messages...');
+        // Small delay to let user see the success message
+        setTimeout(() => {
+          router.push('/dashboard/messages');
+        }, 1000);
+      } else {
+        throw new Error('Failed to create conversation');
+      }
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      let userMessage = 'Please try again later';
+
+      if (errorMessage.includes('401') || errorMessage.includes('unauthorized') || errorMessage.includes('Not authenticated')) {
+        userMessage = 'Please log in again to continue';
+      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        userMessage = 'Please check your internet connection';
+      }
+
+      showToast('error', 'Failed to start conversation', userMessage);
+    } finally {
+      setContactingVendor(false);
+    }
   };
 
   const tabs = [
@@ -475,15 +549,16 @@ export default function ProductDetailClient({
           {/* Message Seller */}
           {isAuthenticated && (
             <button
-              onClick={() =>
-                router.push(
-                  `/dashboard/messages?product=${product.id}${product.sellerId ? `&seller=${product.sellerId}` : ''}`
-                )
-              }
-              className="mt-3 w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-surface border border-border text-foreground font-semibold rounded-xl hover:border-primary/40 hover:text-primary transition-all cursor-pointer text-sm"
+              onClick={handleContactVendor}
+              disabled={contactingVendor}
+              className="mt-3 w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-surface border border-border text-foreground font-semibold rounded-xl hover:border-primary/40 hover:text-primary transition-all cursor-pointer text-sm disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <MessageCircle size={15} />
-              {t('messageSeller')}
+              {contactingVendor ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <MessageCircle size={15} />
+              )}
+              {contactingVendor ? 'Contacting...' : t('messageSeller')}
             </button>
           )}
 
