@@ -1,0 +1,62 @@
+# config/parity-analysis.yaml
+environments:
+  production:
+    namespace: "vendfinder"
+    cluster_context: "production"
+    domain: "vendfinder.com"
+    api_domain: "api.vendfinder.com"
+  staging:
+    namespace: "vendfinder-staging"
+    cluster_context: "staging"
+    domain: "staging.vendfinder.com"
+    api_domain: "api-staging.vendfinder.com"
+
+services:
+  - name: "frontend"
+    port: 3000
+    health_endpoint: "/"
+  - name: "user-service"
+    port: 3004
+    health_endpoint: "/health"
+  - name: "chat-service"
+    port: 3005
+    health_endpoint: "/health"
+  - name: "product-service"
+    port: 3000
+    health_endpoint: "/health"
+  - name: "order-service"
+    port: 3000
+    health_endpoint: "/health"
+  - name: "websocket-service"
+    port: 3006
+    health_endpoint: "/health"
+  - name: "support-bot"
+    port: 3009
+    health_endpoint: "/health"
+  - name: "api-gateway"
+    port: 3000
+    health_endpoint: "/health"
+
+databases:
+  - name: "user-db"
+    service: "user-service"
+    prod_db: "user_db"
+    staging_db: "user_db_staging"
+  - name: "chat-db"
+    service: "chat-service"
+    prod_db: "chat_db"
+    staging_db: "chat_db_staging"
+  - name: "product-db"
+    service: "product-service"
+    prod_db: "product_db"
+    staging_db: "product_db_staging"
+  - name: "order-db"
+    service: "order-service"
+    prod_db: "order_db"
+    staging_db: "order_db_staging"
+
+priority_levels:
+  critical: ["database_schema_mismatch", "missing_service", "auth_config_gap", "image_tag_mismatch"]
+  high: ["env_var_mismatch", "external_service_diff", "resource_limit_diff", "version_mismatch"]
+  medium: ["config_drift", "non_critical_version_diff", "metadata_diff"]
+  low: ["cosmetic_diff", "optional_enhancement"]

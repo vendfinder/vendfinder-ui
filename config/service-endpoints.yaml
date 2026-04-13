@@ -1,0 +1,47 @@
+# config/service-endpoints.yaml
+critical_endpoints:
+  auth:
+    - path: "/api/auth/me"
+      method: "GET"
+      requires_auth: true
+    - path: "/api/auth/login"
+      method: "POST"
+      requires_auth: false
+
+  products:
+    - path: "/api/products"
+      method: "GET"
+      requires_auth: false
+    - path: "/api/products/search"
+      method: "GET"
+      requires_auth: false
+
+  chat:
+    - path: "/api/chat/conversations"
+      method: "GET"
+      requires_auth: true
+    - path: "/api/chat/health"
+      method: "GET"
+      requires_auth: false
+
+  orders:
+    - path: "/api/orders"
+      method: "GET"
+      requires_auth: true
+    - path: "/api/orders/health"
+      method: "GET"
+      requires_auth: false
+
+external_integrations:
+  stripe:
+    test_key_pattern: "pk_test_"
+    prod_key_pattern: "pk_live_"
+    webhook_pattern: "whsec_"
+
+  digitalocean_spaces:
+    endpoint_pattern: "https://.*\\.digitaloceanspaces\\.com"
+    cdn_pattern: "https://.*\\.cdn\\.digitaloceanspaces\\.com"
+
+  anthropic:
+    api_key_pattern: "sk-ant-"
+    model_pattern: "claude-.*"
