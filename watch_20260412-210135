@@ -1,0 +1,50 @@
+NAME                                  READY   STATUS                       RESTARTS
+   AGE                                                                             
+admin-service-5b75ff8b68-vlnfm        1/1     Running                      0       
+   12d                                                                             
+analytics-db-0                        1/1     Running                      0       
+   29d                                                                             
+analytics-service-665b79649d-g8dzn    1/1     Running                      0       
+   12d                                                                             
+api-gateway-5c5fc68b4f-tbnsq          1/1     Running                      0       
+   9d                                                                              
+chat-db-0                             1/1     Running                      0       
+   12d                                                                             
+chat-service-66cd47745d-swchq         1/1     Running                      0       
+   6m5s                                                                            
+elasticsearch-0                       1/1     Running                      0       
+   12d                                                                             
+email-service-d76f64849-gwxld         1/1     Running                      0       
+   12d                                                                             
+frontend-58db8f87bd-rj5n6             1/1     Running                      0       
+   5m37s                                                                           
+grafana-565d75dd76-sxspk              1/1     Running                      0       
+   2d2h                                                                            
+inventory-metrics-67dcdfdb47-9fnmt    1/1     Running                      0       
+   2d2h                                                                            
+loki-5d876b945f-5lh57                 1/1     Running                      0       
+   12d                                                                             
+order-db-0                            1/1     Running                      0       
+   12d                                                                             
+order-service-6fbc7b4f4-bppm4         1/1     Running                      0       
+   162m                                                                            
+order-service-6fbc7b4f4-fncsz         1/1     Running                      0       
+   161m                                                                            
+order-service-vault-5f69c8b4b-hvw86   1/2     ImagePullBackOff             0       
+   77m                                                                             
+order-service-vault-5f69c8b4b-kvs9z   1/2     ImagePullBackOff             0       
+   77m                                                                             
+order-service-vault-9767c7bb7-tkw57   1/2     CreateContainerConfigError   0       
+   64m                                                                             
+product-db-59f8646f49-p4hc7           1/1     Running                      1 (12d a
+   12d                                                                             
+product-service-cb9b5b97d-wwdbc       1/1     Running                      0       
+   161m                                                                            
+prometheus-5cdff89bbf-dvlc4           1/1     Running                      0      d
+
+
+
+
+
+
+

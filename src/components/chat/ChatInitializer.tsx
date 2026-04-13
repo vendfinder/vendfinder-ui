@@ -6,7 +6,7 @@ import { useChatStore } from '@/stores/chat';
 import { useSocket } from '@/hooks/useSocket';
 
 export default function ChatInitializer() {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { fetchConversations, reset, conversationsLoaded } = useChatStore();
 
   // Get token from localStorage
@@ -21,7 +21,7 @@ export default function ChatInitializer() {
   // Fetch conversations when authenticated
   useEffect(() => {
     if (isAuthenticated && token && !conversationsLoaded) {
-      fetchConversations(token);
+      fetchConversations();
     }
   }, [isAuthenticated, token, conversationsLoaded, fetchConversations]);
 

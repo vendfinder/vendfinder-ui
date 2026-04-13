@@ -76,8 +76,8 @@ export default function MessagesPage() {
 
     // Helper: activate a conversation by ID
     const activate = (id: string) => {
-      loadMessages(id, token);
-      markAsRead(id, token);
+      loadMessages(id);
+      markAsRead(id);
       setActiveConversation(id);
       setMobileShowThread(true);
     };
@@ -107,7 +107,7 @@ export default function MessagesPage() {
         handledParamsRef.current = paramsKey;
         useChatStore
           .getState()
-          .startConversation(productId, sellerId, token)
+          .startConversation(productId, sellerId)
           .then((convId) => {
             creatingRef.current = false;
             if (convId) {
@@ -140,7 +140,7 @@ export default function MessagesPage() {
         handledParamsRef.current = paramsKey;
         useChatStore
           .getState()
-          .startConversation('', sellerId, token)
+          .startConversation('', sellerId)
           .then((convId) => {
             creatingRef.current = false;
             if (convId) {
@@ -172,8 +172,8 @@ export default function MessagesPage() {
   const handleSelectConversation = useCallback(
     (id: string) => {
       if (token) {
-        loadMessages(id, token);
-        markAsRead(id, token);
+        loadMessages(id);
+        markAsRead(id);
         emitMessageRead(id);
       }
       setActiveConversation(id);
@@ -186,7 +186,7 @@ export default function MessagesPage() {
   const handleSend = useCallback(
     (content: string) => {
       if (!activeConversation || !token) return;
-      sendMessage(activeConversation, content, token, locale);
+      sendMessage(activeConversation, content, locale);
     },
     [activeConversation, sendMessage, token, locale]
   );
@@ -194,7 +194,7 @@ export default function MessagesPage() {
   const handleSendOffer = useCallback(
     (price: number) => {
       if (!activeConversation || !token) return;
-      sendOffer(activeConversation, price, token);
+      sendOffer(activeConversation, price);
     },
     [activeConversation, sendOffer, token]
   );
@@ -202,7 +202,7 @@ export default function MessagesPage() {
   const handleAcceptOffer = useCallback(
     (offerId: string) => {
       if (!token) return;
-      respondToOffer(offerId, 'accept', token);
+      respondToOffer(offerId, 'accept');
     },
     [respondToOffer, token]
   );
@@ -210,7 +210,7 @@ export default function MessagesPage() {
   const handleDeclineOffer = useCallback(
     (offerId: string) => {
       if (!token) return;
-      respondToOffer(offerId, 'decline', token);
+      respondToOffer(offerId, 'decline');
     },
     [respondToOffer, token]
   );
@@ -218,14 +218,14 @@ export default function MessagesPage() {
   const handleCounterOffer = useCallback(
     (offerId: string, price: number) => {
       if (!token) return;
-      respondToOffer(offerId, 'counter', token, price);
+      respondToOffer(offerId, 'counter', price);
     },
     [respondToOffer, token]
   );
 
   const handleLoadMore = useCallback(() => {
     if (!activeConversation || !token) return;
-    loadMoreMessages(activeConversation, token);
+    loadMoreMessages(activeConversation);
   }, [activeConversation, loadMoreMessages, token]);
 
   const handleReport = useCallback((messageId: string) => {
@@ -235,7 +235,7 @@ export default function MessagesPage() {
   const handleReportSubmit = useCallback(
     (reason: string, details?: string) => {
       if (!reportingMessageId || !token) return;
-      reportMessage(reportingMessageId, reason, token, details);
+      reportMessage(reportingMessageId, reason, details);
     },
     [reportingMessageId, reportMessage, token]
   );

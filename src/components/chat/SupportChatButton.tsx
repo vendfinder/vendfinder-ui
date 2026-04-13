@@ -7,7 +7,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useChatStore } from '@/stores/chat';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { createSupportConversation } from '@/lib/api-chat';
 
 function useCategories() {
   const t = useTranslations('chat');
@@ -24,7 +23,7 @@ export default function SupportChatButton() {
   const t = useTranslations('chat');
   const CATEGORIES = useCategories();
   const { user, token } = useAuth();
-  const { fetchConversations } = useChatStore();
+  const { fetchConversations, startSupportConversation } = useChatStore();
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -46,18 +45,17 @@ export default function SupportChatButton() {
     if (!message.trim() || !token) return;
     setLoading(true);
     try {
-      const result = await createSupportConversation(
-        token,
+      const conversationId = await startSupportConversation(
         message.trim(),
         category
       );
-      if (result.id) {
-        await fetchConversations(token);
+      if (conversationId) {
+        await fetchConversations();
         setIsOpen(false);
         setMessage('');
         setCategory('');
         setStep('category');
-        router.push(`/dashboard/messages?conversation=${result.id}`);
+        router.push(`/dashboard/messages?conversation=${conversationId}`);
       }
     } catch (err) {
       console.error('Failed to start support conversation:', err);
