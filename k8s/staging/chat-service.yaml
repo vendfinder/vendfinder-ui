@@ -33,11 +33,10 @@ spec:
           image: registry.digitalocean.com/vendfinder-registry/chat-service:latest
           ports:
             - containerPort: 3005
+          envFrom:
+            - configMapRef:
+                name: chat-config
           env:
-            - name: PORT
-              value: "3005"
-            - name: DATABASE_URL
-              value: postgresql://vendfinder:vendfinder_pass@chat-db:5432/chat_db
             - name: REDIS_URL
               valueFrom:
                 secretKeyRef:

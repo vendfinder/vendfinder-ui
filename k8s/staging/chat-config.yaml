@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chat-config
+  namespace: vendfinder-staging
+  labels:
+    app: chat-service
+    environment: staging
+data:
+  PORT: "3005"
+  REDIS_URL: "redis://redis:6379"
+  # This will be updated with the actual staging database URL when ready
+  DATABASE_URL: "postgresql://doadmin:AVNS_laaJGl_cVqtvKV3GSo2@vendfinder-staging-db-do-user-31465471-0.h.db.ondigitalocean.com:25060/chat_db?sslmode=require"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-config
+  namespace: vendfinder-staging
+  labels:
+    app: user-service
+    environment: staging
+data:
+  PORT: "3004"
+  # Staging database for user service
+  DATABASE_URL: "postgresql://doadmin:AVNS_laaJGl_cVqtvKV3GSo2@vendfinder-staging-db-do-user-31465471-0.h.db.ondigitalocean.com:25060/user_db?sslmode=require"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vendfinder-config
+  namespace: vendfinder-staging
+  labels:
+    environment: staging
+data:
+  NODE_ENV: "staging"
+  NEXT_PUBLIC_API_URL: "https://staging.vendfinder.com/api"
+  NEXT_PUBLIC_WEBSOCKET_URL: "wss://staging.vendfinder.com"
+  NEXT_PUBLIC_SOCKET_URL: "https://staging.vendfinder.com"
+  DATABASE_URL: "postgresql://doadmin:AVNS_laaJGl_cVqtvKV3GSo2@vendfinder-staging-db-do-user-31465471-0.h.db.ondigitalocean.com:25060/vendfinder_db?sslmode=require"
