@@ -21,6 +21,33 @@ import { useTranslations } from 'next-intl';
 export default function MessagesPage() {
   const t = useTranslations('dashboardMessages');
   const { user } = useAuth();
+  const { token, isAuthenticated, isValidating } = useAuthToken();
+
+  // Show loading state while validating authentication
+  if (isValidating) {
+    return (
+      <div className="flex items-center justify-center py-24 text-center">
+        <p className="text-sm text-muted">{t('validatingAuth')}</p>
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated || !token) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <p className="text-sm text-muted mb-4">{t('pleaseLogin')}</p>
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-dark transition-colors"
+        >
+          {t('goToLogin')}
+        </Link>
+      </div>
+    );
+  }
+
+  // Now safe to use authenticated chat store
   const {
     conversations,
     activeConversation,
@@ -50,8 +77,6 @@ export default function MessagesPage() {
   } | null>(null);
   const handledParamsRef = useRef<string | null>(null);
   const creatingRef = useRef(false);
-
-  const { token, isAuthenticated, isValidating } = useAuthToken();
 
   const {
     joinConversation,
@@ -189,12 +214,36 @@ export default function MessagesPage() {
   const locale = useLocale();
   const handleSend = useCallback(
     async (content: string) => {
-      if (!activeConversation || !token) {
-        throw new Error('Not authenticated or no active conversation');
+      if (!token) {
+        throw new Error('Not authenticated');
       }
+
+      // If no active conversation but we have sellerId, create one first
+      if (!activeConversation && sellerId) {
+        const convId = await useChatStore.getState().startConversation(
+          productId || '',
+          sellerId,
+          token
+        );
+        if (!convId) {
+          throw new Error('Failed to create conversation');
+        }
+        // Set as active conversation
+        setActiveConversation(convId);
+        // Load messages for the new conversation
+        await loadMessages(convId);
+        // Send the message to the new conversation
+        await sendMessage(convId, content, locale);
+        return;
+      }
+
+      if (!activeConversation) {
+        throw new Error('No conversation available');
+      }
+
       await sendMessage(activeConversation, content, locale);
     },
-    [activeConversation, sendMessage, token, locale]
+    [activeConversation, sendMessage, token, locale, sellerId, productId, setActiveConversation, loadMessages]
   );
 
   const handleSendOffer = useCallback(
@@ -286,6 +335,7 @@ export default function MessagesPage() {
 
   const userId = user?.id || '';
 
+  // Show empty state if no conversations
   if (
     conversationsLoaded &&
     conversations.length === 0 &&
@@ -341,30 +391,6 @@ export default function MessagesPage() {
     onTypingStop: () =>
       activeConversation && emitTypingStop(activeConversation),
   };
-
-  // Show loading state while validating authentication
-  if (isValidating) {
-    return (
-      <div className="flex items-center justify-center py-24 text-center">
-        <p className="text-sm text-muted">{t('validatingAuth')}</p>
-      </div>
-    );
-  }
-
-  // Redirect to login if not authenticated
-  if (!isAuthenticated || !token) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <p className="text-sm text-muted mb-4">{t('pleaseLogin')}</p>
-        <Link
-          href="/login"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-dark transition-colors"
-        >
-          {t('goToLogin')}
-        </Link>
-      </div>
-    );
-  }
 
   return (
     <motion.div
@@ -471,16 +497,40 @@ export default function MessagesPage() {
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-                <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center mb-3">
-                  <MessageCircle size={20} className="text-muted/30" />
-                </div>
-                <p className="text-sm font-medium text-muted/60">
-                  {t('selectConversation')}
-                </p>
-                <p className="text-[12px] text-muted/40 mt-1">
-                  {t('selectConversationDesc')}
-                </p>
+              <div className="flex-1 flex flex-col min-w-0 h-full">
+                {/* Show input box if we have sellerId even without active conversation */}
+                {sellerId ? (
+                  <>
+                    <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+                      <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center mb-3">
+                        <MessageCircle size={20} className="text-muted/30" />
+                      </div>
+                      <p className="text-sm font-medium text-muted/60">
+                        Ready to message vendor
+                      </p>
+                      <p className="text-[12px] text-muted/40 mt-1">
+                        Type your message below to start the conversation
+                      </p>
+                    </div>
+
+                    {/* Input box for messaging vendor */}
+                    <div className="shrink-0">
+                      <MessageInput {...inputProps} />
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+                    <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center mb-3">
+                      <MessageCircle size={20} className="text-muted/30" />
+                    </div>
+                    <p className="text-sm font-medium text-muted/60">
+                      {t('selectConversation')}
+                    </p>
+                    <p className="text-[12px] text-muted/40 mt-1">
+                      {t('selectConversationDesc')}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
