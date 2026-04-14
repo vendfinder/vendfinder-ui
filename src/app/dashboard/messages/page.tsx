@@ -219,10 +219,13 @@ export default function MessagesPage() {
       }
 
       // If no active conversation but we have sellerId, create one first
-      if (!activeConversation && sellerId) {
+      const currentSellerId = searchParams.get('seller');
+      const currentProductId = searchParams.get('product');
+
+      if (!activeConversation && currentSellerId) {
         const convId = await useChatStore.getState().startConversation(
-          productId || '',
-          sellerId,
+          currentProductId || '',
+          currentSellerId,
           token
         );
         if (!convId) {
@@ -243,7 +246,7 @@ export default function MessagesPage() {
 
       await sendMessage(activeConversation, content, locale);
     },
-    [activeConversation, sendMessage, token, locale, sellerId, productId, setActiveConversation, loadMessages]
+    [activeConversation, sendMessage, token, locale, searchParams, setActiveConversation, loadMessages]
   );
 
   const handleSendOffer = useCallback(
@@ -499,7 +502,7 @@ export default function MessagesPage() {
             ) : (
               <div className="flex-1 flex flex-col min-w-0 h-full">
                 {/* Show input box if we have sellerId even without active conversation */}
-                {sellerId ? (
+                {searchParams.get('seller') ? (
                   <>
                     <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
                       <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center mb-3">
