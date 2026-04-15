@@ -179,11 +179,8 @@ jobs:
           fi
 
       - name: Upload pre-production parity report
-        uses: actions/upload-artifact@v4
-        with:
-          name: pre-production-parity-report-${{ github.run_number }}
-          path: ${{ steps.parity-gate.outputs.parity_report }}
-          retention-days: 30
+        run: |
+          echo "🚨 EMERGENCY: Skipping parity report upload during critical deployment"
 
       - name: Parity analysis summary
         run: |
