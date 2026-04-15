@@ -68,8 +68,8 @@ jobs:
           echo "🔍 Checking staging deployment status..."
 
           # Check if staging environment is healthy before production deployment
-          # Note: Using direct IP with Host header due to DNS propagation delay
-          if curl -f --max-time 30 -H "Host: staging.vendfinder.com" "http://143.244.221.229/api/health" > /dev/null 2>&1; then
+          # Note: Using API staging endpoint with direct IP for reliability
+          if curl -f --max-time 30 -H "Host: api-staging.vendfinder.com" "http://143.244.221.229/health" > /dev/null 2>&1; then
             echo "✅ Staging environment is healthy"
             echo "verified=true" >> $GITHUB_OUTPUT
           else
