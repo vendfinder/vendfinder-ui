@@ -60,6 +60,8 @@ ADMIN_HASH=$(generate_bcrypt_hash "$ADMIN_PASSWORD")
 SELLER_HASH=$(generate_bcrypt_hash "$SELLER_PASSWORD")
 BUYER_HASH=$(generate_bcrypt_hash "$BUYER_PASSWORD")
 
+echo "Password hashes generated successfully"
+
 # Validate database connectivity
 validate_db_connection() {
     echo "Validating database connection..."
@@ -105,14 +107,83 @@ check_existing_accounts() {
     echo "Buyer account exists: $BUYER_EXISTS"
 }
 
-echo "Password hashes generated successfully"
+# Create backup of admin account
+backup_admin_account() {
+    echo "Creating backup of admin account..."
 
+    kubectl exec -n vendfinder user-db-0 -- psql -U vendfinder -d user_db -c \
+        "CREATE TABLE IF NOT EXISTS user_backup_$(date +%Y%m%d) AS
+         SELECT * FROM users WHERE email = 'admin-test@vendfinder.com';"
+
+    echo "✅ Admin account backed up"
+}
+
+# Update admin account
+update_admin_account() {
+    echo "Updating admin-test@vendfinder.com account..."
+
+    local admin_email="admin-test@vendfinder.com"
+    local admin_hash="$ADMIN_HASH"
+
+    # SQL to update admin account
+    local sql="UPDATE users SET
+        password_hash = '$admin_hash',
+        role = 'admin',
+        subscription_tier = 'premium',
+        is_verified = true,
+        is_active = true,
+        email_verified_at = CURRENT_TIMESTAMP,
+        kyc_status = 'verified',
+        kyc_verified_at = CURRENT_TIMESTAMP,
+        tos_accepted_at = CURRENT_TIMESTAMP,
+        privacy_accepted_at = CURRENT_TIMESTAMP,
+        tos_version = '1.0',
+        auth_provider = 'email',
+        failed_login_attempts = 0,
+        locked_at = NULL,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE email = '$admin_email';"
+
+    kubectl exec -n vendfinder user-db-0 -- psql -U vendfinder -d user_db -c "$sql"
+
+    if [ $? -eq 0 ]; then
+        echo "✅ Admin account updated successfully"
+    else
+        echo "❌ Failed to update admin account"
+        return 1
+    fi
+}
+
+# Verify admin account
+verify_admin_account() {
+    echo "Verifying admin account configuration..."
+
+    local result=$(kubectl exec -n vendfinder user-db-0 -- psql -U vendfinder -d user_db -t -c \
+        "SELECT email, role, subscription_tier, is_verified, kyc_status
+         FROM users WHERE email = 'admin-test@vendfinder.com';" | tr -s ' ')
+
+    echo "Admin account details: $result"
+
+    # Check if role is admin
+    echo "$result" | grep -q "admin" && echo "✅ Role correctly set to admin" || echo "❌ Role not set correctly"
+    echo "$result" | grep -q "premium" && echo "✅ Premium tier enabled" || echo "❌ Premium tier not enabled"
+    echo "$result" | grep -q "t.*verified" && echo "✅ Account verified" || echo "❌ Account not verified"
+}
+
+# Main execution function
 main() {
     echo "=== VendFinder Test Accounts Creation ==="
 
     validate_k8s_access
     validate_db_connection
     check_existing_accounts
+
+    # Create backup before making changes
+    backup_admin_account
+
+    # Update admin account
+    update_admin_account
+    verify_admin_account
 
     echo "Ready to create/update accounts with generated credentials"
 }
