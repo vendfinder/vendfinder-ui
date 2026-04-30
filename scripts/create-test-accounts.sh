@@ -60,6 +60,66 @@ ADMIN_HASH=$(generate_bcrypt_hash "$ADMIN_PASSWORD")
 SELLER_HASH=$(generate_bcrypt_hash "$SELLER_PASSWORD")
 BUYER_HASH=$(generate_bcrypt_hash "$BUYER_PASSWORD")
 
+# Validate database connectivity
+validate_db_connection() {
+    echo "Validating database connection..."
+    kubectl exec -n vendfinder user-db-0 -- psql -U vendfinder -d user_db -c "SELECT 1;" > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "✅ Database connection successful"
+    else
+        echo "❌ Database connection failed"
+        exit 1
+    fi
+}
+
+# Validate Kubernetes access
+validate_k8s_access() {
+    echo "Validating Kubernetes access..."
+    kubectl get pod -n vendfinder user-db-0 > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "✅ Kubernetes access successful"
+    else
+        echo "❌ Cannot access user-db-0 pod"
+        exit 1
+    fi
+}
+
+# Check existing accounts
+check_existing_accounts() {
+    echo "Checking existing accounts..."
+
+    # Check admin-test account
+    ADMIN_EXISTS=$(kubectl exec -n vendfinder user-db-0 -- psql -U vendfinder -d user_db -t -c \
+        "SELECT COUNT(*) FROM users WHERE email = 'admin-test@vendfinder.com';" | tr -d ' ')
+
+    # Check seller-test account
+    SELLER_EXISTS=$(kubectl exec -n vendfinder user-db-0 -- psql -U vendfinder -d user_db -t -c \
+        "SELECT COUNT(*) FROM users WHERE email = 'seller-test@vendfinder.com';" | tr -d ' ')
+
+    # Check buyer-test account
+    BUYER_EXISTS=$(kubectl exec -n vendfinder user-db-0 -- psql -U vendfinder -d user_db -t -c \
+        "SELECT COUNT(*) FROM users WHERE email = 'buyer-test@vendfinder.com';" | tr -d ' ')
+
+    echo "Admin account exists: $ADMIN_EXISTS"
+    echo "Seller account exists: $SELLER_EXISTS"
+    echo "Buyer account exists: $BUYER_EXISTS"
+}
+
 echo "Password hashes generated successfully"
+
+main() {
+    echo "=== VendFinder Test Accounts Creation ==="
+
+    validate_k8s_access
+    validate_db_connection
+    check_existing_accounts
+
+    echo "Ready to create/update accounts with generated credentials"
+}
+
+# Only run main if script is executed directly
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main
+fi
 
 echo "Credentials saved to scripts/account-credentials.txt"
