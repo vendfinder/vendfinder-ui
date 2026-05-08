@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import MobileMenu from './MobileMenu';
 import ChatInboxDrawer from '@/components/chat/ChatInboxDrawer';
+import UserSearchModal from '@/components/social/UserSearchModal';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -71,6 +72,7 @@ export default function Navbar() {
 
               {isAuthenticated ? (
                 <>
+                  <UserSearchModal />
                   <button
                     onClick={() => setChatDrawerOpen(true)}
                     className="relative p-2 text-muted hover:text-primary transition-colors cursor-pointer"
