@@ -28,6 +28,7 @@
   "nav": {
     "home": "首页",
     "products": "商品",
+    "discover": "发现",
     "sneakers": "球鞋",
     "electronics": "电子产品",
     "apparel": "服饰",
@@ -1248,7 +1249,6 @@
     "type": "类型",
     "size": "大小",
     "processingEllipsis": "处理中...",
-    "verified": "已验证",
     "underReviewBadge": "审核中",
     "rejectedBadge": "被拒绝",
     "unverified": "未验证",

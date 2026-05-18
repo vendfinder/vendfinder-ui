@@ -117,6 +117,7 @@ export default function PublicProfilePage() {
   const t = useTranslations();
   const [activeTab, setActiveTab] = useState<ProfileTab>('selling');
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [profileUser, setProfileUser] = useState<Partial<User> | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
 
@@ -162,6 +163,53 @@ export default function PublicProfilePage() {
   const [profileStories, setProfileStories] = useState<Story[]>([]);
   const { feed, openViewer, openCreator, fetchFeed } = useStoryStore();
 
+  // Check if the current user is following this profile user
+  const checkFollowStatus = async (userId: string) => {
+    if (!token || !isAuthenticated) return;
+
+    try {
+      const res = await fetch(`/api/users/${userId}/follow-status`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIsFollowing(data.isFollowing);
+      }
+    } catch (error) {
+      console.error('Failed to check follow status:', error);
+    }
+  };
+
+  // Handle follow/unfollow action
+  const handleFollowToggle = async () => {
+    if (!profileUser?.id || !token || !isAuthenticated || isFollowLoading) return;
+
+    setIsFollowLoading(true);
+    try {
+      const endpoint = isFollowing ? 'unfollow' : 'follow';
+      const res = await fetch(`/api/users/${profileUser.id}/${endpoint}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        setIsFollowing(!isFollowing);
+
+        // Update follower count optimistically
+        if (profileUser) {
+          setProfileUser({
+            ...profileUser,
+            followers: (profileUser.followers || 0) + (isFollowing ? -1 : 1)
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to toggle follow:', error);
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
+
   // Fetch the profile user from the API
   useEffect(() => {
     const username = params.username as string;
@@ -177,7 +225,13 @@ export default function PublicProfilePage() {
     setProfileLoading(true);
     fetchUserByUsername(username).then(({ user: fetchedUser, error }) => {
       if (fetchedUser) {
-        setProfileUser(apiUserToProfileUser(fetchedUser));
+        const profileUserData = apiUserToProfileUser(fetchedUser);
+        setProfileUser(profileUserData);
+
+        // Check follow status if user is authenticated and viewing someone else's profile
+        if (!isOwnProfile && isAuthenticated && fetchedUser.id) {
+          checkFollowStatus(fetchedUser.id);
+        }
       }
       setProfileLoading(false);
     });
@@ -474,8 +528,11 @@ export default function PublicProfilePage() {
                   ) : (
                     <>
                       <button
-                        onClick={() => setIsFollowing(!isFollowing)}
+                        onClick={handleFollowToggle}
+                        disabled={isFollowLoading}
                         className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                          isFollowLoading ? 'opacity-50 cursor-not-allowed' : ''
+                        } ${
                           isFollowing
                             ? 'border border-border/60 text-foreground hover:border-red-400/40 hover:text-red-400 bg-surface/40'
                             : 'bg-primary text-white shadow-[0_0_20px_rgba(232,136,58,0.2)] hover:shadow-[0_0_30px_rgba(232,136,58,0.3)]'
@@ -573,14 +630,9 @@ export default function PublicProfilePage() {
             },
           ].map((stat, i) => {
             const Icon = stat.icon;
-            return (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.25 + i * 0.05 }}
-                className={`bg-card rounded-2xl border ${stat.borderColor} p-4 ${stat.key === 'avgShip' ? 'hidden sm:block' : ''}`}
-              >
+            const isClickable = stat.key === 'followers' || stat.key === 'following';
+            const content = (
+              <>
                 <div className="flex items-center gap-2 mb-2">
                   <div
                     className={`w-7 h-7 rounded-lg ${stat.bgColor} ${stat.color} flex items-center justify-center`}
@@ -597,6 +649,28 @@ export default function PublicProfilePage() {
                 <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mt-0.5">
                   {stat.label}
                 </p>
+              </>
+            );
+
+            return (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.25 + i * 0.05 }}
+                className={`${stat.key === 'avgShip' ? 'hidden sm:block' : ''}`}
+              >
+                {isClickable ? (
+                  <Link href={`/profile/${params.username}/followers?tab=${stat.key}`}>
+                    <div className={`bg-card rounded-2xl border ${stat.borderColor} p-4 cursor-pointer hover:border-${stat.color.split('-')[1]}-400/40 hover:bg-${stat.bgColor}/50 transition-all group`}>
+                      {content}
+                    </div>
+                  </Link>
+                ) : (
+                  <div className={`bg-card rounded-2xl border ${stat.borderColor} p-4`}>
+                    {content}
+                  </div>
+                )}
               </motion.div>
             );
           })}

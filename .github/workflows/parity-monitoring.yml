@@ -1,0 +1,229 @@
+name: Parity Analysis & Auto-Remediation
+
+on:
+  schedule:
+    # Run every 6 hours to catch configuration drift
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      auto_remediate:
+        description: 'Enable automatic remediation of critical issues'
+        required: false
+        type: boolean
+        default: true
+      analysis_scope:
+        description: 'Analysis scope'
+        required: false
+        type: choice
+        options:
+          - 'full'
+          - 'infrastructure-only'
+          - 'services-only'
+        default: 'full'
+
+env:
+  PROD_NAMESPACE: vendfinder
+  STAGING_NAMESPACE: vendfinder-staging
+  REGISTRY: registry.digitalocean.com/vendfinder-registry
+
+jobs:
+  parity-analysis:
+    name: Production vs Staging Parity Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+
+    - name: Configure Kubernetes access
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+        chmod 600 ~/.kube/config
+
+    - name: Verify cluster access
+      run: |
+        kubectl cluster-info
+        kubectl get nodes --no-headers | wc -l
+        echo "✅ Kubernetes cluster access verified"
+
+    - name: Setup analysis environment
+      run: |
+        # Install required tools
+        sudo apt-get update
+        sudo apt-get install -y jq yq bc postgresql-client
+
+        # Validate environment
+        scripts/parity-analysis/lib/common.sh
+
+        # Create reports directory
+        mkdir -p reports
+
+        echo "✅ Analysis environment ready"
+
+    - name: Run comprehensive parity analysis
+      id: analysis
+      env:
+        AUTO_REMEDIATE: ${{ github.event.inputs.auto_remediate || 'true' }}
+        ANALYSIS_SCOPE: ${{ github.event.inputs.analysis_scope || 'full' }}
+      run: |
+        echo "🚀 Starting parity analysis (scope: $ANALYSIS_SCOPE)"
+
+        # Set analysis flags based on scope
+        case "$ANALYSIS_SCOPE" in
+          "infrastructure-only")
+            ./scripts/parity-analysis/tier1-infrastructure.sh reports/parity-analysis-$(date +%Y%m%d_%H%M%S).md
+            ;;
+          "services-only")
+            ./scripts/parity-analysis/tier2-services.sh reports/parity-analysis-$(date +%Y%m%d_%H%M%S).md
+            ;;
+          "full"|*)
+            # Run full analysis with optional auto-remediation
+            if [[ "$AUTO_REMEDIATE" == "true" ]]; then
+              ./scripts/parity-analysis/main.sh --auto-remediate
+            else
+              ./scripts/parity-analysis/main.sh
+            fi
+            ;;
+        esac
+
+        # Extract analysis results
+        REPORT_FILE=$(ls reports/parity-analysis-*.md | tail -1)
+        CRITICAL_COUNT=$(grep -c "CRITICAL:" "$REPORT_FILE" || echo "0")
+        HIGH_COUNT=$(grep -c "HIGH:" "$REPORT_FILE" || echo "0")
+        TOTAL_ISSUES=$((CRITICAL_COUNT + HIGH_COUNT))
+
+        echo "critical_issues=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+        echo "high_issues=$HIGH_COUNT" >> $GITHUB_OUTPUT
+        echo "total_issues=$TOTAL_ISSUES" >> $GITHUB_OUTPUT
+        echo "report_file=$REPORT_FILE" >> $GITHUB_OUTPUT
+
+        echo "📊 Analysis Results:"
+        echo "   🚨 CRITICAL: $CRITICAL_COUNT"
+        echo "   ⚠️ HIGH: $HIGH_COUNT"
+        echo "   📋 TOTAL: $TOTAL_ISSUES"
+
+    - name: Upload analysis report
+      uses: actions/upload-artifact@v4
+      with:
+        name: parity-analysis-report-${{ github.run_number }}
+        path: reports/parity-analysis-*.md
+        retention-days: 30
+
+    - name: Create issue for critical problems
+      if: steps.analysis.outputs.critical_issues > 0
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const criticalCount = '${{ steps.analysis.outputs.critical_issues }}';
+          const highCount = '${{ steps.analysis.outputs.high_issues }}';
+          const reportFile = '${{ steps.analysis.outputs.report_file }}';
+
+          // Read the report content (first 2000 chars for issue body)
+          const fs = require('fs');
+          const reportContent = fs.readFileSync(reportFile, 'utf8').substring(0, 2000);
+
+          const title = `🚨 CRITICAL: ${criticalCount} Production/Staging Parity Issues Found`;
+          const body = `## Automated Parity Analysis Alert
+
+**Critical Issues**: ${criticalCount}
+**High Priority Issues**: ${highCount}
+**Analysis Date**: ${new Date().toISOString()}
+**Report**: Available in workflow artifacts
+
+### Top Critical Issues Preview:
+\`\`\`
+${reportContent}
+\`\`\`
+
+**Action Required**: Review full report and run emergency remediation if needed.
+
+**Emergency Remediation Command**:
+\`\`\`bash
+./scripts/remediation/emergency-fix-critical-gaps.sh
+\`\`\`
+
+*This issue was automatically created by the Parity Analysis workflow.*`;
+
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            body: body,
+            labels: ['critical', 'infrastructure', 'auto-generated']
+          });
+
+    - name: Post to Slack on critical issues
+      if: steps.analysis.outputs.critical_issues > 0
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        if [[ -n "$SLACK_WEBHOOK_URL" ]]; then
+          CRITICAL_COUNT="${{ steps.analysis.outputs.critical_issues }}"
+          HIGH_COUNT="${{ steps.analysis.outputs.high_issues }}"
+
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{
+              \"text\": \"🚨 *CRITICAL PARITY ISSUES DETECTED*\",
+              \"blocks\": [
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"🚨 *Production/Staging Parity Issues Found*\n• Critical: $CRITICAL_COUNT\n• High Priority: $HIGH_COUNT\n\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Analysis Report>\"
+                  }
+                }
+              ]
+            }" \
+            $SLACK_WEBHOOK_URL
+        fi
+
+    - name: Deployment health check
+      run: |
+        echo "🔍 Verifying critical services are operational..."
+
+        # Test production API gateway
+        kubectl port-forward -n $PROD_NAMESPACE svc/api-gateway 8080:3000 > /dev/null 2>&1 &
+        sleep 5
+
+        if curl -sf http://localhost:8080/health > /dev/null; then
+          echo "✅ Production API Gateway: Healthy"
+        else
+          echo "❌ Production API Gateway: Unhealthy"
+          exit 1
+        fi
+
+        # Test staging API gateway
+        kubectl port-forward -n $STAGING_NAMESPACE svc/api-gateway 8081:3000 > /dev/null 2>&1 &
+        sleep 5
+
+        if curl -sf http://localhost:8081/health > /dev/null; then
+          echo "✅ Staging API Gateway: Healthy"
+        else
+          echo "⚠️ Staging API Gateway: Unhealthy (non-critical)"
+        fi
+
+        pkill -f port-forward || true
+
+    - name: Summary
+      run: |
+        echo "## 📋 Parity Analysis Summary" >> $GITHUB_STEP_SUMMARY
+        echo "**Critical Issues**: ${{ steps.analysis.outputs.critical_issues }}" >> $GITHUB_STEP_SUMMARY
+        echo "**High Priority Issues**: ${{ steps.analysis.outputs.high_issues }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Total Issues**: ${{ steps.analysis.outputs.total_issues }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Report**: Available in workflow artifacts" >> $GITHUB_STEP_SUMMARY
+
+        if [[ "${{ steps.analysis.outputs.critical_issues }}" -gt 0 ]]; then
+          echo "**Status**: 🚨 Action Required" >> $GITHUB_STEP_SUMMARY
+        elif [[ "${{ steps.analysis.outputs.high_issues }}" -gt 0 ]]; then
+          echo "**Status**: ⚠️ Review Recommended" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "**Status**: ✅ Environments in Sync" >> $GITHUB_STEP_SUMMARY
+        fi

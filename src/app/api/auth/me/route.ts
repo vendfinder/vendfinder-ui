@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
 
-    const res = await fetch(`${USER_SERVICE_URL}/auth/me`, {
+    const res = await fetch(`${USER_SERVICE_URL}/users/me`, {
       headers: authHeader ? { Authorization: authHeader } : {},
     });
 

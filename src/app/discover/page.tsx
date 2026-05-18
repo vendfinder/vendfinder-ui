@@ -101,43 +101,7 @@ export default function DiscoverPage() {
               and fashion mavens. Find your tribe in the vendfinder community.
             </motion.p>
 
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="flex items-center justify-center gap-8 mb-12"
-            >
-              {[
-                { label: 'Active Sellers', value: '12.5K', icon: Sparkles },
-                { label: 'Weekly Connections', value: '890', icon: TrendingUp },
-                { label: 'Communities', value: '45+', icon: Users },
-              ].map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <motion.div
-                    key={stat.label}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{
-                      duration: 0.4,
-                      delay: 0.6 + index * 0.1,
-                      type: "spring",
-                      stiffness: 200
-                    }}
-                    className="text-center"
-                  >
-                    <div className="flex items-center justify-center gap-1 text-2xl font-bold text-primary mb-1">
-                      <Icon size={20} />
-                      {stat.value}
-                    </div>
-                    <div className="text-xs text-muted uppercase tracking-wider font-semibold">
-                      {stat.label}
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
+
           </motion.div>
         </div>
       </div>

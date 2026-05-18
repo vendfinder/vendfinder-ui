@@ -81,16 +81,16 @@ export default function ProductDetailClient({
   const { showToast } = useToast();
   const router = useRouter();
 
-  // Get store functions safely
+  // Get store functions safely - only use chat store if authenticated
   let startConversation: ((productId: string, sellerId: string, productInfo?: { name: string; image: string; price: number }) => Promise<string | null>) | undefined;
-  try {
-    if (isAuthenticated && token) {
+
+  if (isAuthenticated && token) {
+    try {
       const { startConversation: sc } = useChatStoreWithAuth();
       startConversation = sc;
+    } catch (error) {
+      console.warn('Chat store not available:', error);
     }
-  } catch (error) {
-    // Store will throw if not authenticated, we'll handle this in the click handler
-    console.warn('Chat store not available:', error);
   }
 
   useEffect(() => {

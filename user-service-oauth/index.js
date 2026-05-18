@@ -906,6 +906,120 @@ const getUserById = async (req, res) => {
 // GET /auth/users/:id - Get user by ID (alias for internal service calls)
 app.get('/auth/users/:id', getUserById);
 
+// GET /users/search - Search for users (must come before /users/:id)
+app.get('/users/search', async (req, res) => {
+  try {
+    const { q, page = 1, limit = 20 } = req.query;
+
+    if (!q || q.trim().length < 2) {
+      return res.status(400).json({
+        error: 'Search query must be at least 2 characters',
+        code: 'INVALID_QUERY'
+      });
+    }
+
+    const searchLimit = Math.min(parseInt(limit), 50);
+    const offset = (parseInt(page) - 1) * searchLimit;
+    const searchTerm = `%${q.trim().toLowerCase()}%`;
+
+    const result = await pool.query(`
+      SELECT id, username, display_name, avatar_url, verified, followers_count, following_count, bio
+      FROM users
+      WHERE is_active = true
+        AND (
+          LOWER(username) LIKE $1
+          OR LOWER(display_name) LIKE $1
+          OR LOWER(bio) LIKE $1
+        )
+      ORDER BY
+        CASE WHEN LOWER(username) LIKE $1 THEN 1 ELSE 2 END,
+        followers_count DESC,
+        created_at DESC
+      LIMIT $2 OFFSET $3
+    `, [searchTerm, searchLimit, offset]);
+
+    const countResult = await pool.query(`
+      SELECT COUNT(*)
+      FROM users
+      WHERE is_active = true
+        AND (
+          LOWER(username) LIKE $1
+          OR LOWER(display_name) LIKE $1
+          OR LOWER(bio) LIKE $1
+        )
+    `, [searchTerm]);
+
+    // Transform snake_case to camelCase for frontend compatibility
+    const transformedUsers = result.rows.map(user => ({
+      id: user.id,
+      username: user.username,
+      displayName: user.display_name,
+      avatarUrl: user.avatar_url,
+      verified: user.verified,
+      followersCount: user.followers_count,
+      followingCount: user.following_count,
+      bio: user.bio
+    }));
+
+    res.json({
+      users: transformedUsers,
+      total: parseInt(countResult.rows[0].count),
+      page: parseInt(page),
+      limit: searchLimit,
+      hasMore: offset + result.rows.length < parseInt(countResult.rows[0].count)
+    });
+  } catch (error) {
+    console.error('Search users error:', error);
+    res.status(500).json({
+      error: 'Failed to search users',
+      code: 'SEARCH_ERROR'
+    });
+  }
+});
+
+// GET /users/suggested - Get suggested users to follow (must come before /users/:id)
+app.get('/users/suggested', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const limit = Math.min(parseInt(req.query.limit) || 10, 20);
+
+    // Get users not already followed, with highest follower counts
+    const result = await pool.query(`
+      SELECT id, username, display_name, avatar_url, verified, followers_count, following_count, bio
+      FROM users
+      WHERE is_active = true
+        AND id != $1
+        AND id NOT IN (
+          SELECT following_id FROM follows WHERE follower_id = $1
+        )
+      ORDER BY followers_count DESC, created_at DESC
+      LIMIT $2
+    `, [userId, limit]);
+
+    // Transform snake_case to camelCase for frontend compatibility
+    const transformedUsers = result.rows.map(user => ({
+      id: user.id,
+      username: user.username,
+      displayName: user.display_name,
+      avatarUrl: user.avatar_url,
+      verified: user.verified,
+      followersCount: user.followers_count,
+      followingCount: user.following_count,
+      bio: user.bio
+    }));
+
+    res.json({
+      suggested: transformedUsers
+    });
+  } catch (error) {
+    console.error('Get suggested users error:', error);
+    res.status(500).json({
+      error: 'Failed to fetch suggested users',
+      code: 'SUGGESTED_ERROR'
+    });
+  }
+});
+
 // GET /users/:id - Get user by ID
 app.get('/users/:id', getUserById);
 
@@ -1107,6 +1221,203 @@ app.get('/users/by-username/:username', async (req, res) => {
     });
   }
 });
+
+// ============================================
+// SOCIAL FEATURES ENDPOINTS
+// ============================================
+
+// POST /users/:id/follow - Follow a user
+app.post('/users/:id/follow', authMiddleware, async (req, res) => {
+  try {
+    const followingId = req.params.id;
+    const followerId = req.user.userId;
+
+    if (followingId === followerId) {
+      return res.status(400).json({
+        error: 'Cannot follow yourself',
+        code: 'INVALID_FOLLOW'
+      });
+    }
+
+    // Check if target user exists
+    const targetUser = await pool.query(
+      'SELECT id FROM users WHERE id = $1 AND is_active = true',
+      [followingId]
+    );
+
+    if (targetUser.rows.length === 0) {
+      return res.status(404).json({
+        error: 'User not found',
+        code: 'USER_NOT_FOUND'
+      });
+    }
+
+    // Check if already following
+    const existing = await pool.query(
+      'SELECT id FROM follows WHERE follower_id = $1 AND following_id = $2',
+      [followerId, followingId]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(400).json({
+        error: 'Already following this user',
+        code: 'ALREADY_FOLLOWING'
+      });
+    }
+
+    // Create follow relationship
+    await pool.query(
+      'INSERT INTO follows (follower_id, following_id) VALUES ($1, $2)',
+      [followerId, followingId]
+    );
+
+    logger.userAction('follow', followerId, req.user.email, req.user.username, {
+      followingId,
+      followingUser: targetUser.rows[0].username
+    });
+
+    res.json({ success: true, message: 'User followed successfully' });
+  } catch (error) {
+    console.error('Follow user error:', error);
+    res.status(500).json({
+      error: 'Failed to follow user',
+      code: 'FOLLOW_ERROR'
+    });
+  }
+});
+
+// DELETE /users/:id/unfollow - Unfollow a user
+app.delete('/users/:id/unfollow', authMiddleware, async (req, res) => {
+  try {
+    const followingId = req.params.id;
+    const followerId = req.user.userId;
+
+    // Remove follow relationship
+    const result = await pool.query(
+      'DELETE FROM follows WHERE follower_id = $1 AND following_id = $2',
+      [followerId, followingId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(400).json({
+        error: 'Not following this user',
+        code: 'NOT_FOLLOWING'
+      });
+    }
+
+    logger.userAction('unfollow', followerId, req.user.email, req.user.username, { followingId });
+
+    res.json({ success: true, message: 'User unfollowed successfully' });
+  } catch (error) {
+    console.error('Unfollow user error:', error);
+    res.status(500).json({
+      error: 'Failed to unfollow user',
+      code: 'UNFOLLOW_ERROR'
+    });
+  }
+});
+
+// GET /users/:id/follow-status - Check if current user follows target user
+app.get('/users/:id/follow-status', authMiddleware, async (req, res) => {
+  try {
+    const followingId = req.params.id;
+    const followerId = req.user.userId;
+
+    if (followingId === followerId) {
+      return res.json({ isFollowing: false, isSelf: true });
+    }
+
+    const result = await pool.query(
+      'SELECT id FROM follows WHERE follower_id = $1 AND following_id = $2',
+      [followerId, followingId]
+    );
+
+    res.json({ isFollowing: result.rows.length > 0, isSelf: false });
+  } catch (error) {
+    console.error('Check follow status error:', error);
+    res.status(500).json({
+      error: 'Failed to check follow status',
+      code: 'FOLLOW_STATUS_ERROR'
+    });
+  }
+});
+
+// GET /users/:id/followers - Get user's followers
+app.get('/users/:id/followers', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+    const offset = (page - 1) * limit;
+
+    const result = await pool.query(`
+      SELECT u.id, u.username, u.display_name, u.avatar_url, u.verified, u.followers_count, u.following_count
+      FROM follows f
+      JOIN users u ON f.follower_id = u.id
+      WHERE f.following_id = $1 AND u.is_active = true
+      ORDER BY f.created_at DESC
+      LIMIT $2 OFFSET $3
+    `, [userId, limit, offset]);
+
+    const countResult = await pool.query(
+      'SELECT COUNT(*) FROM follows f JOIN users u ON f.follower_id = u.id WHERE f.following_id = $1 AND u.is_active = true',
+      [userId]
+    );
+
+    res.json({
+      followers: result.rows,
+      total: parseInt(countResult.rows[0].count),
+      page,
+      limit,
+      hasMore: offset + result.rows.length < parseInt(countResult.rows[0].count)
+    });
+  } catch (error) {
+    console.error('Get followers error:', error);
+    res.status(500).json({
+      error: 'Failed to fetch followers',
+      code: 'FOLLOWERS_ERROR'
+    });
+  }
+});
+
+// GET /users/:id/following - Get users that this user follows
+app.get('/users/:id/following', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+    const offset = (page - 1) * limit;
+
+    const result = await pool.query(`
+      SELECT u.id, u.username, u.display_name, u.avatar_url, u.verified, u.followers_count, u.following_count
+      FROM follows f
+      JOIN users u ON f.following_id = u.id
+      WHERE f.follower_id = $1 AND u.is_active = true
+      ORDER BY f.created_at DESC
+      LIMIT $2 OFFSET $3
+    `, [userId, limit, offset]);
+
+    const countResult = await pool.query(
+      'SELECT COUNT(*) FROM follows f JOIN users u ON f.following_id = u.id WHERE f.follower_id = $1 AND u.is_active = true',
+      [userId]
+    );
+
+    res.json({
+      following: result.rows,
+      total: parseInt(countResult.rows[0].count),
+      page,
+      limit,
+      hasMore: offset + result.rows.length < parseInt(countResult.rows[0].count)
+    });
+  } catch (error) {
+    console.error('Get following error:', error);
+    res.status(500).json({
+      error: 'Failed to fetch following',
+      code: 'FOLLOWING_ERROR'
+    });
+  }
+});
+
 
 // ============================================
 // SELLER STATUS & FEE ENDPOINTS

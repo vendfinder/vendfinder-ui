@@ -1,0 +1,4 @@
+{"type":"server-started","port":63021,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:63021","screen_dir":"/Users/anthonyhudnall/Developer/vendfinder-ui/.superpowers/brainstorm/607-1779068313/content","state_dir":"/Users/anthonyhudnall/Developer/vendfinder-ui/.superpowers/brainstorm/607-1779068313/state"}
+{"type":"screen-added","file":"/Users/anthonyhudnall/Developer/vendfinder-ui/.superpowers/brainstorm/607-1779068313/content/upload-flow-options.html"}
+{"type":"screen-added","file":"/Users/anthonyhudnall/Developer/vendfinder-ui/.superpowers/brainstorm/607-1779068313/content/waiting.html"}
+{"type":"server-stopped","reason":"idle timeout"}

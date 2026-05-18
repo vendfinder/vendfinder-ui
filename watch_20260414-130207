@@ -1,0 +1,49 @@
+NAME                                 READY   STATUS      RESTARTS      AGE            
+admin-service-5b75ff8b68-vlnfm       1/1     Running     0             14d            
+analytics-db-0                       1/1     Running     0             31d            
+analytics-service-665b79649d-g8dzn   1/1     Running     0             14d            
+api-gateway-8469f4d7d9-lx228         1/1     Running     0             33h            
+chat-db-0                            1/1     Running     0             14d            
+chat-service-576f54b7b-dktml         1/1     Running     0             19h            
+cm-acme-http-solver-xb8gh            1/1     Running     0             20h            
+elasticsearch-0                      1/1     Running     0             14d            
+email-service-d76f64849-gwxld        1/1     Running     0             14d            
+frontend-6474c6d48d-mb457            1/1     Running     0             20h            
+grafana-565d75dd76-sxspk             1/1     Running     0             3d18h          
+inventory-metrics-67dcdfdb47-9fnmt   1/1     Running     0             3d18h          
+loki-5d876b945f-5lh57                1/1     Running     0             14d            
+order-db-0                           1/1     Running     0             14d            
+order-service-cc684d748-4d6wm        1/1     Running     0             23h            
+order-service-cc684d748-5g9s6        1/1     Running     0             23h            
+pii-compliance-scan-29600760-hmf9d   0/1     Completed   0             39h            
+pii-compliance-scan-29602200-vghht   0/1     Completed   0             15h            
+product-db-59f8646f49-p4hc7          1/1     Running     1 (14d ago)   14d            
+product-service-f5668744d-6rcd6      1/1     Running     0             21h            
+prometheus-5cdff89bbf-dvlc4          1/1     Running     0             3d19h          
+promtail-8llfm                       1/1     Running     0             14d            
+promtail-bfzv9                       1/1     Running     0             30d            
+promtail-dx8l9                       1/1     Running     0             30d            
+promtail-zprwr                       1/1     Running     0             30d            
+redis-0                              1/1     Running     0             14d            
+review-service-675577756-ml7cj       1/1     Running     0             14d            
+search-service-6849747c9c-xnwp9      1/1     Running     0             14d            
+support-bot-694f5df796-w89hp         1/1     Running     0             39h            
+user-service-64f7cf95dc-jpzls        1/1     Running     0             23h            
+vendor-db-69b85c5b8b-jv6mw           1/1     Running     1 (14d ago)   14d            
+vendor-service-85d7c98bd5-csxzw      1/1     Running     0             35h            
+websocket-service-fbd98ff87-qzl28    1/1     Running     0             39h            
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      

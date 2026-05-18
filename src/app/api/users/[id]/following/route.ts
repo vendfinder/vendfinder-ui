@@ -56,7 +56,16 @@ export async function GET(
     // Transform snake_case to camelCase for consistency
     const transformedData = {
       ...data,
-      following: data.following?.map((user: any) => ({
+      following: data.following?.map((user: {
+        id: string;
+        username: string;
+        display_name: string;
+        avatar_url: string;
+        verified: boolean;
+        followers_count: number;
+        following_count: number;
+        bio: string;
+      }) => ({
         id: user.id,
         username: user.username,
         displayName: user.display_name,

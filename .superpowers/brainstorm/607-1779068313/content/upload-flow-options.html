@@ -1,0 +1,68 @@
+<h2>Video Upload Flow Options</h2>
+<p class="subtitle">How should vendors add videos to their products?</p>
+
+<div class="options">
+  <div class="option" data-choice="integrated" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Integrated Upload</h3>
+      <p>Add video upload directly to existing product creation/edit forms alongside image uploads</p>
+      <div class="mockup" style="margin-top: 12px; font-size: 0.85em;">
+        <div class="mock-content" style="padding: 12px; border: 1px dashed #666;">
+          Product Name: [Hair Extension Set]<br>
+          Images: [img1] [img2] [+]<br>
+          <strong>Videos: [video1.mp4] [+]</strong><br>
+          Description: [....]
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="separate" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Separate Media Manager</h3>
+      <p>Dedicated media management page where vendors upload/organize all videos, then link to products</p>
+      <div class="mockup" style="margin-top: 12px; font-size: 0.85em;">
+        <div class="mock-content" style="padding: 12px; border: 1px dashed #666;">
+          Media Library<br>
+          📹 hair_styling_demo.mp4<br>
+          📹 texture_closeup.mp4<br>
+          [Upload New Video]<br>
+          → Link to Products
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="stepwise" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Step-by-Step Wizard</h3>
+      <p>Multi-step product creation: Basic Info → Images → Videos → Publish</p>
+      <div class="mockup" style="margin-top: 12px; font-size: 0.85em;">
+        <div class="mock-content" style="padding: 12px; border: 1px dashed #666;">
+          Step 3 of 4: Add Videos<br>
+          ○ Basic Info ○ Images <strong>● Videos</strong> ○ Publish<br>
+          [Drop videos here or browse]<br>
+          Preview will show...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="bulk" onclick="toggleSelect(this)">
+    <div class="letter">D</div>
+    <div class="content">
+      <h3>Bulk Upload Tool</h3>
+      <p>Vendors upload multiple videos at once, then assign them to products in batch</p>
+      <div class="mockup" style="margin-top: 12px; font-size: 0.85em;">
+        <div class="mock-content" style="padding: 12px; border: 1px dashed #666;">
+          Upload 5 videos → Auto-generate thumbnails<br>
+          Assign: video1 → Product A, Product B<br>
+          video2 → Product C...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

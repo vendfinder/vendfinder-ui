@@ -33,6 +33,23 @@ spec:
           image: registry.digitalocean.com/vendfinder-registry/api-gateway:latest
           ports:
             - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+            - name: USER_SERVICE_URL
+              value: "http://user-service:3004"
+            - name: CHAT_SERVICE_URL
+              value: "http://chat-service:3006"
+            - name: WEBSOCKET_SERVICE_URL
+              value: "http://websocket-service:3006"
+            - name: PRODUCT_SERVICE_URL
+              value: "http://product-service:3000"
+            - name: ORDER_SERVICE_URL
+              value: "http://order-service:3000"
+            - name: REVIEW_SERVICE_URL
+              value: "http://review-service:3003"
+            - name: CORS_ORIGIN
+              value: "*"
           resources:
             requests:
               cpu: 150m

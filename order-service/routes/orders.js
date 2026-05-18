@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const logger = require('../logger');
 
 const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-service:3004';
-const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL || 'http://email-service:3007';
+const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL || 'http://email-service:3009';
 const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN || '';
 
 async function triggerKycCheck(sellerId, pool) {
@@ -37,31 +37,82 @@ async function triggerKycCheck(sellerId, pool) {
   }
 }
 
-async function sendOrderShippedEmail(order, trackingNumber, carrier) {
-  if (!INTERNAL_SERVICE_TOKEN) return;
+// Fetch buyer email for shipping notification
+async function getBuyerEmailForShipping(buyerId) {
   try {
-    const fetch = (await import('node-fetch')).default;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    const response = await fetch(`${USER_SERVICE_URL}/users/${buyerId}`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (!response.ok) {
+      logger.warn('Failed to fetch buyer details for shipping email', { buyerId, status: response.status });
+      return null;
+    }
+    const user = await response.json();
+    return user.email || null;
+  } catch (err) {
+    logger.warn('Error fetching buyer email for shipping', { buyerId, error: err.message });
+    return null;
+  }
+}
+
+// Build a carrier-specific tracking URL
+function buildTrackingUrl(carrier, trackingNumber) {
+  if (!carrier || !trackingNumber) return null;
+  const c = String(carrier).toLowerCase();
+  const tn = encodeURIComponent(trackingNumber);
+  switch (c) {
+    case 'usps':
+      return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${tn}`;
+    case 'ups':
+      return `https://www.ups.com/track?tracknum=${tn}`;
+    case 'fedex':
+      return `https://www.fedex.com/fedextrack/?trknbr=${tn}`;
+    case 'dhl':
+      return `https://www.dhl.com/en/express/tracking.html?AWB=${tn}`;
+    default:
+      return null;
+  }
+}
+
+async function sendOrderShippedEmail(order, trackingNumber, carrier) {
+  try {
+    const buyerEmail = await getBuyerEmailForShipping(order.buyer_id);
+    if (!buyerEmail) {
+      logger.warn('Skipping item shipped email — no buyer email', { orderId: order.id });
+      return;
+    }
+
+    const trackingUrl = buildTrackingUrl(carrier, trackingNumber);
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-
-    await fetch(`${EMAIL_SERVICE_URL}/send/order-shipped`, {
+    const response = await fetch(`${EMAIL_SERVICE_URL}/emails/item-shipped`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Service-Token': INTERNAL_SERVICE_TOKEN },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        buyerId: order.buyer_id,
+        email: buyerEmail,
         orderNumber: order.order_number,
         productName: order.product_name,
-        trackingNumber: trackingNumber,
         carrier: carrier,
-        sellerName: order.seller_name || 'Seller',
-        timestamp: new Date().toISOString()
+        trackingNumber: trackingNumber,
+        trackingUrl: trackingUrl,
+        vendorName: order.seller_name || 'Seller',
       }),
       signal: controller.signal,
     });
     clearTimeout(timeout);
-    logger.info('Order shipped email sent', { orderId: order.id });
+
+    if (!response.ok) {
+      const text = await response.text();
+      logger.warn('Item shipped email failed', { status: response.status, body: text.slice(0, 200) });
+      return;
+    }
+    logger.info('Item shipped email sent', { orderNumber: order.order_number, email: buyerEmail });
   } catch (err) {
-    logger.warn('Failed to send order shipped email', { error: err.message, orderId: order.id });
+    logger.warn('Error sending item shipped email', { error: err.message });
   }
 }
 

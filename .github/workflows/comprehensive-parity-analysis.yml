@@ -1,0 +1,275 @@
+name: Comprehensive Parity Analysis
+
+on:
+  workflow_dispatch:
+    inputs:
+      enable_auto_remediation:
+        description: 'Enable automatic remediation of issues'
+        required: false
+        type: boolean
+        default: false
+      analysis_depth:
+        description: 'Analysis depth level'
+        required: false
+        type: choice
+        options:
+          - 'standard'
+          - 'deep'
+          - 'comprehensive'
+        default: 'standard'
+      target_environment:
+        description: 'Target environment comparison'
+        required: false
+        type: choice
+        options:
+          - 'production-vs-staging'
+          - 'staging-health-check'
+          - 'production-health-check'
+        default: 'production-vs-staging'
+
+env:
+  PROD_NAMESPACE: vendfinder
+  STAGING_NAMESPACE: vendfinder-staging
+
+jobs:
+  comprehensive-analysis:
+    name: Comprehensive Environment Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup environment
+      run: |
+        # Install comprehensive toolset
+        sudo apt-get update
+        sudo apt-get install -y jq yq bc postgresql-client curl wget
+
+        # Setup kubectl
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+        # Configure Kubernetes access
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+        chmod 600 ~/.kube/config
+
+        # Verify cluster access
+        kubectl cluster-info
+        echo "✅ Environment setup complete"
+
+    - name: Pre-analysis environment validation
+      run: |
+        echo "🔍 Validating environment health before analysis..."
+
+        # Check namespace access
+        kubectl auth can-i get pods --namespace=$PROD_NAMESPACE
+        kubectl auth can-i get pods --namespace=$STAGING_NAMESPACE
+
+        # Verify key services exist
+        PROD_SERVICES=$(kubectl get deployments -n $PROD_NAMESPACE --no-headers | wc -l)
+        STAGING_SERVICES=$(kubectl get deployments -n $STAGING_NAMESPACE --no-headers | wc -l)
+
+        echo "📊 Environment Overview:"
+        echo "   Production deployments: $PROD_SERVICES"
+        echo "   Staging deployments: $STAGING_SERVICES"
+
+        if [ "$PROD_SERVICES" -lt 10 ] || [ "$STAGING_SERVICES" -lt 5 ]; then
+          echo "⚠️ Warning: Unexpected low service count - analysis may be incomplete"
+        fi
+
+    - name: Execute comprehensive parity analysis
+      id: analysis
+      env:
+        ANALYSIS_DEPTH: ${{ github.event.inputs.analysis_depth }}
+        AUTO_REMEDIATE: ${{ github.event.inputs.enable_auto_remediation }}
+        TARGET_ENV: ${{ github.event.inputs.target_environment }}
+      run: |
+        echo "🚀 Starting comprehensive parity analysis..."
+        echo "   Depth: $ANALYSIS_DEPTH"
+        echo "   Auto-remediation: $AUTO_REMEDIATE"
+        echo "   Target: $TARGET_ENV"
+
+        # Create comprehensive reports directory
+        mkdir -p reports/comprehensive
+
+        case "$TARGET_ENV" in
+          "production-vs-staging")
+            echo "🔄 Full production vs staging comparison"
+            if [[ "$AUTO_REMEDIATE" == "true" ]]; then
+              ./scripts/parity-analysis/main.sh --auto-remediate --verbose
+            else
+              ./scripts/parity-analysis/main.sh --verbose
+            fi
+            ;;
+          "staging-health-check")
+            echo "🔧 Staging environment health analysis"
+            REPORT_FILE="reports/staging-health-$(date +%Y%m%d_%H%M%S).md"
+            ./scripts/parity-analysis/tier2-services.sh "$REPORT_FILE"
+            ;;
+          "production-health-check")
+            echo "🏭 Production environment health analysis"
+            # Run production-focused health checks
+            kubectl get pods -n $PROD_NAMESPACE -o wide > reports/production-pods-$(date +%Y%m%d_%H%M%S).txt
+            kubectl top pods -n $PROD_NAMESPACE > reports/production-resources-$(date +%Y%m%d_%H%M%S).txt
+            ;;
+        esac
+
+        # Capture analysis results
+        LATEST_REPORT=$(find reports -name "*.md" -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
+
+        if [[ -f "$LATEST_REPORT" ]]; then
+          CRITICAL_COUNT=$(grep -c "CRITICAL:" "$LATEST_REPORT" 2>/dev/null | head -1 | tr -d '\n' || echo "0")
+          HIGH_COUNT=$(grep -c "HIGH:" "$LATEST_REPORT" 2>/dev/null | head -1 | tr -d '\n' || echo "0")
+          MEDIUM_COUNT=$(grep -c "MEDIUM:" "$LATEST_REPORT" 2>/dev/null | head -1 | tr -d '\n' || echo "0")
+          LOW_COUNT=$(grep -c "LOW:" "$LATEST_REPORT" 2>/dev/null | head -1 | tr -d '\n' || echo "0")
+
+          echo "analysis_report=$LATEST_REPORT" >> $GITHUB_OUTPUT
+          echo "critical_issues=${CRITICAL_COUNT}" >> $GITHUB_OUTPUT
+          echo "high_issues=${HIGH_COUNT}" >> $GITHUB_OUTPUT
+          echo "medium_issues=${MEDIUM_COUNT}" >> $GITHUB_OUTPUT
+          echo "low_issues=${LOW_COUNT}" >> $GITHUB_OUTPUT
+
+          echo "📊 Comprehensive Analysis Results:"
+          echo "   🚨 CRITICAL: $CRITICAL_COUNT"
+          echo "   ⚠️ HIGH: $HIGH_COUNT"
+          echo "   🔍 MEDIUM: $MEDIUM_COUNT"
+          echo "   💡 LOW: $LOW_COUNT"
+        else
+          echo "analysis_report=none" >> $GITHUB_OUTPUT
+          echo "⚠️ No markdown report generated"
+        fi
+
+    - name: Generate executive summary
+      run: |
+        echo "📋 Generating executive summary..."
+
+        SUMMARY_FILE="reports/executive-summary-$(date +%Y%m%d_%H%M%S).md"
+
+        cat > "$SUMMARY_FILE" <<EOF
+# Executive Summary - Comprehensive Parity Analysis
+
+**Analysis Date**: $(date)
+**Scope**: ${{ github.event.inputs.target_environment }}
+**Depth**: ${{ github.event.inputs.analysis_depth }}
+**Auto-Remediation**: ${{ github.event.inputs.enable_auto_remediation }}
+
+## Results Summary
+- **Critical Issues**: ${{ steps.analysis.outputs.critical_issues }}
+- **High Priority**: ${{ steps.analysis.outputs.high_issues }}
+- **Medium Priority**: ${{ steps.analysis.outputs.medium_issues }}
+- **Low Priority**: ${{ steps.analysis.outputs.low_issues }}
+
+## Environment Status
+$(kubectl get pods -n $PROD_NAMESPACE --no-headers | wc -l) production services running
+$(kubectl get pods -n $STAGING_NAMESPACE --no-headers | wc -l) staging services running
+
+## Recommendations
+EOF
+
+        if [[ "${{ steps.analysis.outputs.critical_issues }}" -gt 0 ]]; then
+          echo "🚨 **IMMEDIATE ACTION REQUIRED**: Critical issues detected that require urgent attention" >> "$SUMMARY_FILE"
+          echo "" >> "$SUMMARY_FILE"
+          echo "**Emergency Remediation Command**:" >> "$SUMMARY_FILE"
+          echo '```bash' >> "$SUMMARY_FILE"
+          echo './scripts/remediation/emergency-fix-critical-gaps.sh' >> "$SUMMARY_FILE"
+          echo '```' >> "$SUMMARY_FILE"
+        elif [[ "${{ steps.analysis.outputs.high_issues }}" -gt 0 ]]; then
+          echo "⚠️ **PLANNED ACTION RECOMMENDED**: High priority issues should be addressed in next maintenance window" >> "$SUMMARY_FILE"
+        else
+          echo "✅ **ENVIRONMENT HEALTHY**: No critical or high priority issues detected" >> "$SUMMARY_FILE"
+        fi
+
+        echo "executive_summary=$SUMMARY_FILE" >> $GITHUB_OUTPUT
+
+    - name: Upload comprehensive reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: comprehensive-parity-analysis-${{ github.run_number }}
+        path: |
+          reports/
+          ${{ steps.analysis.outputs.analysis_report }}
+        retention-days: 90
+
+    - name: Create detailed GitHub issue
+      if: steps.analysis.outputs.critical_issues > 5
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const summaryFile = '${{ steps.analysis.outputs.executive_summary }}' || 'reports/executive-summary-latest.md';
+
+          let summaryContent = '';
+          try {
+            summaryContent = fs.readFileSync(summaryFile, 'utf8').substring(0, 1500);
+          } catch (error) {
+            summaryContent = 'Executive summary not available';
+          }
+
+          const title = `🚨 CRITICAL: ${{ steps.analysis.outputs.critical_issues }} Critical Parity Issues - Comprehensive Analysis`;
+          const body = `## Comprehensive Parity Analysis Alert
+
+**Analysis Type**: ${{ github.event.inputs.target_environment }}
+**Analysis Depth**: ${{ github.event.inputs.analysis_depth }}
+**Date**: ${new Date().toISOString()}
+
+### Issue Summary
+- **🚨 Critical**: ${{ steps.analysis.outputs.critical_issues }}
+- **⚠️ High**: ${{ steps.analysis.outputs.high_issues }}
+- **🔍 Medium**: ${{ steps.analysis.outputs.medium_issues }}
+- **💡 Low**: ${{ steps.analysis.outputs.low_issues }}
+
+### Executive Summary Preview
+\`\`\`
+${summaryContent}
+\`\`\`
+
+### Action Items
+- [ ] Review full analysis report in workflow artifacts
+- [ ] Execute emergency remediation if needed
+- [ ] Schedule maintenance window for high-priority issues
+- [ ] Update deployment procedures to prevent recurrence
+
+**Full Analysis Report**: Available in [workflow artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+*This issue was automatically created by the Comprehensive Parity Analysis workflow.*`;
+
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            body: body,
+            labels: ['critical', 'parity-analysis', 'infrastructure', 'auto-generated'],
+            assignees: []
+          });
+
+    - name: Workflow summary
+      run: |
+        echo "## 🔍 Comprehensive Parity Analysis Complete" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Analysis Type**: ${{ github.event.inputs.target_environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Depth Level**: ${{ github.event.inputs.analysis_depth }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Auto-Remediation**: ${{ github.event.inputs.enable_auto_remediation }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Issue Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- 🚨 **Critical**: ${{ steps.analysis.outputs.critical_issues }}" >> $GITHUB_STEP_SUMMARY
+        echo "- ⚠️ **High**: ${{ steps.analysis.outputs.high_issues }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔍 **Medium**: ${{ steps.analysis.outputs.medium_issues }}" >> $GITHUB_STEP_SUMMARY
+        echo "- 💡 **Low**: ${{ steps.analysis.outputs.low_issues }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [[ "${{ steps.analysis.outputs.critical_issues }}" -gt 0 ]]; then
+          echo "**Status**: 🚨 CRITICAL ISSUES DETECTED" >> $GITHUB_STEP_SUMMARY
+          echo "**Next Steps**: Run emergency remediation and review full report" >> $GITHUB_STEP_SUMMARY
+        elif [[ "${{ steps.analysis.outputs.high_issues }}" -gt 0 ]]; then
+          echo "**Status**: ⚠️ HIGH PRIORITY ISSUES FOUND" >> $GITHUB_STEP_SUMMARY
+          echo "**Next Steps**: Schedule maintenance window to address issues" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "**Status**: ✅ ENVIRONMENTS HEALTHY" >> $GITHUB_STEP_SUMMARY
+          echo "**Next Steps**: Continue regular monitoring" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Full Reports**: Available in workflow artifacts" >> $GITHUB_STEP_SUMMARY

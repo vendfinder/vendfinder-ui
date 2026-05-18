@@ -28,6 +28,8 @@ import {
   Home,
   Watch,
   Trophy,
+  Video,
+  Play,
 } from 'lucide-react';
 import { categories } from '@/data/categories';
 import { useAuth } from '@/context/AuthContext';
@@ -35,6 +37,7 @@ import {
   createProduct,
   createAsk,
   uploadProductImages,
+  uploadProductVideos,
 } from '@/lib/api-products';
 import { useTranslations } from 'next-intl';
 import SizeChartModal from '@/components/product/SizeChartModal';
@@ -147,6 +150,13 @@ export default function NewListingPage() {
   const [uploading, setUploading] = useState(false);
   const [showSizeChart, setShowSizeChart] = useState(false);
 
+  // Video upload state
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const [videos, setVideos] = useState<string[]>([]);
+  const [videoUrls, setVideoUrls] = useState<string[]>([]);
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoErrors, setVideoErrors] = useState<string[]>([]);
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
     if (!selectedFiles.length || !token) return;
@@ -181,6 +191,62 @@ export default function NewListingPage() {
     setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleVideoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    if (!selectedFiles.length || !token) return;
+
+    const remaining = 4 - videos.length; // Limit to 4 videos
+    const filesToUpload = selectedFiles.slice(0, remaining);
+
+    // Client-side validation
+    const validationErrors: string[] = [];
+    filesToUpload.forEach((file) => {
+      // Check file size (30MB limit)
+      if (file.size > 30 * 1024 * 1024) {
+        validationErrors.push(`File ${file.name} exceeds 30MB limit`);
+        return;
+      }
+
+      // Check file type
+      const allowedTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo'];
+      if (!allowedTypes.includes(file.type)) {
+        validationErrors.push(`Invalid file type for ${file.name}. Allowed: MP4, MOV, AVI`);
+        return;
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      setVideoErrors(validationErrors);
+      return;
+    }
+
+    setVideoErrors([]);
+
+    // Show local previews immediately (file names for videos)
+    const newPreviews = filesToUpload.map((f) => f.name);
+    setVideos((prev) => [...prev, ...newPreviews]);
+
+    setVideoUploading(true);
+    try {
+      const urls = await uploadProductVideos(filesToUpload, token);
+      setVideoUrls((prev) => [...prev, ...urls]);
+    } catch (err: unknown) {
+      // Remove previews for failed uploads
+      setVideos((prev) => prev.slice(0, prev.length - newPreviews.length));
+      const message = err instanceof Error ? err.message : 'Failed to upload videos';
+      setVideoErrors([message]);
+    } finally {
+      setVideoUploading(false);
+      // Reset file input so re-selecting the same file works
+      if (videoInputRef.current) videoInputRef.current.value = '';
+    }
+  };
+
+  const removeVideo = (index: number) => {
+    setVideos((prev) => prev.filter((_, i) => i !== index));
+    setVideoUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token || submitting) return;
@@ -190,6 +256,11 @@ export default function NewListingPage() {
 
     try {
       // Create product first with all selected sizes
+      const mediaItems = [
+        ...formData.images.map((url) => ({ type: 'image', url })),
+        ...videoUrls.map((url) => ({ type: 'video', url }))
+      ];
+
       const product = await createProduct(
         {
           name: formData.productName,
@@ -198,9 +269,7 @@ export default function NewListingPage() {
           retail_price: parseFloat(formData.askPrice),
           sizes: formData.sizes.length > 0 ? formData.sizes : undefined,
           image_url: formData.images[0] || undefined,
-          media: formData.images.length
-            ? formData.images.map((url) => ({ type: 'image', url }))
-            : undefined,
+          media: mediaItems.length > 0 ? mediaItems : undefined,
           is_global_listing: true,
         },
         token
@@ -556,6 +625,120 @@ export default function NewListingPage() {
                         <Plus size={16} />
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* Videos */}
+                <div className="bg-card rounded-2xl border border-border p-5">
+                  <div className="flex items-center gap-2.5 mb-5">
+                    <div className="w-9 h-9 rounded-xl bg-purple-400/10 text-purple-400 flex items-center justify-center">
+                      <Video size={15} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        {t('videos')}
+                      </p>
+                      <p className="text-[11px] text-muted">
+                        {t('videosDesc')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <input
+                    ref={videoInputRef}
+                    type="file"
+                    multiple
+                    accept="video/mp4,video/quicktime,video/x-msvideo"
+                    onChange={handleVideoSelect}
+                    className="hidden"
+                    data-testid="video-file-input"
+                  />
+
+                  {/* Video upload errors */}
+                  {videoErrors.length > 0 && (
+                    <div className="mb-4 space-y-2">
+                      {videoErrors.map((error, index) => (
+                        <div
+                          key={index}
+                          className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400 flex items-center gap-2"
+                        >
+                          <AlertTriangle size={16} />
+                          {error}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    {/* Uploaded videos */}
+                    {videos.map((fileName, i) => (
+                      <div
+                        key={i}
+                        data-testid={`video-preview-${i}`}
+                        className="flex items-center gap-3 p-3 rounded-xl border border-border bg-surface/50 group"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-purple-400/10 text-purple-400 flex items-center justify-center shrink-0">
+                          {videoUploading && !videoUrls[i] ? (
+                            <Loader2 size={18} className="animate-spin" />
+                          ) : (
+                            <Play size={18} />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {fileName}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {videoUploading && !videoUrls[i] && (
+                              <span className="text-[10px] text-muted">
+                                {t('uploadProgress')}...
+                              </span>
+                            )}
+                            {videoUrls[i] && (
+                              <span className="text-[10px] text-emerald-400">
+                                ✓ Uploaded
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {/* Remove button */}
+                        {videoUrls[i] && (
+                          <button
+                            type="button"
+                            onClick={() => removeVideo(i)}
+                            data-testid={`remove-video-${i}`}
+                            className="w-8 h-8 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={14} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* Add Video button (if under 4) */}
+                    {videos.length < 4 && (
+                      <button
+                        type="button"
+                        onClick={() => videoInputRef.current?.click()}
+                        disabled={videoUploading}
+                        className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-purple-400/30 hover:border-purple-400/60 bg-purple-400/[0.03] text-purple-400 hover:bg-purple-400/[0.06] transition-all disabled:opacity-40"
+                      >
+                        {videoUploading ? (
+                          <Loader2 size={20} className="animate-spin" />
+                        ) : (
+                          <Video size={20} />
+                        )}
+                        <span className="text-sm font-semibold">
+                          {t('addVideo')}
+                        </span>
+                      </button>
+                    )}
+
+                    {videos.length === 0 && (
+                      <p className="text-center text-[11px] text-muted/60 py-2">
+                        Maximum 4 videos, 30MB each • MP4, MOV, AVI supported
+                      </p>
+                    )}
                   </div>
                 </div>
 

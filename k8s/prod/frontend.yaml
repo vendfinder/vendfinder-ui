@@ -33,6 +33,9 @@ spec:
           image: registry.digitalocean.com/vendfinder-registry/frontend:latest
           ports:
             - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: vendfinder-config
           resources:
             requests:
               cpu: 100m

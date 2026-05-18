@@ -3,6 +3,7 @@
 export const navItemHrefs = [
   { key: 'home', href: '/' },
   { key: 'products', href: '/products' },
+  { key: 'discover', href: '/discover' },
   { key: 'sneakers', href: '/categories/sneakers' },
   { key: 'electronics', href: '/categories/electronics' },
   { key: 'apparel', href: '/categories/apparel' },

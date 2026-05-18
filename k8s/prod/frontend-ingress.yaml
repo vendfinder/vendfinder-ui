@@ -10,12 +10,51 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     nginx.ingress.kubernetes.io/proxy-body-size: 50m
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/websocket-services: websocket-service
 spec:
   ingressClassName: nginx
   rules:
   - host: vendfinder.com
     http:
       paths:
+      - backend:
+          service:
+            name: websocket-service
+            port:
+              number: 3006
+        path: /socket.io
+        pathType: Prefix
+      - backend:
+          service:
+            name: websocket-service
+            port:
+              number: 3006
+        path: /api/ws
+        pathType: Prefix
+      - backend:
+          service:
+            name: frontend
+            port:
+              number: 3000
+        path: /
+        pathType: Prefix
+  - host: www.vendfinder.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: websocket-service
+            port:
+              number: 3006
+        path: /socket.io
+        pathType: Prefix
+      - backend:
+          service:
+            name: websocket-service
+            port:
+              number: 3006
+        path: /api/ws
+        pathType: Prefix
       - backend:
           service:
             name: frontend
@@ -26,4 +65,5 @@ spec:
   tls:
   - hosts:
     - vendfinder.com
+    - www.vendfinder.com
     secretName: vendfinder-tls

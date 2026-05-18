@@ -35,7 +35,8 @@ spec:
         - name: vendfinder-registry
       containers:
         - name: frontend
-          image: registry.digitalocean.com/vendfinder-registry/frontend:v20260308-product-uploads
+          image: registry.digitalocean.com/vendfinder-registry/frontend@sha256:dac219b028d6d64bf4a0a1abe6ff9b26e65b5525425d1e46a0e28dfd76b319ce
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
               protocol: TCP

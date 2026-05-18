@@ -5,6 +5,124 @@ const logger = require('../logger');
 const { paymentsProcessed } = require('../metrics');
 
 const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || 'http://product-service:3002';
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-service:3004';
+const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL || 'http://email-service:3009';
+
+// Fetch buyer's email address from user-service
+async function getBuyerEmail(buyerId) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    const response = await fetch(`${USER_SERVICE_URL}/users/${buyerId}`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (!response.ok) {
+      logger.warn('Failed to fetch buyer details', { buyerId, status: response.status });
+      return null;
+    }
+    const user = await response.json();
+    return user.email || null;
+  } catch (err) {
+    logger.warn('Error fetching buyer email', { buyerId, error: err.message });
+    return null;
+  }
+}
+
+// Fetch seller's email address from user-service
+async function getSellerEmail(sellerId) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    const response = await fetch(`${USER_SERVICE_URL}/users/${sellerId}`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (!response.ok) {
+      logger.warn('Failed to fetch seller details', { sellerId, status: response.status });
+      return null;
+    }
+    const user = await response.json();
+    return user.email || null;
+  } catch (err) {
+    logger.warn('Error fetching seller email', { sellerId, error: err.message });
+    return null;
+  }
+}
+
+// Send order confirmation email via email-service
+async function sendOrderConfirmationEmail(buyerEmail, order) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const payload = {
+      email: buyerEmail,
+      orderNumber: order.order_number,
+      items: [{
+        productName: order.product_name,
+        quantity: 1,
+        subtotal: parseFloat(order.item_price),
+      }],
+      subtotal: parseFloat(order.item_price),
+      shipping: parseFloat(order.shipping_fee || 0),
+      total: parseFloat(order.total_buyer_pays),
+      shippingAddress: {
+        name: order.shipping_name,
+        line1: order.shipping_address_line1,
+        line2: order.shipping_address_line2,
+        city: order.shipping_city,
+        state: order.shipping_state,
+        postalCode: order.shipping_zip,
+        country: order.shipping_country || 'US',
+      },
+    };
+    const response = await fetch(`${EMAIL_SERVICE_URL}/emails/order-confirmation`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (!response.ok) {
+      const text = await response.text();
+      logger.warn('Order confirmation email failed', { status: response.status, body: text.slice(0, 200) });
+      return;
+    }
+    logger.info('Order confirmation email sent', { orderNumber: order.order_number, email: buyerEmail });
+  } catch (err) {
+    logger.warn('Error sending order confirmation email', { error: err.message });
+  }
+}
+
+// Send seller sale notification email via email-service
+async function sendSellerSaleNotificationEmail(sellerEmail, order) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const payload = {
+      email: sellerEmail,
+      orderNumber: order.order_number,
+      productName: order.product_name,
+      salePrice: parseFloat(order.item_price),
+      sellerPayout: parseFloat(order.seller_payout || 0),
+    };
+    const response = await fetch(`${EMAIL_SERVICE_URL}/emails/seller-sale-notification`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (!response.ok) {
+      const text = await response.text();
+      logger.warn('Seller sale notification email failed', { status: response.status, body: text.slice(0, 200) });
+      return;
+    }
+    logger.info('Seller sale notification email sent', { orderNumber: order.order_number, email: sellerEmail });
+  } catch (err) {
+    logger.warn('Error sending seller sale notification email', { error: err.message });
+  }
+}
 
 module.exports = function(pool, redis) {
   const router = express.Router();
@@ -63,6 +181,34 @@ module.exports = function(pool, redis) {
             } catch (err) {
               logger.warn('Failed to record sale in product-service', { error: err.message });
             }
+
+            // Send order confirmation email (async, do not block)
+            (async () => {
+              const buyerEmail = await getBuyerEmail(order.rows[0].buyer_id);
+              if (buyerEmail) {
+                await sendOrderConfirmationEmail(buyerEmail, order.rows[0]);
+              } else {
+                logger.warn('Skipping order confirmation email — no buyer email', { orderId });
+              }
+            })().catch((err) => {
+              logger.warn('Order confirmation email task failed', { error: err.message });
+            });
+
+            // Send seller sale notification email (async, do not block)
+            (async () => {
+              if (!order.rows[0].seller_id) {
+                logger.warn('Skipping seller sale notification — no seller_id on order', { orderId });
+                return;
+              }
+              const sellerEmail = await getSellerEmail(order.rows[0].seller_id);
+              if (sellerEmail) {
+                await sendSellerSaleNotificationEmail(sellerEmail, order.rows[0]);
+              } else {
+                logger.warn('Skipping seller sale notification — no seller email', { orderId });
+              }
+            })().catch((err) => {
+              logger.warn('Seller sale notification task failed', { error: err.message });
+            });
           }
 
           paymentsProcessed.inc({ status: 'succeeded' });
