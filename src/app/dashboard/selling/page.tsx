@@ -29,11 +29,15 @@ import {
   XCircle,
   MessageCircle,
   ExternalLink,
+  Video,
+  Play,
+  Upload,
+  AlertTriangle,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useAuth } from '@/context/AuthContext';
-import { updateAsk, deleteAsk } from '@/lib/api-products';
+import { updateAsk, deleteAsk, updateProduct, uploadProductVideos } from '@/lib/api-products';
 import { shipOrder } from '@/lib/api-orders';
 import Badge from '@/components/ui/Badge';
 import { formatPrice, getTrackingUrl, formatCarrierName } from '@/lib/utils';
@@ -89,6 +93,15 @@ export default function SellingPage() {
   const [shipCarrier, setShipCarrier] = useState('usps');
   const [shipTracking, setShipTracking] = useState('');
   const [shipping, setShipping] = useState(false);
+
+  // Video management state
+  const [editingProduct, setEditingProduct] = useState<string | null>(null);
+  const [editingVideos, setEditingVideos] = useState<string[]>([]);
+  const [editingVideoUrls, setEditingVideoUrls] = useState<string[]>([]);
+  const [existingVideos, setExistingVideos] = useState<Array<{ type: 'video'; url: string; sort_order: number }>>([]);
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoErrors, setVideoErrors] = useState<string[]>([]);
+
   const { token } = useAuth();
   const { sellerStats, listings, sellerOrders, loading, refetch } =
     useDashboardData();
@@ -194,6 +207,121 @@ export default function SellingPage() {
       // silent
     } finally {
       setDeleting(null);
+    }
+  };
+
+  // Video management handlers
+  const openEditModal = (listing: any) => {
+    setEditingProduct(listing.productId);
+    setOpenMenu(null);
+
+    // Load existing videos from the listing's media
+    const videos = (listing.media || [])
+      .filter((item: any) => item.type === 'video')
+      .map((item: any) => ({ type: 'video' as const, url: item.url, sort_order: item.sort_order }));
+    setExistingVideos(videos);
+
+    // Reset new video state
+    setEditingVideos([]);
+    setEditingVideoUrls([]);
+    setVideoErrors([]);
+  };
+
+  const closeEditModal = () => {
+    setEditingProduct(null);
+    setEditingVideos([]);
+    setEditingVideoUrls([]);
+    setExistingVideos([]);
+    setVideoErrors([]);
+  };
+
+  const handleEditVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    if (!selectedFiles.length || !token) return;
+
+    const remaining = 4 - (existingVideos.length + editingVideos.length);
+    const filesToUpload = selectedFiles.slice(0, remaining);
+
+    // Client-side validation
+    const validationErrors: string[] = [];
+    filesToUpload.forEach((file) => {
+      if (file.size > 30 * 1024 * 1024) {
+        validationErrors.push(`File ${file.name} exceeds 30MB limit`);
+        return;
+      }
+      const allowedTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo'];
+      if (!allowedTypes.includes(file.type)) {
+        validationErrors.push(`Invalid file type for ${file.name}. Allowed: MP4, MOV, AVI`);
+        return;
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      setVideoErrors(validationErrors);
+      return;
+    }
+
+    setVideoErrors([]);
+    const newPreviews = filesToUpload.map((f) => f.name);
+    setEditingVideos((prev) => [...prev, ...newPreviews]);
+
+    setVideoUploading(true);
+    try {
+      const urls = await uploadProductVideos(filesToUpload, token);
+      setEditingVideoUrls((prev) => [...prev, ...urls]);
+    } catch (err: unknown) {
+      setEditingVideos((prev) => prev.slice(0, prev.length - newPreviews.length));
+      const message = err instanceof Error ? err.message : 'Failed to upload videos';
+      setVideoErrors([message]);
+    } finally {
+      setVideoUploading(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const removeExistingVideo = (url: string) => {
+    setExistingVideos((prev) => prev.filter((video) => video.url !== url));
+  };
+
+  const removeEditingVideo = (index: number) => {
+    setEditingVideos((prev) => prev.filter((_, i) => i !== index));
+    setEditingVideoUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const saveProductChanges = async () => {
+    if (!editingProduct || !token || saving) return;
+
+    setSaving(true);
+    try {
+      const listing = listings.find(l => l.productId === editingProduct);
+      if (!listing) return;
+
+      // Get existing non-video media
+      const existingMedia = (listing.media || []).filter((item: any) => item.type !== 'video');
+
+      // Combine with remaining existing videos and new videos
+      const allVideos = [
+        ...existingVideos,
+        ...editingVideoUrls.map((url, index) => ({
+          type: 'video' as const,
+          url,
+          sort_order: existingVideos.length + index + 1
+        }))
+      ];
+
+      const combinedMedia = [
+        ...existingMedia,
+        ...allVideos
+      ].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+
+      await updateProduct(editingProduct, { media: combinedMedia }, token);
+      closeEditModal();
+      refetch();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save changes';
+      setVideoErrors([message]);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -1092,6 +1220,13 @@ export default function SellingPage() {
                                   <Edit3 size={12} className="text-muted" />
                                   {t('editAsk')}
                                 </button>
+                                <button
+                                  onClick={() => openEditModal(listing)}
+                                  className="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors"
+                                >
+                                  <Video size={12} className="text-muted" />
+                                  Edit Product
+                                </button>
                                 <Link
                                   href={`/products/${listing.productId}`}
                                   onClick={() => setOpenMenu(null)}
@@ -1189,6 +1324,213 @@ export default function SellingPage() {
             )}
           </motion.div>
         )}
+
+        {/* Edit Product Modal */}
+        <AnimatePresence>
+          {editingProduct && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+                onClick={() => !saving && closeEditModal()}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                className="relative w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden max-h-[80vh] overflow-y-auto"
+              >
+                {/* Modal header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                  <div>
+                    <h3 className="text-base font-bold text-foreground">
+                      Edit Product
+                    </h3>
+                    <p className="text-xs text-muted mt-0.5">
+                      Manage product videos and media
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => !saving && closeEditModal()}
+                    className="p-2 text-muted hover:text-foreground rounded-lg hover:bg-surface transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div className="px-6 py-5 space-y-5">
+                  {/* Videos Section */}
+                  <div>
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <div className="w-9 h-9 rounded-xl bg-purple-400/10 text-purple-400 flex items-center justify-center">
+                        <Video size={15} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          Videos
+                        </p>
+                        <p className="text-[11px] text-muted">
+                          Add videos to showcase your product
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Video upload errors */}
+                    {videoErrors.length > 0 && (
+                      <div className="mb-4 space-y-2">
+                        {videoErrors.map((error, index) => (
+                          <div
+                            key={index}
+                            className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400 flex items-center gap-2"
+                          >
+                            <AlertTriangle size={16} />
+                            {error}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* File input */}
+                    <input
+                      type="file"
+                      multiple
+                      accept="video/mp4,video/quicktime,video/x-msvideo"
+                      onChange={handleEditVideoUpload}
+                      className="hidden"
+                      data-testid="edit-video-file-input"
+                      id="edit-video-upload"
+                    />
+
+                    <div className="space-y-3">
+                      {/* Existing videos */}
+                      {existingVideos.map((video, i) => (
+                        <div
+                          key={video.url}
+                          className="flex items-center gap-3 p-3 rounded-xl border border-border bg-surface/50 group"
+                        >
+                          <div className="w-10 h-10 rounded-xl bg-purple-400/10 text-purple-400 flex items-center justify-center shrink-0">
+                            <Play size={18} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">
+                              {video.url.split('/').pop() || 'video'}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[10px] text-emerald-400">
+                                ✓ Existing
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeExistingVideo(video.url)}
+                            data-testid={`remove-existing-video-${i}`}
+                            className="w-8 h-8 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+
+                      {/* Newly uploaded videos */}
+                      {editingVideos.map((fileName, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-3 p-3 rounded-xl border border-border bg-surface/50 group"
+                        >
+                          <div className="w-10 h-10 rounded-xl bg-purple-400/10 text-purple-400 flex items-center justify-center shrink-0">
+                            {videoUploading && !editingVideoUrls[i] ? (
+                              <Loader2 size={18} className="animate-spin" />
+                            ) : (
+                              <Play size={18} />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">
+                              {fileName}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {videoUploading && !editingVideoUrls[i] && (
+                                <span className="text-[10px] text-muted">
+                                  Uploading...
+                                </span>
+                              )}
+                              {editingVideoUrls[i] && (
+                                <span className="text-[10px] text-emerald-400">
+                                  ✓ Uploaded
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          {editingVideoUrls[i] && (
+                            <button
+                              type="button"
+                              onClick={() => removeEditingVideo(i)}
+                              className="w-8 h-8 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+
+                      {/* Add Video button */}
+                      {(existingVideos.length + editingVideos.length) < 4 && (
+                        <label
+                          htmlFor="edit-video-upload"
+                          className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-purple-400/30 hover:border-purple-400/60 bg-purple-400/[0.03] text-purple-400 hover:bg-purple-400/[0.06] transition-all cursor-pointer"
+                        >
+                          {videoUploading ? (
+                            <Loader2 size={20} className="animate-spin" />
+                          ) : (
+                            <Upload size={20} />
+                          )}
+                          <span className="text-sm font-semibold">
+                            Add Video
+                          </span>
+                        </label>
+                      )}
+
+                      {(existingVideos.length + editingVideos.length) === 0 && (
+                        <p className="text-center text-[11px] text-muted/60 py-2">
+                          Maximum 4 videos, 30MB each • MP4, MOV, AVI supported
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="px-6 py-4 border-t border-border flex items-center gap-3">
+                  <button
+                    onClick={closeEditModal}
+                    disabled={saving}
+                    className="flex-1 px-4 py-3 rounded-xl border border-border text-sm font-medium text-muted hover:text-foreground hover:border-border-hover transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveProductChanges}
+                    disabled={saving || videoUploading}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark shadow-[0_0_20px_rgba(232,136,58,0.15)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {saving ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Upload size={14} />
+                    )}
+                    {saving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {featuringListing && (
           <FeatureListingModal
             productId={featuringListing.productId}

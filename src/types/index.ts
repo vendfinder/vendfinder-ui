@@ -156,6 +156,7 @@ export interface Listing {
   soldAt?: string;
   expiresAt?: string;
   views: number;
+  media?: any[]; // Support for media items including videos
 }
 
 export interface Bid {
