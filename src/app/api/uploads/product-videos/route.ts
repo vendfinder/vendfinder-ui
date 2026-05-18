@@ -1,0 +1,30 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function POST(request: NextRequest) {
+  try {
+    const API_BASE_URL = process.env.API_BASE_URL || 'http://api-gateway:3000';
+    const authHeader = request.headers.get('authorization');
+    const contentType = request.headers.get('content-type');
+
+    const body = await request.arrayBuffer();
+
+    const headers: Record<string, string> = {};
+    if (authHeader) headers['Authorization'] = authHeader;
+    if (contentType) headers['Content-Type'] = contentType;
+
+    const res = await fetch(`${API_BASE_URL}/api/uploads/product-videos`, {
+      method: 'POST',
+      headers,
+      body: Buffer.from(body),
+    });
+
+    const data = await res.json();
+    return NextResponse.json(data, { status: res.status });
+  } catch (error) {
+    console.error('Video upload error:', error);
+    return NextResponse.json(
+      { error: 'Failed to upload video' },
+      { status: 502 }
+    );
+  }
+}
