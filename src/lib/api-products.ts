@@ -161,6 +161,46 @@ export async function uploadProductImages(
   return data.urls;
 }
 
+// --- Video Upload ---
+
+export async function uploadProductVideos(
+  files: File[],
+  token: string
+): Promise<string[]> {
+  // Client-side validation
+  for (const file of files) {
+    // Check file size (30MB limit)
+    if (file.size > 30 * 1024 * 1024) {
+      throw new Error(`File ${file.name} exceeds 30MB limit`);
+    }
+
+    // Check file type
+    const allowedTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo'];
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error(`Invalid file type for ${file.name}. Allowed: MP4, MOV, AVI`);
+    }
+  }
+
+  const formData = new FormData();
+  for (const file of files) {
+    formData.append('videos', file);
+  }
+
+  const res = await fetch('/api/uploads/product-videos', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to upload videos');
+  }
+
+  const data = await res.json();
+  return data.urls || [data.videoUrl]; // Handle both single and multiple responses
+}
+
 // --- Products CRUD ---
 
 export async function createProduct(
