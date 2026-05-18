@@ -1,3 +1,33 @@
+export interface ImageItem {
+  url: string;
+  alt?: string;
+  sort_order: number;
+}
+
+export interface VideoItem {
+  url: string;
+  thumbnail?: string;
+  duration?: number; // seconds
+  size?: number; // bytes
+  sort_order: number;
+}
+
+export interface Media {
+  images?: ImageItem[];
+  videos?: VideoItem[];
+}
+
+export interface VideoUploadResponse {
+  success: boolean;
+  videoUrl?: string;
+  metadata?: {
+    duration: number;
+    size: number;
+    format: string;
+  };
+  error?: string;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -5,8 +35,10 @@ export interface Product {
   description: string;
   longDescription: string;
   price: number;
+  retail_price?: number; // New optional field for video platform
   compareAtPrice?: number;
   images: string[];
+  media?: Media; // New optional field for video support
   category: string;
   tags: string[];
   rating: number;
@@ -18,8 +50,11 @@ export interface Product {
   specifications: Record<string, string>;
   sizes?: string[];
   sellerId?: string;
+  vendor_id?: string; // New optional field for video platform
   sellerName?: string;
   createdAt: string;
+  created_at?: string; // New optional field for video platform
+  updated_at?: string; // New optional field for video platform
   translations?: Record<
     string,
     {
