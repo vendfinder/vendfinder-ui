@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, Package, Eye, Globe } from 'lucide-react';
+import { ShoppingCart, Package, Eye, Globe, Play } from 'lucide-react';
 import { Product } from '@/types';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { useCart } from '@/context/CartContext';
@@ -13,6 +13,15 @@ import { useTranslatedProduct } from '@/hooks/useTranslatedProduct';
 interface ProductCardProps {
   product: Product;
 }
+
+// Helper functions for video badge
+const hasVideos = (product: Product) => {
+  return product.media?.videos && product.media.videos.length > 0;
+};
+
+const getVideoCount = (product: Product) => {
+  return product.media?.videos?.length || 0;
+};
 
 export default function ProductCard({ product: rawProduct }: ProductCardProps) {
   const product = useTranslatedProduct(rawProduct);
@@ -68,9 +77,21 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
             {t('product.percentOff', { percent: discountPercent })}
           </span>
         )}
+        {/* Video Badge */}
+        {hasVideos(product) && (
+          <div className="absolute top-3 right-3 bg-black/75 backdrop-blur-sm rounded-full p-1.5 flex items-center gap-1">
+            <Play size={12} className="text-white fill-white" />
+            {getVideoCount(product) > 1 && (
+              <span className="text-white text-xs font-medium">
+                {getVideoCount(product)}
+              </span>
+            )}
+            <span className="sr-only" aria-label="Has video">Video available</span>
+          </div>
+        )}
         {product.isGlobalListing && (
           <span
-            className="absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-black/60 text-blue-300 rounded-lg backdrop-blur-sm border border-blue-400/20"
+            className={`absolute ${hasVideos(product) ? 'top-10' : 'top-3'} right-3 inline-flex items-center gap-1 px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-black/60 text-blue-300 rounded-lg backdrop-blur-sm border border-blue-400/20`}
             title="Available in multiple languages"
           >
             <Globe size={9} />
@@ -79,7 +100,7 @@ export default function ProductCard({ product: rawProduct }: ProductCardProps) {
         )}
         {product.stockCount && product.stockCount <= 5 && (
           <span
-            className={`absolute ${product.isGlobalListing ? 'top-10' : 'top-3'} right-3 px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-black/50 text-amber-300 rounded-lg backdrop-blur-sm border border-amber-400/20`}
+            className={`absolute ${(product.isGlobalListing && hasVideos(product)) ? 'top-[4.5rem]' : (product.isGlobalListing || hasVideos(product)) ? 'top-10' : 'top-3'} right-3 px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-black/50 text-amber-300 rounded-lg backdrop-blur-sm border border-amber-400/20`}
           >
             {t('product.lowStock')}
           </span>
